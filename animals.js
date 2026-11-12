@@ -422,6 +422,8 @@ const Animals = (() => {
     }, 550);
     const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
     if (isNew && typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 650);
+    if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 5, selten: 10, sehrselten: 25, legendaer: 75 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
+    if (isNew) setTimeout(refreshPens, 1300);
     else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
     if (isNew && v.rarity === "sehrselten") { H.burst(r.left + r.width / 2, r.top, ["💜", "✨", "⭐"], 18, 140); [784, 988, 1175].forEach((f, i) => s.tone(f, 0.2, "triangle", 0.15, null, 0.5 + i * 0.1)); }
     if (isNew && v.rarity === "legendaer") { setTimeout(() => { H.confetti(["👑", "✨", "⭐", "💛", "🎉"], 80); s.jingle(); }, 700); }
@@ -471,25 +473,31 @@ const Animals = (() => {
 
   function pen(area, later) {
     const field = H.el("div", { class: "pen" });
-    field.innerHTML = DECOR;
     area.append(field);
+    mountPen(field, later);
+  }
+
+  function mountPen(field, later) {
+    field.innerHTML = "";
+    field.append(H.el("div", { class: "zoo-scene", html: typeof Zoo !== "undefined" ? Zoo.scene() : DECOR }));
     const mine = VARIANTS.filter((v) => found.has(v.id));
     if (!mine.length) {
-      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch ist das Gehege leer." }), H.el("div", { text: "Unten auf der Seite laufen ständig Tiere vorbei. Klick sie an, dann werden sie hierher gebeamt. Insgesamt gibt es 100 verschiedene." })));
+      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Unten laufen ständig Tiere vorbei. Klick sie an, dann ziehen sie ins Gehege ein – und bringen ein paar Taler mit." })));
       return;
     }
     const small = innerWidth < 600;
+    const k = field.classList.contains("inline") ? (small ? 0.42 : 0.7) : small ? 0.62 : 1;
     mine.forEach((v) => {
       const sp = SPECIES[v.sp];
-      const w = sp.W * sp.scale * (small ? 0.62 : 1);
+      const w = sp.W * sp.scale * k;
       const a = H.el("div", { class: "pen-animal" });
       const wrap = H.el("div", { class: "pa-in" });
       wrap.innerHTML = svg(v, { width: w });
       a.append(wrap);
-      let x = Math.random() * 88, y = 8 + Math.random() * 78;
+      let x = Math.random() * 88, y = 48 + Math.random() * 46;
       a.style.left = x + "%"; a.style.top = y + "%"; a.style.zIndex = Math.round(y);
       const move = () => {
-        const nx = Math.max(0, Math.min(90, x + (Math.random() - 0.5) * 50)), ny = Math.max(6, Math.min(86, y + (Math.random() - 0.5) * 40));
+        const nx = Math.max(0, Math.min(90, x + (Math.random() - 0.5) * 50)), ny = Math.max(46, Math.min(96, y + (Math.random() - 0.5) * 30));
         const fw = field.clientWidth, fh = field.clientHeight;
         const dist = Math.hypot(((nx - x) / 100) * fw, ((ny - y) / 100) * fh);
         const dur = Math.max(0.8, dist / (sp.speed * 0.7));
@@ -553,6 +561,16 @@ const Animals = (() => {
     setTimeout(() => { H.toast("🏡 " + fresh[fresh.length - 1].msg, 7000); H.sfx.jingle(); btn.classList.add("bump"); }, 2500);
   }
 
+  /* ---------- Gehege auf der Startseite ---------- */
+  const inlineTimers = new Set();
+  const inlineLater = (fn, ms) => { const t = setTimeout(() => { inlineTimers.delete(t); fn(); }, ms); inlineTimers.add(t); };
+  function refreshPens() {
+    const f = document.getElementById("zoo-pen");
+    if (!f) return;
+    inlineTimers.forEach(clearTimeout); inlineTimers.clear();
+    mountPen(f, inlineLater);
+  }
+
   function init() {
     H = App.h;
     load();
@@ -562,9 +580,10 @@ const Animals = (() => {
     document.body.append(btn);
     updateBtn();
     announceWaves();
+    refreshPens();
     setTimeout(spawn, 600); setTimeout(spawn, 2500);
     setInterval(spawn, 2600);
   }
 
-  return { SPECIES, VARIANTS, RARITY, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { SPECIES, VARIANTS, RARITY, refreshPens, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();

@@ -18,11 +18,11 @@
     outro: "Zwölf Paare – und kein einziger Doppelgänger hat dich hereingelegt.",
     render(root, { solve }) {
       solve = once(solve);
-      const set = [A("katze", 1, "brille"), A("katze", 1, "schal", "#e85d75"), A("hund", 0, "muetze"), A("hund", 0, "schleife", "#4f7fe0"), A("capy", 0, "orange"), A("capy", 0, "krone"),
+      const set = this.data || [A("katze", 1, "brille"), A("katze", 1, "schal", "#e85d75"), A("hund", 0, "muetze"), A("hund", 0, "schleife", "#4f7fe0"), A("capy", 0, "orange"), A("capy", 0, "krone"),
         A("waschbaer", 0, "blume", "#e85d75"), A("waschbaer", 0, "fliege", "#4f7fe0"), A("fuchs", 0, ""), A("fuchs", 0, "geweih"), A("pinguin", 0, "schal", "#3f9e6e"), A("pinguin", 0, "muetze")];
       const cols = small() ? 4 : 6;
       const grid = el("div", { class: "grid", style: `grid-template-columns:repeat(${cols},minmax(0,130px));gap:10px` });
-      const stat = info("0 Züge · 0 von 12 Paaren");
+      const stat = info(`0 Züge · 0 von ${set.length} Paaren`);
       let open = [], lock = false, found = 0, moves = 0;
       shuffle([...set.keys(), ...set.keys()]).forEach((k) => {
         const c = el("div", { class: "mem-card" }, el("div", { class: "mem-inner" }, el("div", { class: "mem-face mem-back", text: "?" }), el("div", { class: "mem-face mem-front", html: pic(set[k]) })));
@@ -35,7 +35,7 @@
             setTimeout(() => { x.classList.add("matched"); y.classList.add("matched"); sfx.good(); burstAt(y, ["✨", "💖"], 8, 60); }, 300);
             if (++found === set.length) setTimeout(solve, 1100);
           } else { lock = true; setTimeout(() => { x.classList.remove("flipped"); y.classList.remove("flipped"); lock = false; }, 1000); }
-          stat.textContent = `${moves} Züge · ${found} von 12 Paaren`;
+          stat.textContent = `${moves} Züge · ${found} von ${set.length} Paaren`;
         };
         grid.append(c);
       });
@@ -50,7 +50,7 @@
     outro: "Meerschweinchen, Koala, Seepferdchen, Pinguin: alle durchschaut.",
     render(root, { solve }) {
       solve = once(solve);
-      const rs = [
+      const rs = this.data || [
         ["Mein Name verspricht zweimal, was ich nicht halten kann: Ich lebe nicht im Meer – und ein Schwein bin ich auch nicht.", ["Meerschweinchen"]],
         ["Man nennt mich gern Bär, doch ich bin keiner. Ich verschlafe fast den ganzen Tag – schuld ist mein Leibgericht, das kaum Energie liefert.", ["Koala", "Koalabär"]],
         ["Ich bin ein Pferd, das nie galoppiert. Und bei uns trägt der Vater die Kinder aus.", ["Seepferdchen", "Seepferd"]],
@@ -193,7 +193,7 @@
     outro: "Schnabeltier, Erdmännchen, Gürteltier – der Nikolaus bedankt sich.",
     render(root, { solve }) {
       solve = once(solve);
-      const words = ["SCHNABELTIER", "ERDMÄNNCHEN", "GÜRTELTIER"];
+      const words = this.data || ["SCHNABELTIER", "ERDMÄNNCHEN", "GÜRTELTIER"];
       const box = el("div");
       root.append(box);
       const play = (w) => {
@@ -271,7 +271,7 @@
     outro: "Die Keksdose ist offen. Der Waschbär ist beeindruckt – und etwas beleidigt.",
     render(root, { solve }) {
       solve = once(solve);
-      const syms = [A("capy"), A("katze", 1), A("hund", 0), A("waschbaer"), A("pinguin"), A("schwein")];
+      const syms = this.data || [A("capy"), A("katze", 1), A("hund", 0), A("waschbaer"), A("pinguin"), A("schwein")];
       let code = shuffle([0, 1, 2, 3, 4, 5]).slice(0, 4), guess = [], tries = 0;
       const board = el("div", { class: "mm-board" });
       const cur = el("div", { class: "mm-row current" });
@@ -311,7 +311,7 @@
     outro: "Da steppt der Bär: zehn von zehn!",
     render(root, { solve }) {
       solve = once(solve);
-      const qs = [
+      const qs = this.data || [
         ["Da steppt der ___.", "Bär", ["Hund", "Hase", "Elch"]],
         ["Da liegt der ___ begraben.", "Hund", ["Hase", "Fuchs", "Igel"]],
         ["Ich glaub, mein ___ pfeift!", "Schwein", ["Hamster", "Esel", "Dackel"]],
@@ -370,7 +370,7 @@
     outro: "Acht von acht. Ab sofort bist du die Tier-Expertin der Familie.",
     render(root, { solve }) {
       solve = once(solve);
-      const qs = [
+      const qs = this.data || [
         ["Wie viele Stunden schläft ein Koala am Tag?", "18 bis 22 Stunden", ["6 bis 8 Stunden", "10 bis 12 Stunden", "14 bis 16 Stunden"], "Eukalyptus liefert kaum Energie – also wird viel geschlafen."],
         ["Welches Tier hat drei Herzen?", "Der Oktopus", ["Der Regenwurm", "Der Blauwal", "Die Giraffe"], "Zwei Herzen pumpen Blut durch die Kiemen, eines durch den Körper."],
         ["Welche Farbe hat die Haut unter dem Fell eines Eisbären?", "Schwarz", ["Weiß", "Rosa", "Grau-blau"], "Die schwarze Haut nimmt Sonnenwärme besser auf."],
@@ -447,10 +447,11 @@
     outro: "Angekommen. Der Igel rollt sich zufrieden mit seinem Apfel zusammen.",
     render(root, { solve }) {
       solve = once(solve);
-      const cw = small() ? 9 : 17, ch = small() ? 12 : 10;
+      const D = this.data || {};
+      const cw = small() ? D.cwS || 9 : D.cw || 17, ch = small() ? D.chS || 12 : D.ch || 10;
       const W = cw * 2 + 1, Hh = ch * 2 + 1;
       const M = Array.from({ length: Hh }, () => Array(W).fill(1));
-      const rnd = seeded(1313);
+      const rnd = seeded(D.seed || 1313);
       const stack = [[0, 0]], seen = new Set(["0,0"]);
       M[1][1] = 0;
       while (stack.length) {
@@ -799,8 +800,9 @@
     outro: "Alle fünf Gäste gefunden. Das Foto kann gemacht werden.",
     render(root, { solve }) {
       solve = once(solve);
-      const rnd = seeded(2323);
-      const targets = [A("katze", 4, "krone"), A("hund", 2, "schal", "#4f7fe0"), A("schaf", 1, "brille"), A("pinguin", 1, "blume", "#e85d75"), A("capy", 2, "geweih")];
+      const D = this.data || {};
+      const rnd = seeded(D.seed || 2323);
+      const targets = D.targets || [A("katze", 4, "krone"), A("hund", 2, "schal", "#4f7fe0"), A("schaf", 1, "brille"), A("pinguin", 1, "blume", "#e85d75"), A("capy", 2, "geweih")];
       const kinds = ["capy", "katze", "hund", "waschbaer", "fuchs", "pinguin", "igel", "hase", "schaf", "schwein", "otter", "ente", "baer", "panda_rot"];
       const accs = ["", "muetze", "schal", "schleife", "brille", "krone", "geweih", "blume", "fliege"];
       const cols = small() ? 6 : 11, rows = small() ? 11 : 8, total = cols * rows;
@@ -833,88 +835,89 @@
     },
   });
 
-  /* ---------- 24: Das große Finale ---------- */
-  R(24, {
-    art: A("capy", 2, "muetze"), title: "Das Weihnachtsgeheimnis",
-    intro: "Heiligabend! Bring alle 23 Buchstaben aus deinem Körbchen in die richtige Reihenfolge und lüfte das Geheimnis. Tippe einen Buchstaben an, um ihn in die nächste freie Lücke zu legen – tippe auf eine gefüllte Lücke, um ihn zurückzunehmen. " + App.config.finalClue,
-    render(root, { solve }) {
-      const words = App.words, target = App.letters.join("");
-      const missing = [];
-      for (let d = 1; d <= 23; d++) if (!App.isSolved(d)) missing.push(d);
+  /* =========================================================
+     Kapitel 24–31: neue Varianten bekannter Spiele
+     ========================================================= */
+  const like = (day, extra) => Object.assign({}, App.get(day), extra);
 
-      if (App.isSolved(24)) {
-        root.append(el("div", { class: "center" },
-          el("p", { style: "font-size:26px;font-weight:700;color:var(--red)", text: words.join(" ") }),
-          el("button", { class: "btn btn-green", text: "Überraschung nochmal ansehen", onclick: () => finale() })));
-        return;
-      }
-      if (missing.length) {
-        root.append(el("div", { class: "center" },
-          el("p", { style: "font-size:18px", text: `In deinem Körbchen fehlen noch ${missing.length} Buchstaben (Türchen ${missing.join(", ")}). Du kannst diese Türchen noch lösen – oder Bello erschnüffelt die fehlenden Buchstaben für dich.` }),
-          el("div", { class: "row" },
-            el("button", { class: "btn btn-soft", text: "Erst die Türchen lösen", onclick: () => App.closeModal() }),
-            el("button", { class: "btn btn-green", text: "Bello, such!", onclick: () => { root.innerHTML = ""; sfx.boop(); build(); } }))));
-        return;
-      }
-      build();
+  R(24, like(2, {
+    art: A("capy", 2, "muetze"), title: "Heiligabend-Rätsel",
+    intro: "Unter dem Weihnachtsbaum liegen vier Zettel mit Rätseln. Wer sie alle löst, darf den Baum schmücken.",
+    outro: "Rentier, Igel, Eisbär und Gans – frohe Weihnachten!",
+    data: [
+      ["Ich trage ein Geweih und ziehe in einer bestimmten Nacht einen Schlitten über den Himmel. Mein berühmtester Kollege hat eine rote Nase.", ["Rentier", "Rentiere"]],
+      ["Ich bin klein und stachelig und verschlafe den Winter. Aber bitte nenn mich nicht Kaktus.", ["Igel"]],
+      ["Ich bin weiß, lebe am Nordpol, und meine Haut ist schwarz. Pinguine habe ich noch nie getroffen.", ["Eisbär", "Eisbaer"]],
+      ["Ich bin ein Vogel, der zu Weihnachten gern auf dem Tisch landet. Ich schnattere aus Protest.", ["Gans", "Weihnachtsgans"]],
+    ],
+  }));
 
-      function build() {
-        const pool = [];
-        for (let d = 1; d <= 23; d++) pool.push({ ch: App.letterFor(d), day: d, used: false });
-        const slots = Array(target.length).fill(null);
-        const starts = []; let p = 0; words.forEach((w) => { starts.push(p); p += w.length; });
-        const slotWrap = el("div", { class: "slots" });
-        const poolWrap = el("div", { class: "pool big" });
-        const fb = el("div", { class: "feedback" });
-        const slotEls = [];
-        words.forEach((w, wi) => {
-          const sw = el("div", { class: "slot-word" });
-          for (let k = 0; k < w.length; k++) {
-            const idx = starts[wi] + k;
-            const s = el("button", { class: "slot" });
-            s.onclick = () => { if (slots[idx] == null) return; pool[slots[idx]].used = false; slots[idx] = null; sfx.tick(); draw(); fb.textContent = ""; };
-            sw.append(s); slotEls[idx] = s;
-          }
-          slotWrap.append(sw);
-        });
-        const poolBtns = pool.map((pp, i) => {
-          const b = el("button", { text: pp.ch, title: "Türchen " + pp.day });
-          b.onclick = () => { const free = slots.indexOf(null); if (free < 0 || pp.used) return; pp.used = true; slots[free] = i; sfx.boop(300 + free * 20); draw(); check(); };
-          poolWrap.append(b); return b;
-        });
-        const draw = () => {
-          slotEls.forEach((s, k) => { s.textContent = slots[k] != null ? pool[slots[k]].ch : ""; s.className = "slot" + (slots[k] != null ? " filled" : ""); });
-          poolBtns.forEach((b, i) => b.classList.toggle("used", pool[i].used));
-        };
-        const check = () => {
-          if (slots.includes(null)) return;
-          const guess = slots.map((s) => pool[s].ch).join("");
-          if (guess === target) { slotEls.forEach((s) => s.classList.add("right")); fb.textContent = ""; solve(); setTimeout(finale, 1200); }
-          else { const right = [...guess].filter((c, k) => c === target[k]).length; sfx.bad(); shakeEl(slotWrap); fb.textContent = `Noch nicht ganz: ${right} von ${target.length} Buchstaben stehen schon richtig.`; }
-        };
-        root.append(slotWrap, poolWrap, fb, el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn btn-soft", text: "Alle Buchstaben zurück", onclick: () => { slots.forEach((s, k) => { if (s != null) { pool[s].used = false; slots[k] = null; } }); fb.textContent = ""; draw(); } })));
-        draw();
-      }
+  R(25, like(11, {
+    art: A("pinguin", 1, "schal", "#e85d75"), title: "Winterwissen",
+    intro: "Zum ersten Feiertag ein Quiz rund um Tiere im Winter. Sieben Fragen, jeweils nur eine richtige Antwort.",
+    outro: "Sieben von sieben – du weißt, wie Tiere den Winter überstehen.",
+    data: [
+      ["Wie halten sich Kaiserpinguine im Schneesturm warm?", "Sie kuscheln sich eng zusammen und tauschen die Plätze", ["Sie graben Schneehöhlen", "Sie fliegen in den Süden", "Sie halten Winterschlaf"], "Jeder darf mal in die warme Mitte."],
+      ["Welches Tier zieht in Lappland traditionell Schlitten?", "Das Rentier", ["Der Elch", "Der Rothirsch", "Der Moschusochse"], "Rentiere werden dort seit Jahrhunderten als Zugtiere gehalten."],
+      ["Was fressen Eichhörnchen im Winter?", "Vorräte, die sie im Herbst versteckt haben", ["Vor allem Schnee", "Nur Baumrinde", "Gar nichts – sie schlafen durch"], "Viele Verstecke finden sie nie wieder – daraus wachsen neue Bäume."],
+      ["Welche Farbe hat das Fell eines Schneehasen im Winter?", "Weiß", ["Braun", "Grau", "Gefleckt"], "Im Sommer ist es braun, im Winter wechselt es zu Weiß."],
+      ["Wie lange dauert der Winterschlaf eines Igels ungefähr?", "3 bis 5 Monate", ["2 Wochen", "1 Monat", "Ein ganzes Jahr"], "Dabei sinkt seine Körpertemperatur auf etwa 5 Grad."],
+      ["Welche Rentiere tragen im Winter noch ihr Geweih?", "Vor allem die Weibchen", ["Nur die Männchen", "Gar keine", "Nur die Kälber"], "Männchen werfen es im Spätherbst ab – die Schlittenzieher des Weihnachtsmanns wären also Damen."],
+      ["In welchem Land baden Kapibaras im Winter in heißen Quellen?", "Japan", ["Island", "Norwegen", "Kanada"], "In japanischen Zoos ist das Kapibara-Bad eine beliebte Wintertradition."],
+    ],
+  }));
 
-      function finale() {
-        App.closeModal(); App.refreshDoor(24);
-        const C = App.config;
-        const parade = [A("capy", 0, "orange"), A("katze", 0, "muetze"), A("hund", 0, "schal"), A("waschbaer", 0, "krone"), A("pinguin", 0, "fliege", "#e85d75"), A("giraffe", 0, "geweih"), A("igel", 0, "muetze")];
-        const ov = el("div", { class: "finale-overlay" });
-        const row = el("div", { class: "finale-animals" }, ...parade.map((a) => el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.6 }) })));
-        ov.append(el("div", { class: "finale-card" }, row,
-          el("h2", { text: C.finalTitle }),
-          el("div", { class: "finale-sentence", text: App.words.join(" ") }),
-          el("div", { class: "msg", text: C.finalMessage }),
-          el("p", { class: "sig", text: C.signature }),
-          el("div", { class: "row", style: "margin-top:16px" },
-            el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { confetti(); sfx.jingle(); } }),
-            el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => ov.remove() }))));
-        row.addEventListener("click", (e) => { const fa = e.target.closest(".fa"); if (fa) { sfx.boop(300 + Math.random() * 500); burstAt(fa, ["💖", "✨"], 8, 60); } });
-        document.body.append(ov);
-        sfx.jingle(); confetti();
-        setTimeout(() => rain(["💖", "💗", "🎄", "⭐", "🎁"], 70), 1500); setTimeout(() => confetti(), 3500);
-      }
-    },
-  });
+  R(26, like(6, {
+    art: A("baer", 1, "schal", "#4f7fe0"), title: "Buchstabensturm",
+    intro: "Ein Schneesturm hat drei Tiernamen durcheinandergewirbelt. Setz sie wieder zusammen.",
+    outro: "Schneeeule, Walross, Eichhörnchen – der Sturm hat sich gelegt.",
+    data: ["SCHNEEEULE", "WALROSS", "EICHHÖRNCHEN"],
+  }));
+
+  R(27, like(9, {
+    art: A("katze", 2, "fliege", "#4f7fe0"), title: "Noch mehr Redewendungen",
+    intro: "Zwischen den Jahren wird geplaudert. Ergänze zehn weitere tierische Redewendungen.",
+    outro: "Zehn von zehn. Da beißt die Maus keinen Faden ab!",
+    data: [
+      ["Den Letzten beißen die ___.", "Hunde", ["Katzen", "Mäuse", "Gänse"]],
+      ["Er stand da wie ein begossener ___.", "Pudel", ["Dackel", "Hase", "Kater"]],
+      ["Zwei ___ mit einer Klappe schlagen.", "Fliegen", ["Mücken", "Vögel", "Mäuse"]],
+      ["Den ___ zum Gärtner machen.", "Bock", ["Hasen", "Fuchs", "Hund"]],
+      ["Stumm wie ein ___.", "Fisch", ["Frosch", "Hase", "Igel"]],
+      ["Jemandem einen ___ aufbinden.", "Bären", ["Hasen", "Esel", "Ochsen"]],
+      ["Diese Handschrift kann kein ___ lesen.", "Schwein", ["Hund", "Huhn", "Pferd"]],
+      ["Mit den ___ ins Bett gehen.", "Hühnern", ["Gänsen", "Enten", "Lämmern"]],
+      ["Da beißt sich die ___ in den Schwanz.", "Katze", ["Maus", "Schlange", "Ratte"]],
+      ["Ist die Katze aus dem Haus, tanzen die ___ auf dem Tisch.", "Mäuse", ["Ratten", "Hamster", "Spatzen"]],
+    ],
+  }));
+
+  R(28, like(13, {
+    art: A("igel", 1, "schal", "#e85d75"), title: "Der Weg zum Lagerfeuer",
+    intro: "Das Lagerfeuer ist angezündet, aber der Igel steckt im verschneiten Wald fest. Dieser Wald ist noch größer und verwinkelter als der letzte. Führe ihn zum Apfel unten rechts.",
+    outro: "Geschafft – der Igel wärmt sich jetzt am Feuer die Pfoten.",
+    data: { seed: 2828, cw: 21, ch: 12, cwS: 10, chS: 14 },
+  }));
+
+  R(29, like(1, {
+    art: A("schaf", 0, "muetze"), title: "Memory der Doppelgänger II",
+    intro: "Für das Teleskop braucht es ein scharfes Auge. Zwölf neue Paare – und wieder mit Doppelgängern, die sich nur im Accessoire unterscheiden.",
+    outro: "Zwölf Paare, kein Fehlgriff. Damit findest du jeden Stern.",
+    data: [A("schaf", 0, "muetze"), A("schaf", 0, "schal", "#4f7fe0"), A("hase", 0, "krone"), A("hase", 0, "schleife", "#e85d75"), A("ente", 0, "fliege", "#4f7fe0"), A("ente", 0, "blume", "#e85d75"),
+      A("schwein", 0, "brille"), A("schwein", 0, "geweih"), A("baer", 0, ""), A("baer", 0, "muetze"), A("otter", 0, "schal", "#3f9e6e"), A("otter", 0, "krone")],
+  }));
+
+  R(30, like(8, {
+    art: A("elefant", 0, "krone"), title: "Der Karussell-Code",
+    intro: "Das Karussell startet nur mit dem richtigen Code aus vier verschiedenen Tieren. Grüner Punkt: richtiges Tier am richtigen Platz. Gelber Punkt: richtiges Tier, falscher Platz. 10 Versuche pro Code.",
+    outro: "Das Karussell dreht sich, und der Elefant strahlt.",
+    data: [A("fuchs"), A("igel"), A("hase", 1), A("elefant"), A("ente"), A("otter")],
+  }));
+
+  R(31, like(23, {
+    art: A("capy", 0, "krone"), title: "Das Silvester-Suchbild",
+    intro: "Alle warten auf Mitternacht. Fünf Gäste werden noch gesucht, damit das Feuerwerk beginnen kann. Finde genau diese fünf in der Menge – Achtung, es gibt Doppelgänger!",
+    outro: "Alle fünf sind da. Zehn, neun, acht …",
+    data: { seed: 3131, targets: [A("waschbaer", 1, "geweih"), A("ente", 2, "krone"), A("baer", 2, "schal", "#e85d75"), A("hase", 0, "brille"), A("fuchs", 1, "muetze")] },
+  }));
 })();

@@ -7,21 +7,22 @@ const CONFIG = {
   // Jahr des Adventskalenders (Türchen öffnen sich ab dem 1.12. dieses Jahres)
   year: 2026,
 
-  // Die geheime Lösung. Muss (ohne Leerzeichen) genau 23 Buchstaben haben!
-  // Leerzeichen trennen die Wörter (werden am 24. als Lücken angezeigt).
-  solution: "DU BIST DIE ALLERBESTE MAMA",
-
-  // Überschrift + Nachricht, die nach dem allerletzten Rätsel erscheint
-  finalTitle: "Frohe Weihnachten, Mama! 🎄",
-  finalMessage:
-    "Du hast alle 24 Rätsel gelöst – du bist einfach unschlagbar!\n\n" +
+  // Brief am 24. Dezember (erscheint nach dem Rätsel unter dem Weihnachtsbaum)
+  christmasTitle: "Frohe Weihnachten, Mama! 🎄",
+  christmasMessage:
+    "Schau dir an, was aus dem tristen Gehege geworden ist – das warst alles du!\n\n" +
     "Danke, dass du immer für mich da bist, für deine Umarmungen, " +
-    "dein Lachen und dafür, dass du jedes Tier dieser Welt streicheln willst. 🐾\n\n" +
+    "dein Lachen und dafür, dass du jedes Tier dieser Welt streicheln willst.\n\n" +
     "Ich hab dich unendlich lieb!",
-  signature: "In Liebe ❤️",
 
-  // Kleiner Satz, der am 24. als Hinweis zur Lösung angezeigt wird
-  finalClue: "Ein Satz aus 5 Wörtern – und er ist zu 100 % wahr. 💕",
+  // Brief zu Silvester (erscheint, wenn das Feuerwerk gekauft ist)
+  newYearTitle: "Frohes neues Jahr, Mama! 🎆",
+  newYearMessage:
+    "31 Türchen, ein ganzes Gehege voller glücklicher Tiere – und eine Direktorin, " +
+    "die sich das alles mehr als verdient hat.\n\n" +
+    "Auf ein wunderbares neues Jahr mit dir!",
+
+  signature: "In Liebe ❤️",
 };
 
 /* ========================================================= */
@@ -30,9 +31,7 @@ const App = (() => {
   const STORE_KEY = "mama-advent-" + CONFIG.year;
   const params = new URLSearchParams(location.search);
   const PREVIEW = !!window.FORCE_PREVIEW || params.has("vorschau") || params.has("test");
-  const WORDS = CONFIG.solution.trim().toUpperCase().split(/\s+/);
-  const LETTERS = WORDS.join("").split("");
-  if (LETTERS.length !== 23) console.warn("⚠️ Die Lösung hat " + LETTERS.length + " statt 23 Buchstaben!");
+  const LAST_DAY = 31;
 
   const puzzles = {};
   let state = { solved: {}, flakes: 0 };
@@ -85,8 +84,6 @@ const App = (() => {
 
   /* ---------- Buchstaben-Verteilung ---------- */
   // Jeder Tag 1–23 bekommt einen Buchstaben – absichtlich durcheinander!
-  const ORDER = shuffle(LETTERS.map((_, i) => i), seeded(2412));
-  const letterFor = (day) => LETTERS[ORDER[day - 1]];
 
   /* ---------- Sound (selbst gebaut, keine Dateien nötig) ---------- */
   let actx = null;
@@ -185,30 +182,49 @@ const App = (() => {
   function daysUntil(day) { return Math.ceil((unlockDate(day) - now()) / 86400000); }
   function todayDay() {
     const n = now();
-    return n.getFullYear() === CONFIG.year && n.getMonth() === 11 && n.getDate() <= 24 ? n.getDate() : 0;
+    return n.getFullYear() === CONFIG.year && n.getMonth() === 11 ? n.getDate() : 0;
   }
 
   /* ---------- Kalender ---------- */
   const DOOR_ORDER = [7, 15, 1, 22, 10, 18, 3, 13, 24, 5, 20, 9, 16, 2, 11, 23, 6, 19, 12, 4, 14, 8, 21, 17];
   const doors = {};
 
+  const BONUS = [25, 26, 27, 28, 29, 30, 31];
+  const bonusVisible = () => PREVIEW || !!state.solved[18];
+
+  function makeDoor(day, i, box) {
+    const p = puzzles[day] || {};
+    const inside = el("div", { class: "door-inside" });
+    const special = day === 24 ? "background:linear-gradient(135deg,#e85d75,#ffb84d)" : day > 24 ? "background:linear-gradient(135deg,#3b4f8a,#7b5fc4)" : null;
+    const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: special },
+      el("span", { class: "num", text: day }),
+      el("span", { class: "d-art", html: p.art && typeof Animals !== "undefined" ? Animals.svg(p.art, { fit: true }) : "" }),
+      el("span", { class: "knob" }));
+    const wrap = el("div", { class: "door-wrap" }, inside, door);
+    door.addEventListener("click", (e) => { e.stopPropagation(); onDoor(day); });
+    doors[day] = { wrap, door, inside };
+    box.append(wrap);
+    refreshDoor(day);
+  }
+
   function buildCalendar() {
     const cal = document.getElementById("calendar");
     cal.innerHTML = "";
-    DOOR_ORDER.forEach((day, i) => {
-      const p = puzzles[day] || { emoji: "🎁" };
-      const inside = el("div", { class: "door-inside" });
-      const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: day === 24 ? "background:linear-gradient(135deg,#e85d75,#ffb84d)" : null },
-        el("span", { class: "num", text: day }),
-        el("span", { class: "d-art", html: p.art && (typeof Animals !== "undefined") ? Animals.svg(p.art, { fit: true }) : "🎁" }),
-        el("span", { class: "knob" })
-      );
-      const wrap = el("div", { class: "door-wrap" }, inside, door);
-      door.addEventListener("click", (e) => { e.stopPropagation(); onDoor(day); });
-      doors[day] = { wrap, door, inside };
-      cal.append(wrap);
-      refreshDoor(day);
-    });
+    DOOR_ORDER.forEach((day, i) => makeDoor(day, i, cal));
+    buildBonus();
+  }
+
+  function buildBonus(reveal) {
+    const sec = document.getElementById("bonus");
+    if (!bonusVisible()) { sec.classList.add("hidden"); return; }
+    sec.classList.remove("hidden");
+    const cal = document.getElementById("calendar-bonus");
+    cal.innerHTML = "";
+    BONUS.forEach((day, i) => makeDoor(day, i, cal));
+    if (reveal) {
+      sec.classList.add("reveal");
+      setTimeout(() => { sec.scrollIntoView({ behavior: "smooth", block: "center" }); burstAt(sec, ["🎁", "✨", "⭐"], 24, 240); sfx.jingle(); }, 300);
+    }
   }
 
   function refreshDoor(day) {
@@ -221,8 +237,8 @@ const App = (() => {
     if (!isUnlocked(day)) d.door.append(el("span", { class: "lock", text: "🔒" }));
     d.door.classList.toggle("open", solved);
     d.inside.innerHTML = "";
-    if (solved && day !== 24) d.inside.append(el("div", {}, el("div", { class: "in-letter", text: letterFor(day) }), el("div", { class: "in-art", html: Animals.svg(p.art, { fit: true }) })));
-    else if (solved) d.inside.append(el("div", { class: "in-letter", text: "♥" }));
+    const st = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    if (solved && st) d.inside.append(el("div", { class: "in-item", html: Zoo.preview(st.item) }), el("div", { class: "in-check", text: "✓" }));
     else d.inside.append(el("div", { class: "in-art", html: p.art ? Animals.svg(p.art, { fit: true }) : "" }));
   }
 
@@ -257,14 +273,19 @@ const App = (() => {
     const p = puzzles[day];
     const m = document.getElementById("modal");
     m.querySelector(".modal-art").innerHTML = p.art ? Animals.svg(p.art, { fit: true, walk: true }) : "";
-    m.querySelector(".modal-day").textContent = `Türchen ${day} · ${day}. Dezember`;
+    m.querySelector(".modal-day").textContent = `Kapitel ${day} · ${day}. Dezember`;
+    const story = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    const sb = m.querySelector(".modal-story");
+    sb.innerHTML = "";
+    if (story) sb.append(el("div", { class: "story-avatar", html: Animals.svg({ sp: "capy", col: 0, acc: "orange" }, { fit: true }) }), el("p", { text: story.story }));
+    sb.classList.toggle("hidden", !story);
     m.querySelector(".modal-title").textContent = p.title;
     m.querySelector(".modal-intro").textContent = p.intro || "";
     const body = m.querySelector(".modal-body");
     body.innerHTML = "";
     m.classList.remove("hidden");
     document.body.style.overflow = "hidden";
-    if (state.solved[day] && day !== 24) showReward(day, true);
+    if (state.solved[day]) showReward(day, true);
     else p.render(body, { solve: () => solved(day), day });
   }
 
@@ -281,66 +302,36 @@ const App = (() => {
   }
 
   function solved(day) {
-    const first = !state.solved[day];
     state.solved[day] = true; save();
     sfx.win(); confetti();
-    if (day === 24) return; // Finale macht das Rätsel selbst
-    setTimeout(() => showReward(day, false, first), 700);
+    setTimeout(() => showReward(day, false), 700);
   }
 
-  function showReward(day, again, first) {
+  function showReward(day, again) {
     const m = document.getElementById("modal");
     const body = m.querySelector(".modal-body");
     if (body._cleanup) { body._cleanup(); body._cleanup = null; }
     m.querySelector(".modal-intro").textContent = "";
+    m.querySelector(".modal-story").classList.add("hidden");
     body.innerHTML = "";
-    const letter = letterFor(day);
-    const btn = el("button", { class: "btn btn-green", text: again ? "Zurück zum Kalender 🏠" : "Ins Körbchen legen 🧺" });
-    const replay = el("button", { class: "btn btn-soft", text: "🔁 Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
-    const letterBox = el("div", { class: "r-letter", text: letter });
-    letterBox.addEventListener("click", () => { sfx.pop(); burstAt(letterBox, ["💖", "✨"], 10); });
+    const st = Zoo.STORY[day], it = Zoo.info(st.item);
+    const coins = again ? 0 : Zoo.earn(day);
+    const coinBox = el("div", { class: "r-coins", html: `<span class="coin-ic"></span>+${coins || st.coins} Taler` });
+    coinBox.querySelector(".coin-ic").innerHTML = document.getElementById("coin-icon").innerHTML;
+    const has = Zoo.owns(st.item);
+    const shopBtn = el("button", { class: "btn btn-green", text: has ? "Ist schon im Gehege ✓" : `Zum Shop: ${it[1]}`, onclick: () => { closeModal(); Zoo.openShop(st.item); } });
+    shopBtn.disabled = has;
+    const later = el("button", { class: "btn btn-soft", text: "Zurück zum Kalender", onclick: () => closeModal() });
+    const replay = el("button", { class: "btn btn-soft", text: "Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
+    const letterBtn = day === 24 ? el("button", { class: "btn", text: "Den Brief unter dem Baum öffnen", onclick: () => { closeModal(); Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); } }) : null;
     body.append(el("div", { class: "reward" },
-      el("h3", { text: again ? "Dein Buchstabe von heute" : pick(PRAISE) }),
-      el("p", { text: again ? "Der liegt schon sicher im Körbchen." : "Dein Buchstabe für heute:" }),
-      letterBox,
-      el("p", { text: puzzles[day].outro || "" }),
-      el("div", { class: "row" }, btn, again ? replay : null)
-    ));
-    btn.onclick = () => {
-      const r = letterBox.getBoundingClientRect();
-      closeModal();
-      if (!again) flyToBasket(letter, r, day);
-    };
-  }
-
-  function flyToBasket(letter, from, day) {
-    const target = document.getElementById("basket");
-    const tr = target.getBoundingClientRect();
-    const p = el("div", { class: "particle", text: letter, style: `left:${from.left + from.width / 2}px;top:${from.top + from.height / 2}px;font-size:70px;font-weight:700;color:#e85d75` });
-    fx().append(p);
-    const dx = tr.left + tr.width / 2 - (from.left + from.width / 2), dy = tr.top + 30 - (from.top + from.height / 2);
-    p.animate([{ transform: "translate(-50%,-50%) scale(1)" }, { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5 - 120}px)) scale(1.2) rotate(180deg)` }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.3) rotate(360deg)`, opacity: 0.6 }], { duration: 900, easing: "ease-in-out" }).onfinish = () => {
-      p.remove(); renderBasket(day);
-      const icon = document.querySelector(".basket-icon");
-      icon.classList.remove("wiggle"); void icon.offsetWidth; icon.classList.add("wiggle");
-      burstAt(target, ["💖", "✨", "🐾"], 12, 90); sfx.good();
-    };
-  }
-
-  /* ---------- Körbchen ---------- */
-  function renderBasket(popDay) {
-    const box = document.getElementById("basket-letters");
-    box.innerHTML = "";
-    let count = 0;
-    for (let d = 1; d <= 23; d++) {
-      const has = !!state.solved[d];
-      if (has) count++;
-      const b = el("div", { class: "b-letter" + (has ? "" : " empty") + (popDay === d ? " pop" : ""), title: "Türchen " + d },
-        has ? letterFor(d) : "?", el("small", { text: d }));
-      if (has) b.addEventListener("click", (e) => { e.stopPropagation(); sfx.boop(300 + d * 20); burstAt(b, ["💖", "✨"], 6, 50); });
-      box.append(b);
-    }
-    document.getElementById("basket-count").textContent = `${count} / 23 gesammelt`;
+      el("h3", { text: again ? "Dieses Kapitel ist geschafft" : pick(PRAISE) }),
+      again ? null : coinBox,
+      puzzles[day].outro ? el("p", { class: "r-solution", text: puzzles[day].outro }) : null,
+      el("div", { class: "r-story" }, el("div", { class: "r-item", html: Zoo.preview(st.item) }), el("p", { text: st.outro })),
+      el("div", { class: "row" }, letterBtn, shopBtn, again ? replay : later)));
+    if (!again && coins) { const r = coinBox.getBoundingClientRect(); setTimeout(() => Zoo.addCoins(coins, { x: r.left + r.width / 2, y: r.top + r.height / 2 }), 500); }
+    if (!again && day === 18) setTimeout(() => buildBonus(true), 900);
   }
 
   /* ---------- Deko: Titel ---------- */
@@ -440,17 +431,19 @@ const App = (() => {
     const t = todayDay();
     if (PREVIEW) {
       c.innerHTML = "🔓 <b>Vorschau-Modus</b>: alle Türchen offen · ";
-      c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { localStorage.removeItem(STORE_KEY); } catch (e) {} location.reload(); } }));
+      c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { Object.keys(localStorage).filter((k) => k.startsWith("mama-")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} location.reload(); } }));
     }
     else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen! 🐾`; }
-    else if (t) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> – Türchen ${t} wartet auf dich! 🎁`;
-    else c.innerHTML = "Frohe Weihnachten! 🎄💖";
+    else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> – Kapitel ${t} wartet auf dich! 🎁`;
+    else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖";
+    else c.innerHTML = "Frohes neues Jahr! 🎆";
   }
 
   /* ---------- Start ---------- */
   function start() {
     load();
-    buildTitle(); buildLights(); buildCalendar(); renderBasket();
+    if (typeof Zoo !== "undefined") Zoo.init();
+    buildTitle(); buildLights(); buildCalendar();
     updateCountdown(); setupCapy(); setupPaws(); startSnow();
     if ((typeof Animals !== "undefined")) Animals.init();
     const st = document.getElementById("sound-toggle");
@@ -465,11 +458,11 @@ const App = (() => {
   }
 
   return {
-    start, config: CONFIG, words: WORDS, letters: LETTERS, letterFor,
+    start, config: CONFIG, get: (d) => puzzles[d],
     register: (day, def) => (puzzles[day] = def),
     isSolved: (d) => !!state.solved[d],
     markSolved: (d) => { state.solved[d] = true; save(); },
-    renderBasket, closeModal, refreshDoor, isUnlocked, preview: PREVIEW,
+    closeModal, refreshDoor, isUnlocked, preview: PREVIEW,
     h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, shakeEl, textAnswer },
   };
 })();

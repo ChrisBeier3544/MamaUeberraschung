@@ -19,21 +19,27 @@
 
   <header>
     <h1 id="title" aria-label="Mamas tierischer Adventskalender"></h1>
-    <p class="subtitle">24 Türchen · 23 Buchstaben · 1 Geheimnis <span id="title-heart">💖</span></p>
+    <p class="subtitle">Hilf den Tieren, ihr Gehege in ein Winterparadies zu verwandeln <span id="title-heart">💖</span></p>
     <div id="countdown"></div>
   </header>
 
   <main>
-    <section id="basket" aria-label="Buchstaben-Körbchen">
-      <div class="basket-head">
-        <span class="basket-icon">🧺</span>
-        <span>Mamas Buchstaben-Körbchen</span>
-        <span id="basket-count"></span>
+    <section id="zoo" aria-label="Das Gehege">
+      <div class="zoo-bar">
+        <div class="coins"><span id="coin-icon"></span><b id="coin-count">0</b><span>Taler</span></div>
+        <div class="zoo-progress" id="zoo-progress"></div>
+        <button id="shop-btn" class="btn">Shop</button>
       </div>
-      <div id="basket-letters"></div>
+      <div id="zoo-pen" class="pen inline"></div>
     </section>
 
     <section id="calendar" aria-label="Adventskalender"></section>
+
+    <section id="bonus" class="hidden" aria-label="Bonus-Türchen">
+      <h2 class="bonus-title">Die sieben Päckchen aus dem Paket</h2>
+      <p class="bonus-sub">Die Geschichte geht weiter – bis Silvester.</p>
+      <div id="calendar-bonus"></div>
+    </section>
   </main>
 
   <!-- Kapibara-Maskottchen -->
@@ -85,6 +91,7 @@
           <h2 class="modal-title"></h2>
         </div>
       </div>
+      <div class="modal-story hidden"></div>
       <p class="modal-intro"></p>
       <div class="modal-body"></div>
     </div>
@@ -94,6 +101,7 @@
   <div id="fx" aria-hidden="true"></div>
 
   <script src="app.js"></script>
+  <script src="zoo.js"></script>
   <script src="animals.js"></script>
   <script src="photos.js"></script>
   <script src="puzzles.js"></script>
