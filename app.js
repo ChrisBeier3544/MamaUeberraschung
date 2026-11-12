@@ -419,7 +419,7 @@ const App = (() => {
       else say(pick(CAPY));
     });
     setTimeout(() => say(CAPY[0]), 1200);
-    setInterval(() => { if (!document.hidden && Math.random() < 0.5) say(pick(CAPY)); }, 22000);
+    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? `Psst, Mama: ${n === 1 ? "ein Tier hat" : n + " Tiere haben"} Hunger! Futter gibt's im Shop.` : pick(CAPY)); }, 22000);
   }
 
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */
@@ -453,7 +453,8 @@ const App = (() => {
     if (typeof Zoo !== "undefined") Zoo.init();
     buildTitle(); buildLights(); buildCalendar();
     updateCountdown(); setupCapy(); setupPaws(); startSnow();
-    if ((typeof Animals !== "undefined")) Animals.init();
+    if (typeof Animals !== "undefined") Animals.init();
+    if (typeof Games !== "undefined") Games.init();
     const st = document.getElementById("sound-toggle");
     st.textContent = soundOn ? "🔔" : "🔕";
     st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; st.textContent = soundOn ? "🔔" : "🔕"; try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });

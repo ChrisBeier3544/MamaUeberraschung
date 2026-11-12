@@ -18,6 +18,11 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - **Kleinigkeiten:** 15 günstige Deko-Teile (15–40 Taler) für zwischendurch. Nach jedem Kauf laufen drei Tiere
   hin und sagen, wie schön es ist (ohne eigene Tiere kommen Kalle, Mimi und Bello zu Besuch).
   Manche Tiere ziehen erst ab Nikolaus, dem 13. oder dem 20. Dezember ein.
+- **Füttern:** Jede Tierart frisst etwas anderes (16 Sorten, je 1 Taler im Shop unter „Futter“). Im Gehege ein Tier
+  antippen und „Füttern“ wählen. Wer 24 Stunden nichts bekommt, wird traurig.
+- **Großes Gehege:** Über den Gehege-Knopf öffnet sich eine große Ansicht zum Zoomen (Mausrad, zwei Finger, +/−) und Verschieben.
+- **Spielecke:** „Mandarinen-Regen“ und „Pinguin-Rutsche“. Neue Rekorde und bestimmte Punktzahlen bringen heimlich Taler
+  (Regeln in `games.js` unter `RULES`).
 - Türchen öffnen sich erst am jeweiligen Tag. Der Fortschritt wird im Browser gespeichert
   (also immer auf demselben Gerät und im selben Browser spielen).
 

@@ -100,6 +100,36 @@ const Zoo = (() => {
     ["teddy", "Teddybär", 35, "Wohnt auf der Kuschelhöhle.", [68, 284, 56, 50]],
     ["sternschnuppe", "Sternschnuppe", 40, "Wer sie sieht, darf sich etwas wünschen.", [56, 50, 138, 76]],
   ];
+  /* ---------- Futter: jede Tierart frisst etwas anderes ---------- */
+  const FOOD = {
+    capy: ["Mandarine", `<circle cx="20" cy="22" r="13" fill="#ff9f1c"/><circle cx="15" cy="17" r="3.5" fill="#ffc46b"/><path d="M20 9 q7 -7 12 -2 q-7 3 -12 2z" fill="#4caf50"/>`],
+    waschbaer: ["Weintrauben", [[14, 14], [24, 14], [19, 21], [29, 21], [9, 21], [14, 28], [24, 28], [19, 34]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="#8e5ac8"/>`).join("") + `<path d="M19 9 v-5 l6 -2" stroke="#6b4a35" stroke-width="2" fill="none"/>`],
+    katze: ["Thunfisch", `<path d="M6 20 q14 -14 28 0 q-14 14 -28 0z" fill="#7d93b2"/><path d="M33 20 l6 -6 v12z" fill="#7d93b2"/><circle cx="12" cy="18" r="1.8" fill="#1a1a1a"/>`],
+    hund: ["Knochen", `<rect x="10" y="16" width="20" height="8" rx="4" fill="#fffaf0"/><circle cx="9" cy="15" r="5" fill="#fffaf0"/><circle cx="9" cy="25" r="5" fill="#fffaf0"/><circle cx="31" cy="15" r="5" fill="#fffaf0"/><circle cx="31" cy="25" r="5" fill="#fffaf0"/><path d="M10 16 h20 M10 24 h20" stroke="#e8dcc6"/>`],
+    giraffe: ["Akazienblätter", `<path d="M8 34 Q20 20 32 6" stroke="#7a5537" stroke-width="2.5" fill="none"/>` + [[14, 26], [20, 19], [26, 12], [10, 20], [17, 13], [24, 7]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="3" fill="#4f9e5c"/>`).join("")],
+    fuchs: ["Waldbeeren", [[14, 20], [24, 18], [19, 27], [28, 27], [11, 29]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#d93a4a"/><circle cx="${x - 1.5}" cy="${y - 1.5}" r="1.3" fill="#fff" opacity=".7"/>`).join("") + `<path d="M18 13 q4 -6 10 -6" stroke="#4f9e5c" stroke-width="2" fill="none"/>`],
+    panda_rot: ["Bambus", `<rect x="16" y="4" width="8" height="33" rx="3" fill="#8fc66a"/><path d="M16 14 h8 M16 24 h8" stroke="#5f9a45" stroke-width="2"/><path d="M24 12 q8 -4 12 -2 q-6 4 -12 2z M16 22 q-8 -4 -12 -2 q6 4 12 2z" fill="#5aa86a"/>`],
+    pinguin: ["Hering", `<path d="M5 20 q15 -12 28 0 q-13 12 -28 0z" fill="#c9d6e3"/><path d="M32 20 l7 -6 v12z" fill="#c9d6e3"/><path d="M10 21 q10 3 20 -1" stroke="#9fb0c2" fill="none"/><circle cx="11" cy="18" r="1.6" fill="#1a1a1a"/>`],
+    igel: ["Knusperkörner", `<path d="M6 22 h28 q-2 12 -14 12 q-12 0 -14 -12z" fill="#e85d75"/>` + [[12, 20], [18, 18], [24, 19], [29, 21], [15, 22], [22, 22]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#a0703f"/>`).join("")],
+    hase: ["Möhre", `<path d="M13 12 L29 28 Q31 31 27 31 L11 15z" fill="#f39c32" transform="rotate(10 20 20)"/><path d="M12 12 q-6 -6 -4 -8 M12 12 q-2 -8 2 -8 M12 12 q-8 0 -8 -4" stroke="#4caf50" stroke-width="2.4" fill="none"/>`],
+    schaf: ["Heu", `<path d="M8 32 Q12 10 20 8 Q28 10 32 32z" fill="#e8c46b"/><path d="M14 30 q2 -12 6 -18 M20 31 v-20 M26 30 q-2 -12 -6 -18" stroke="#c9a03d" stroke-width="1.6" fill="none"/><rect x="9" y="21" width="22" height="4" fill="#d9534f"/>`],
+    schwein: ["Kartoffeln", `<ellipse cx="15" cy="23" rx="9" ry="7" fill="#c9965c"/><ellipse cx="26" cy="19" rx="8" ry="6.5" fill="#b98550"/><circle cx="13" cy="21" r="1" fill="#8a5a33"/><circle cx="27" cy="18" r="1" fill="#8a5a33"/>`],
+    elefant: ["Bananen", `<path d="M8 12 Q12 32 32 30 Q16 26 14 10z" fill="#ffd84d"/><path d="M12 10 Q18 28 34 24 Q20 22 18 8z" fill="#f6c531"/><path d="M8 12 l2 -3 M12 10 l2 -3" stroke="#6b4a35" stroke-width="2"/>`],
+    otter: ["Muscheln", `<path d="M20 32 L8 14 Q20 4 32 14z" fill="#f5c9a8"/><path d="M20 32 L14 10 M20 32 L20 8 M20 32 L26 10" stroke="#e0a37f" stroke-width="1.6"/>`],
+    ente: ["Haferflocken", `<path d="M6 22 h28 q-2 12 -14 12 q-12 0 -14 -12z" fill="#58b6ff"/>` + [[11, 20], [17, 18], [23, 19], [29, 20], [14, 22], [26, 22], [20, 21]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="3" ry="1.8" fill="#f0dcae"/>`).join("")],
+    baer: ["Honig", `<path d="M10 14 h20 l-2 20 q-8 3 -16 0z" fill="#d99a2b"/><rect x="9" y="10" width="22" height="6" rx="2" fill="#b07a52"/><path d="M14 18 q2 6 0 9" stroke="#ffd84d" stroke-width="3" fill="none"/><text x="20" y="29" text-anchor="middle" font-size="7" font-weight="700" font-family="Arial, sans-serif" fill="#fff6c9">HONIG</text>`],
+  };
+  const foodIcon = (sp) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style="width:100%;height:100%">${FOOD[sp][1]}</svg>`;
+  const foodCount = (sp) => st.food[sp] || 0;
+  function useFood(sp, id) {
+    if (!foodCount(sp)) return false;
+    st.food[sp]--; st.fed[id] = Date.now(); save(); return true;
+  }
+  function buyFood(sp, n) {
+    if (st.coins < n) return false;
+    st.coins -= n; st.food[sp] = foodCount(sp) + n; save(); refresh(); return true;
+  }
+
   const ALL = [...ITEMS, ...EXTRAS, ...SMALL];
   const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; return [x + w / 2, Math.max(300, Math.min(585, y + h + 6))]; };
   const info = (key) => ALL.find((i) => i[0] === key);
@@ -107,7 +137,7 @@ const Zoo = (() => {
 
   /* ---------- Spielstand ---------- */
   const KEY = "mama-zoo-" + CONFIG.year;
-  let st = { coins: 0, owned: [], paid: {} };
+  let st = { coins: 0, owned: [], paid: {}, food: {}, fed: {}, high: {}, ms: {} };
   const load = () => { try { const r = localStorage.getItem(KEY); if (r) st = Object.assign(st, JSON.parse(r)); } catch (e) {} };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   const owns = (k) => st.owned.includes(k);
@@ -277,6 +307,8 @@ const Zoo = (() => {
   }
 
   function openShop(highlight) {
+    const wantTab = highlight === "@futter" ? "futter" : null;
+    if (wantTab) highlight = null;
     const ov = H.el("div", { class: "gehege-overlay shop-overlay", role: "dialog", "aria-label": "Shop" });
     const close = () => { if (typeof Animals !== "undefined") Animals.clearIn(ov); ov.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", esc); };
     const esc = (e) => { if (e.key === "Escape") close(); };
@@ -299,19 +331,40 @@ const Zoo = (() => {
       ["neu", "Neu freigeschaltet", vis.filter(([k]) => available(k) && !owns(k)), "Gerade gibt es kein neues Teil aus der Geschichte. Mit dem nächsten Türchen kommt wieder etwas dazu!"],
       ["klein", "Kleinigkeiten", SMALL.filter(([k]) => !owns(k)), "Alle Kleinigkeiten stehen schon im Gehege."],
       ["extras", "Extras", EXTRAS.filter(([k]) => !owns(k)), "Alle Extras stehen schon im Gehege."],
+      ["futter", "Futter", Object.keys(FOOD), ""],
       ["gehege", "Schon im Gehege", ALL.filter(([k]) => owns(k)), "Noch ist nichts gekauft – leg los!"],
     ];
+    const foodCard = (sp) => {
+      const [name] = FOOD[sp];
+      const plural = typeof Animals !== "undefined" ? Animals.SPECIES[sp].plural : sp;
+      const mine = typeof Animals !== "undefined" ? Animals.ownedOf(sp) : 0;
+      const stock = H.el("b", { class: "food-stock", text: `Vorrat: ${foodCount(sp)}` });
+      const mk = (n) => {
+        const b = H.el("button", { class: "btn" + (st.coins >= n ? "" : " btn-soft"), text: `${n} kaufen · ${n} T` });
+        b.disabled = st.coins < n;
+        b.onclick = () => { if (buyFood(sp, n)) { H.sfx.pop(); stock.textContent = `Vorrat: ${foodCount(sp)}`; coinsEl.querySelector("b").textContent = st.coins; area.querySelectorAll(".food-card .btn").forEach((x) => { const need = +x.dataset.n; x.disabled = st.coins < need; x.classList.toggle("btn-soft", st.coins < need); }); } };
+        b.dataset.n = n;
+        return b;
+      };
+      return H.el("div", { class: "shop-card food-card" + (mine ? "" : " nobody") },
+        H.el("div", { class: "shop-pic food-pic", html: foodIcon(sp) }),
+        H.el("div", { class: "shop-info" }, H.el("b", { text: name }), H.el("small", { text: `für ${plural}` + (mine ? ` · ${mine} im Gehege` : " · noch keine im Gehege") }), stock),
+        H.el("div", { class: "shop-buy food-buy" }, mk(1), mk(5)));
+    };
     const tabBar = H.el("div", { class: "shop-tabs", role: "tablist" });
     const show = (id) => {
       const [, , list, emptyText] = TABS.find((t) => t[0] === id);
       tabBar.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.t === id));
       if (typeof Animals !== "undefined") Animals.clearIn(area);
       area.innerHTML = "";
-      area.append(list.length ? H.el("div", { class: "shop-grid" + (id === "gehege" ? " mini" : "") }, ...list.map(card)) : H.el("p", { class: "shop-empty", text: emptyText }));
+      if (id === "futter") {
+        const order = list.slice().sort((a, b) => (Animals.ownedOf(b) > 0) - (Animals.ownedOf(a) > 0));
+        area.append(H.el("p", { class: "shop-note", text: "Jede Tierart frisst etwas anderes. Tiere, die einen Tag lang nichts bekommen, werden traurig." }), H.el("div", { class: "shop-grid" }, ...order.map(foodCard)));
+      } else area.append(list.length ? H.el("div", { class: "shop-grid" + (id === "gehege" ? " mini" : "") }, ...list.map(card)) : H.el("p", { class: "shop-empty", text: emptyText }));
       if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
     };
     TABS.forEach(([id, label, list]) => {
-      const b = H.el("button", { class: "g-tab", role: "tab", "data-t": id }, label, id !== "gehege" && list.length ? H.el("span", { class: "tab-n", text: list.length }) : null);
+      const b = H.el("button", { class: "g-tab", role: "tab", "data-t": id }, label, id !== "gehege" && id !== "futter" && list.length ? H.el("span", { class: "tab-n", text: list.length }) : null);
       b.onclick = () => { H.sfx.tick(); show(id); };
       tabBar.append(b);
     });
@@ -319,7 +372,7 @@ const Zoo = (() => {
       H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), H.el("div", { class: "shop-tabwrap" }, tabBar), area);
     document.body.append(ov); document.body.style.overflow = "hidden";
     const start = highlight ? (SMALL.some((i) => i[0] === highlight) ? "klein" : EXTRAS.some((i) => i[0] === highlight) ? "extras" : owns(highlight) ? "gehege" : "neu") : TABS[0][2].length ? "neu" : "klein";
-    show(start);
+    show(wantTab || start);
   }
 
   function letter(title, msg, fireworks) {
@@ -342,5 +395,19 @@ const Zoo = (() => {
     refresh();
   }
 
-  return { STORY, ITEMS, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  // Spiele: Rekorde & geheime Meilensteine
+  function gameResult(game, score, rule) {
+    const old = st.high[game] || 0;
+    let coins = 0;
+    const notes = [];
+    if (score > old) {
+      st.high[game] = score;
+      if (score >= rule.min) { const c = Math.min(40, 10 + Math.floor((score - old) / rule.per)); coins += c; notes.push(`neuer Rekord: ${c} Taler`); }
+    }
+    rule.ms.forEach((m) => { const k = game + m; if (score >= m && !st.ms[k]) { st.ms[k] = true; coins += 25; notes.push(`${m} Punkte geknackt: 25 Taler`); } });
+    save();
+    return { old, high: st.high[game], coins, notes };
+  }
+
+  return { STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

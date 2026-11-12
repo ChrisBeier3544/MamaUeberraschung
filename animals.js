@@ -358,7 +358,7 @@ const Animals = (() => {
     const sp = SPECIES[v.sp];
     const d = sp.draw(sp.colors[v.col || 0]);
     const size = opts.fit ? 'style="width:100%;height:100%"' : `width="${f(opts.width || sp.W * sp.scale)}" height="${f(((opts.width || sp.W * sp.scale) * sp.H) / sp.W)}"`;
-    return `<svg class="ani${opts.walk ? " walking" : ""} ${opts.cls || ""}" viewBox="0 0 ${sp.W} ${sp.H}" ${size} aria-hidden="true">${d.legs}<g class="up">${d.body}${acc(v.acc, d.a, v.accColor)}</g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="ani${opts.walk ? " walking" : ""} ${opts.cls || ""}" viewBox="0 0 ${sp.W} ${sp.H}" ${size} aria-hidden="true">${d.legs}<g class="up">${d.body}${acc(v.acc, d.a, v.accColor)}</g></svg>`;
   }
   function inner(v) {
     const sp = SPECIES[v.sp];
@@ -369,8 +369,23 @@ const Animals = (() => {
   /* ---------- Speicher ---------- */
   const KEY = "mama-gehege-" + (typeof CONFIG !== "undefined" ? CONFIG.year : "x");
   let found = new Set();
-  const load = () => { try { found = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {} };
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...found])); } catch (e) {} };
+  let since = {};
+  const load = () => {
+    try { found = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); since = JSON.parse(localStorage.getItem(KEY + "-zeit") || "{}"); } catch (e) {}
+    let changed = false; found.forEach((id) => { if (!since[id]) { since[id] = Date.now(); changed = true; } }); if (changed) save();
+  };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...found])); localStorage.setItem(KEY + "-zeit", JSON.stringify(since)); } catch (e) {} };
+  /* ---------- Hunger: 24 Stunden ohne Futter = traurig ---------- */
+  const DAY = 24 * 3600 * 1000;
+  const hungry = (v) => typeof Zoo !== "undefined" && found.has(v.id) && Date.now() - Math.max(Zoo.fedAt(v.id), since[v.id] || Date.now()) > DAY;
+  const hungryCount = () => VARIANTS.filter(hungry).length;
+  const ownedOf = (sp) => VARIANTS.filter((v) => v.sp === sp && found.has(v.id)).length;
+  function updateHunger() {
+    const pill = document.getElementById("hunger-pill"); if (!pill) return;
+    const n = hungryCount();
+    pill.classList.toggle("hidden", !n);
+    pill.textContent = n === 1 ? "1 Tier hat Hunger" : `${n} Tiere haben Hunger`;
+  }
 
   /* ---------- Tierparade ---------- */
   let H, btn;
@@ -417,7 +432,7 @@ const Animals = (() => {
     s.tone(300, 0.5, "sine", 0.18, 1600); s.tone(600, 0.4, "triangle", 0.08, 2400, 0.1);
     H.burst(r.left + r.width / 2, r.top + r.height / 2, ["✨", "⭐", "💫"], 12, 80);
     const isNew = !found.has(v.id);
-    found.add(v.id); save();
+    found.add(v.id); if (!since[v.id]) since[v.id] = Date.now(); save();
     setTimeout(() => {
       div.remove(); onScreen.delete(v.id);
       const b = btn.getBoundingClientRect();
@@ -555,9 +570,43 @@ const Animals = (() => {
   </svg>`;
 
   function pen(area, later) {
-    const field = H.el("div", { class: "pen" });
-    area.append(field);
-    mountPen(field, later);
+    const vp = H.el("div", { class: "pen-viewport" });
+    const n = VARIANTS.filter((v) => found.has(v.id)).length;
+    const baseW = Math.round(Math.max(1500, 1100 + n * 16)), baseH = Math.round(baseW * 0.6);
+    const world = H.el("div", { class: "pen pen-world", style: `width:${baseW}px;height:${baseH}px` });
+    const ctrl = H.el("div", { class: "zoom-ctrl" });
+    vp.append(world, ctrl);
+    area.append(vp);
+    mountPen(world, later);
+    let z = 1, tx = 0, ty = 0, zMin = 0.2;
+    const apply = () => { world.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; world.style.setProperty("--inv", (1 / z).toFixed(3)); };
+    const clampPan = () => {
+      const W = vp.clientWidth, Hh = vp.clientHeight, w = baseW * z, h = baseH * z;
+      tx = w <= W ? (W - w) / 2 : Math.min(0, Math.max(W - w, tx));
+      ty = h <= Hh ? (Hh - h) / 2 : Math.min(0, Math.max(Hh - h, ty));
+    };
+    const fit = () => { zMin = Math.min(vp.clientWidth / baseW, vp.clientHeight / baseH); z = zMin; clampPan(); apply(); };
+    const zoomAt = (nz, cx, cy) => { nz = Math.max(zMin, Math.min(2.6, nz)); tx = cx - ((cx - tx) * nz) / z; ty = cy - ((cy - ty) * nz) / z; z = nz; clampPan(); apply(); };
+    const mid = () => [vp.clientWidth / 2, vp.clientHeight / 2];
+    const btn = (t, lab, f) => { const b = H.el("button", { text: t, "aria-label": lab }); b.onclick = (e) => { e.stopPropagation(); f(); H.sfx.tick(); }; ctrl.append(b); };
+    btn("+", "Hineinzoomen", () => zoomAt(z * 1.35, ...mid()));
+    btn("−", "Herauszoomen", () => zoomAt(z / 1.35, ...mid()));
+    btn("Alles zeigen", "Ganzes Gehege zeigen", fit);
+    vp.addEventListener("wheel", (e) => { e.preventDefault(); const r = vp.getBoundingClientRect(); zoomAt(z * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    const pts = new Map();
+    let last = null, dist0 = 0, z0 = 1, moved = 0;
+    vp.addEventListener("pointerdown", (e) => { if (e.target.closest(".zoom-ctrl, .feed-btn")) return; pts.set(e.pointerId, [e.clientX, e.clientY]); last = [e.clientX, e.clientY]; moved = 0; if (pts.size === 2) { const [a, b] = [...pts.values()]; dist0 = Math.hypot(a[0] - b[0], a[1] - b[1]); z0 = z; } });
+    vp.addEventListener("pointermove", (e) => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pts.size === 2) { const [a, b] = [...pts.values()]; const r = vp.getBoundingClientRect(); zoomAt(z0 * (Math.hypot(a[0] - b[0], a[1] - b[1]) / dist0), (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); moved = 99; return; }
+      const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY]; moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 6) { vp.classList.add("dragging"); tx += dx; ty += dy; clampPan(); apply(); }
+    });
+    const up = (e) => { pts.delete(e.pointerId); if (!pts.size) setTimeout(() => vp.classList.remove("dragging"), 0); };
+    vp.addEventListener("pointerup", up); vp.addEventListener("pointercancel", up);
+    vp.addEventListener("click", (e) => { if (moved > 6) { e.stopPropagation(); e.preventDefault(); moved = 0; } }, true);
+    requestAnimationFrame(fit);
   }
 
   let inlineCtrls = [];
@@ -586,11 +635,13 @@ const Animals = (() => {
     wrap.innerHTML = svg(v, { width: w });
     a.append(wrap);
     const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? Math.random() * 88, y: o.y ?? 48 + Math.random() * 46 };
+    c.setSad = (on) => { a.classList.toggle("sad", on); if (on && !a.querySelector(".tear")) a.append(H.el("div", { class: "tear" })); if (!on) a.querySelector(".tear")?.remove(); };
+    if (!o.guest) c.setSad(hungry(v));
     a.style.left = c.x + "%"; a.style.top = c.y + "%"; a.style.zIndex = Math.round(c.y);
     c.walkTo = (nx, ny, done, fast) => {
       const fw = field.clientWidth, fh = field.clientHeight;
       const dist = Math.hypot(((nx - c.x) / 100) * fw, ((ny - c.y) / 100) * fh);
-      const dur = fast ? Math.min(5, Math.max(1.6, dist / 90)) : Math.max(0.6, dist / (sp.speed * 0.8));
+      const dur = (fast ? Math.min(5, Math.max(1.6, dist / 90)) : Math.max(0.6, dist / (sp.speed * 0.8))) * (a.classList.contains("sad") ? 1.8 : 1);
       a.classList.toggle("flip", nx < c.x);
       a.querySelector("svg").classList.add("walking");
       a.style.transition = `left ${dur}s linear, top ${dur}s linear`;
@@ -602,7 +653,7 @@ const Animals = (() => {
       if (!a.isConnected) return;
       if (c.busy) { later(move, 1500); return; }
       const nx = Math.max(0, Math.min(90, c.x + (Math.random() - 0.5) * 50)), ny = Math.max(46, Math.min(96, c.y + (Math.random() - 0.5) * 30));
-      c.walkTo(nx, ny, () => later(move, 800 + Math.random() * 3500));
+      c.walkTo(nx, ny, () => later(move, (a.classList.contains("sad") ? 3000 : 800) + Math.random() * 3500));
     };
     c.goTo = (nx, ny, done) => { c.busy = true; c.walkTo(nx, ny, done, true); };
     c.name = v.name;
@@ -620,14 +671,40 @@ const Animals = (() => {
     a.addEventListener("click", (e) => {
       e.stopPropagation();
       a.querySelector(".pen-tag")?.remove();
-      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }));
+      let feedBtn = null;
+      if (!o.guest && typeof Zoo !== "undefined") {
+        const [fname] = Zoo.FOOD[v.sp], n = Zoo.foodCount(v.sp);
+        feedBtn = H.el("button", { class: "feed-btn" + (n ? "" : " empty") }, H.el("span", { class: "feed-ic", html: Zoo.foodIcon(v.sp) }), n ? `Füttern (${fname} ×${n})` : `Kein Futter – ${fname} im Shop`);
+        feedBtn.addEventListener("click", (ev) => { ev.stopPropagation(); tag.remove(); if (n) feed(c, field); else { document.querySelector(".gehege-overlay .modal-close")?.click(); Zoo.openShop("@futter"); } });
+      }
+      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }), o.guest || !hungry(v) ? null : H.el("span", { class: "hungry-note", text: "hat Hunger!" }), feedBtn);
       a.append(tag);
       wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
       H.sfx.boop(300 + Math.random() * 400);
-      setTimeout(() => tag.remove(), 2600);
+      setTimeout(() => tag.remove(), feedBtn ? 5000 : 2600);
     });
     field.append(a);
     return c;
+  }
+
+  /* ---------- Füttern ---------- */
+  const YUM = ["Danke, Mama!", "Du bist die Beste!", "Mein Lieblingsessen!", "Mehr davon, bitte!", "Jetzt geht's mir wieder gut!", "Lecker, lecker!"];
+  function feed(c, field) {
+    const v = c.v;
+    if (!Zoo.useFood(v.sp, v.id)) return;
+    const [fname] = Zoo.FOOD[v.sp];
+    const food = H.el("div", { class: "food-pop", html: Zoo.foodIcon(v.sp) });
+    c.a.append(food); setTimeout(() => food.remove(), 1400);
+    const was = c.a.classList.contains("sad");
+    c.setSad(false);
+    const wrap = c.a.querySelector(".pa-in");
+    setTimeout(() => {
+      wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-26px) rotate(-6deg)" }, { transform: "translateY(0)" }, { transform: "translateY(-16px) rotate(6deg)" }, { transform: "translateY(0)" }], { duration: 900, easing: "ease-out" });
+      H.burstAt(c.a, ["💖", "💕", "✨"], 12, 70);
+      H.sfx.good();
+      c.say(`Mmmh, ${fname}! ${was ? "Endlich! " : ""}${H.pick(YUM)}`, 3600);
+    }, 700);
+    updateHunger();
   }
 
   /* ---------- Nach einem Kauf: drei Tiere schauen sich das Neue an – nacheinander ---------- */
@@ -731,8 +808,10 @@ const Animals = (() => {
     const field = document.getElementById("zoo-pen");
     if (!field || !field.clientWidth) return;
     if (props.vogel && Math.random() < 0.35) birdVisit();
+    const sadOnes = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && c.a.classList.contains("sad"));
+    if (sadOnes.length && Math.random() < 0.5) { H.pick(sadOnes).say(H.pick(["Ich hab solchen Hunger …", "Bekomme ich heute nichts?", "Mein Bauch knurrt …", "Ein kleiner Snack wäre schön …"]), 3200); return; }
     const keys = Object.keys(ACT).filter((k) => Zoo.owns(k)).concat(props.ball ? ["ball", "ball"] : []);
-    const free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest);
+    const free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest && !c.a.classList.contains("sad"));
     if (!keys.length || !free.length) return;
     const key = H.pick(keys), c = H.pick(free);
     const M = sceneMap(field);
@@ -808,9 +887,10 @@ const Animals = (() => {
     updateBtn();
     announceWaves();
     refreshPens();
+    updateHunger(); setInterval(() => { updateHunger(); inlineCtrls.forEach((c) => !c.guest && c.setSad(hungry(c.v))); }, 60000);
     setTimeout(spawn, 600); setTimeout(spawn, 2500);
     setInterval(spawn, 2600);
   }
 
-  return { SPECIES, VARIANTS, RARITY, refreshPens, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { SPECIES, VARIANTS, RARITY, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();
