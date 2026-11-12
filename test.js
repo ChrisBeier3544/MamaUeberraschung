@@ -46,24 +46,40 @@
       #testbar button.warn { background: #c94060; }
       #testbar input { background: #fff; color: #2b2140; padding: 3px 6px; }
       #testbar .grow { flex: 1; }
+      #testbar .tb-toggle { background: #ffd84d; color: #2b2140; font-weight: 700; }
+      #testbar.collapsed { left: auto; right: max(10px, env(safe-area-inset-right, 0px)); top: max(8px, env(safe-area-inset-top, 0px)); padding: 4px; border-radius: 12px; opacity: .85; }
+      #testbar.collapsed:hover { opacity: 1; }
+      #testbar.collapsed > :not(.tb-toggle) { display: none; }
 `;
     document.head.append(st);
     const bar = document.createElement("div");
     bar.id = "testbar";
     const tag = new RealDate(`${datum}T12:00:00`).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-    bar.innerHTML = `<span>TESTMODUS: <b>${tag}, ${zeit} Uhr</b></span>
+    const shortTag = new RealDate(`${datum}T12:00:00`).toLocaleDateString("de-DE", { day: "numeric", month: "numeric" });
+    bar.innerHTML = `<button class="tb-toggle" data-a="toggle" aria-expanded="true" title="Testleiste ein-/ausklappen">▲ Einklappen</button><span>TESTMODUS: <b>${tag}, ${zeit} Uhr</b></span>
       <button data-a="prev" title="Einen Tag zurück">◀ Tag</button><button data-a="next" title="Einen Tag weiter">Tag ▶</button>
       <input type="date" value="${datum}" aria-label="Datum"><input type="time" value="${zeit}" aria-label="Uhrzeit"><button data-a="go">Springen</button>
       <span class="grow"></span>
       <button data-a="coins">+100 Taler</button><button data-a="solve">Rätsel bis gestern lösen</button>
       <button data-a="reset" class="warn">Testspielstand löschen</button><button data-a="out">Übersicht</button>`;
     document.body.prepend(bar);
-    const pad = () => (document.body.style.paddingTop = bar.offsetHeight + "px");
-    pad(); addEventListener("resize", pad);
+    const pad = () => (document.body.style.paddingTop = bar.classList.contains("collapsed") ? "" : bar.offsetHeight + "px");
+    const tgl = bar.querySelector(".tb-toggle");
+    const setCollapsed = (c) => {
+      bar.classList.toggle("collapsed", c);
+      tgl.textContent = c ? `▼ Test ${shortTag} ${zeit}` : "▲ Einklappen";
+      tgl.setAttribute("aria-expanded", String(!c));
+      try { c ? s.call(sessionStorage, "testbar-zu", "1") : r.call(sessionStorage, "testbar-zu"); } catch (e) {}
+      pad();
+    };
+    let zu = false; try { zu = g.call(sessionStorage, "testbar-zu") === "1"; } catch (e) {}
+    setCollapsed(zu);
+    addEventListener("resize", pad);
     const [di, ti] = bar.querySelectorAll("input");
     bar.addEventListener("click", (e) => {
       e.stopPropagation();
       const a = e.target.dataset && e.target.dataset.a; if (!a) return;
+      if (a === "toggle") setCollapsed(!bar.classList.contains("collapsed"));
       if (a === "prev") shift(-1);
       if (a === "next") shift(1);
       if (a === "go") go(di.value || datum, ti.value || zeit);
