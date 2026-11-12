@@ -903,3 +903,32 @@ h1 { position: relative; z-index: 2; }
 body.game-open main, body.game-open header, body.game-open #parade, body.game-open #snow, body.game-open #capy-wrap,
 body.game-open #lights, body.game-open #gehege-btn, body.game-open #sound-toggle, body.game-open > .hider { visibility: hidden; }
 body.game-open #snow, body.game-open #parade { display: none; }
+
+/* ================= Nikolaus-Geschenk ================= */
+.post-run { position: fixed; left: 0; bottom: 90px; z-index: 260; display: flex; align-items: flex-end; pointer-events: none; }
+.post-cart svg, .post-dog svg { display: block; overflow: visible; }
+.post-cart { margin-right: -14px; }
+.post-dog { position: relative; }
+.post-run.rolling .wheel { animation: wheelSpin .6s linear infinite; }
+@keyframes wheelSpin { to { transform: rotate(360deg); } }
+.post-bubble { left: 50%; bottom: 100%; transform: translateX(-50%) translateY(8px) scale(.8); font-weight: 600; }
+.post-bubble.show { transform: translateX(-50%); }
+.gift-parcel { position: fixed; z-index: 270; border: none; background: none; padding: 0; cursor: pointer; animation: parcelBob 1.4s ease-in-out infinite 1.3s; }
+.gift-parcel .parcel-svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 0 18px rgba(255, 216, 77, .8)); }
+@keyframes parcelBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+.gift-hint { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; background: #fff; border-radius: 14px; padding: 8px 14px; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow); font-size: 15px; animation: fadeIn .4s 1.3s both; }
+.gift-parcel .p-lid, .gift-parcel .p-bow, .gift-parcel .p-body { transform-box: fill-box; transform-origin: 50% 100%; }
+.gift-parcel.opening { animation: parcelShake .55s ease-in-out; }
+@keyframes parcelShake { 0%, 100% { rotate: 0deg; } 20% { rotate: -8deg; } 40% { rotate: 8deg; } 60% { rotate: -6deg; } 80% { rotate: 5deg; } }
+.gift-parcel.opening .p-lid { animation: lidOff 1s cubic-bezier(.3, .7, .4, 1) .5s forwards; }
+.gift-parcel.opening .p-body { animation: bodyGlow 1s ease-out .6s forwards; }
+@keyframes lidOff { to { transform: translate(-30px, -140px) rotate(-40deg); opacity: 0; } }
+@keyframes bodyGlow { 40% { transform: scale(1.08); filter: brightness(1.3); } 100% { transform: scale(1.3); opacity: 0; } }
+.gift-letter .finale-card { background: #fffdf8; border-radius: 26px; padding: 24px clamp(16px, 4vw, 40px); box-shadow: 0 20px 60px rgba(0, 0, 0, .2); max-width: 620px; }
+.gift-letter h2 { font-size: clamp(26px, 5vw, 40px); }
+.gift-msg { text-align: left; font-family: "Caveat", "Segoe Print", cursive; font-size: clamp(21px, 2.6vw, 26px); line-height: 1.35; }
+@media (max-width: 600px) { .post-run { bottom: 70px; } }
+.finale-overlay { overflow-y: auto; place-items: safe center; padding-block: max(16px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-bottom, 0px)); }
+.finale-card { margin: auto; }
+@media (max-width: 600px) { .gift-letter .finale-animals .fa svg { width: 52px !important; height: auto !important; } .gift-msg { font-size: 20px; } }
+.gift-letter { z-index: 280; }

@@ -389,9 +389,103 @@ const Zoo = (() => {
     setTimeout(() => H.rain(fireworks ? ["🎆", "✨", "⭐", "🎇", "💖"] : ["💖", "🎄", "⭐", "🎁"], 70), 1400);
   }
 
+  /* ---------- Nikolaus: Die Tiere schenken Mama 100 ersparte Taler ---------- */
+  const GIFT = {
+    title: "Ein Geschenk von uns allen",
+    text:
+      "Liebe Mama,\n\n" +
+      "wir haben ganz heimlich jeden Taler zur Seite gelegt, den wir unter Kissen, im Stroh und hinter dem Futternapf gefunden haben. " +
+      "Sogar Rocky hat (fast) nichts davon für Kekse ausgegeben!\n\n" +
+      "Wir sind so unendlich froh, dass wir dich haben. Du bist ein ganz toller, herzensguter und liebenswerter Mensch – " +
+      "die beste Gehege-Direktorin, die sich ein Tier nur wünschen kann.\n\n" +
+      "Frohen Nikolaus!",
+    from: "Deine Tiere aus dem Gehege – Kalle, Mimi, Bello, Rocky und alle anderen",
+  };
+  const PARCEL = `<svg viewBox="0 0 120 120" class="parcel-svg" aria-hidden="true">
+    <ellipse cx="60" cy="112" rx="44" ry="6" fill="rgba(0,0,0,.15)"/>
+    <g class="p-body"><rect x="16" y="46" width="88" height="62" rx="6" fill="#e85d75"/><rect x="54" y="46" width="12" height="62" fill="#ffd84d"/>
+      <path d="M22 60 l6 -6 M30 100 l8 -8 M86 64 l8 -8 M80 102 l10 -10" stroke="#f08aa0" stroke-width="3" stroke-linecap="round"/></g>
+    <g class="p-lid"><rect x="10" y="34" width="100" height="18" rx="5" fill="#d94a64"/><rect x="54" y="34" width="12" height="18" fill="#f6c531"/>
+      <g class="p-bow"><path d="M60 34 C44 10 26 18 32 30 C36 38 50 36 60 34Z" fill="#ffd84d"/><path d="M60 34 C76 10 94 18 88 30 C84 38 70 36 60 34Z" fill="#ffd84d"/><circle cx="60" cy="33" r="6" fill="#f6c531"/></g>
+      <rect x="70" y="40" width="30" height="9" rx="2" fill="#fff"/><text x="85" y="47" text-anchor="middle" font-size="6.5" font-weight="700" font-family="Arial, sans-serif" fill="#e85d75">FÜR MAMA</text></g>
+  </svg>`;
+  const CART = `<svg viewBox="0 0 230 120" class="cart-svg" aria-hidden="true">
+    <path d="M196 70 L232 58" stroke="#5a3b2e" stroke-width="5" stroke-linecap="round"/>
+    <rect x="18" y="40" width="182" height="50" rx="8" fill="#ffcf3f"/><rect x="18" y="40" width="182" height="10" rx="5" fill="#f2b51f"/>
+    <text x="70" y="78" text-anchor="middle" font-size="18" font-weight="700" font-family="Fredoka, Arial, sans-serif" fill="#2f5fa8">TIERPOST</text>
+    <g transform="translate(150 54)" fill="#2f5fa8"><ellipse cx="14" cy="20" rx="7" ry="6"/><ellipse cx="6" cy="12" rx="2.6" ry="3.4"/><ellipse cx="11" cy="7" rx="2.6" ry="3.6"/><ellipse cx="17" cy="7" rx="2.6" ry="3.6"/><ellipse cx="22" cy="12" rx="2.6" ry="3.4"/></g>
+    <g class="cart-parcel" transform="translate(72 -2) scale(.42)">${"$"}{PARCEL_INNER}</g>
+    <g class="wheel" style="transform-origin:58px 96px"><circle cx="58" cy="96" r="17" fill="#c94060"/><circle cx="58" cy="96" r="6" fill="#fff"/><path d="M58 80 V112 M42 96 H74" stroke="#fff" stroke-width="3"/></g>
+    <g class="wheel" style="transform-origin:166px 96px"><circle cx="166" cy="96" r="17" fill="#c94060"/><circle cx="166" cy="96" r="6" fill="#fff"/><path d="M166 80 V112 M150 96 H182" stroke="#fff" stroke-width="3"/></g>
+  </svg>`;
+  function nikolausGift() {
+    if (document.querySelector(".gehege-overlay, .finale-overlay, .pola-wrap, .post-run, .gift-parcel") || !document.getElementById("modal").classList.contains("hidden")) { setTimeout(nikolausGift, 4000); return; }
+    const parcelInner = PARCEL.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+    const run = H.el("div", { class: "post-run" });
+    const dogW = innerWidth < 600 ? 90 : 130, cartW = innerWidth < 600 ? 150 : 220;
+    run.innerHTML = `<div class="post-cart" style="width:${cartW}px">${CART.replace("${PARCEL_INNER}", parcelInner)}</div><div class="post-dog"><div class="pd-in">${Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { walk: true, width: dogW })}</div></div>`;
+    document.body.append(run);
+    const runW = run.offsetWidth, mid = innerWidth / 2 - runW / 2;
+    const bubble = H.el("div", { class: "bubble post-bubble", text: "Post für Mama!" });
+    run.querySelector(".post-dog").append(bubble);
+    run.classList.add("rolling");
+    H.sfx.tone(660, 0.12, "triangle", 0.12); H.sfx.tone(880, 0.12, "triangle", 0.12, null, 0.15);
+    run.animate([{ transform: `translateX(${-runW - 40}px)` }, { transform: `translateX(${mid}px)` }], { duration: 3600, easing: "cubic-bezier(.25,.6,.35,1)", fill: "forwards" }).onfinish = () => {
+      run.classList.remove("rolling");
+      run.querySelector(".post-dog svg").classList.remove("walking");
+      bubble.classList.add("show"); H.sfx.jingle();
+      setTimeout(() => {
+        // Paket springt vom Wagen in die Bildschirmmitte
+        const cp = run.querySelector(".cart-parcel"), r = cp.getBoundingClientRect();
+        cp.style.visibility = "hidden";
+        const size = Math.min(240, innerWidth * 0.55);
+        const parcel = H.el("button", { class: "gift-parcel", "aria-label": "Geschenk öffnen", html: PARCEL, style: `width:${size}px;height:${size}px;left:${innerWidth / 2 - size / 2}px;top:${innerHeight / 2 - size / 2 - 30}px` });
+        const hint = H.el("div", { class: "gift-hint", text: "Ein Geschenk für dich! Tippe zum Auspacken." });
+        parcel.append(hint);
+        document.body.append(parcel);
+        const pr = parcel.getBoundingClientRect();
+        parcel.animate([
+          { transform: `translate(${r.left + r.width / 2 - pr.left - pr.width / 2}px, ${r.top + r.height / 2 - pr.top - pr.height / 2}px) scale(${r.width / pr.width})` },
+          { transform: `translate(${(r.left + r.width / 2 - pr.left - pr.width / 2) * 0.4}px, -120px) scale(.8) rotate(-10deg)`, offset: 0.55 },
+          { transform: "none" }], { duration: 1200, easing: "ease-in-out" });
+        H.sfx.tone(400, 0.4, "sine", 0.15, 900);
+        parcel.addEventListener("click", (e) => { e.stopPropagation(); openGift(parcel); }, { once: true });
+        bubble.textContent = "Frohen Nikolaus!";
+        setTimeout(() => {
+          bubble.classList.remove("show");
+          run.classList.add("rolling"); run.querySelector(".post-dog svg").classList.add("walking");
+          run.animate([{ transform: `translateX(${mid}px)` }, { transform: `translateX(${innerWidth + 40}px)` }], { duration: 3000, easing: "ease-in", fill: "forwards" }).onfinish = () => run.remove();
+        }, 1800);
+      }, 1400);
+    };
+  }
+  function openGift(parcel) {
+    parcel.classList.add("opening");
+    parcel.querySelector(".gift-hint")?.remove();
+    H.sfx.tone(300, 0.15, "square", 0.06); setTimeout(() => H.sfx.win(), 650);
+    const r = parcel.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    setTimeout(() => { H.burst(cx, cy, ["💖", "✨", "⭐", "🐾", "💝"], 30, 220); H.confetti(["💖", "✨", "🐾", "⭐", "🎁"], 70); }, 600);
+    st.gift6 = true; save();
+    setTimeout(() => {
+      parcel.remove();
+      const ov = H.el("div", { class: "finale-overlay gift-letter" });
+      const animals = [{ sp: "capy", col: 0, acc: "orange" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75" }, { sp: "hund", col: 0, acc: "postmuetze" }, { sp: "waschbaer", col: 0, acc: "muetze" }, { sp: "hase", col: 0, acc: "blume", accColor: "#e85d75" }, { sp: "pinguin", col: 1, acc: "schal", accColor: "#e85d75" }];
+      const coin = H.el("div", { class: "r-coins", html: `${coinSvg}+100 Taler` });
+      ov.append(H.el("div", { class: "finale-card gift-card" },
+        H.el("div", { class: "finale-animals" }, ...animals.map((a) => H.el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.55 }) }))),
+        H.el("h2", { text: GIFT.title }), coin,
+        H.el("div", { class: "msg gift-msg", text: GIFT.text }),
+        H.el("p", { class: "sig", text: GIFT.from }),
+        H.el("div", { class: "row", style: "margin-top:14px" }, H.el("button", { class: "btn", text: "Danke, ihr Lieben!", onclick: () => ov.remove() }))));
+      document.body.append(ov);
+      setTimeout(() => { const c = coin.getBoundingClientRect(); addCoins(100, { x: c.left + c.width / 2, y: c.top + c.height / 2 }); }, 900);
+    }, 1300);
+  }
+
   function init() {
     H = App.h;
     load();
+    if (!st.gift6 && App.isUnlocked(6)) setTimeout(nikolausGift, 3500);
     document.getElementById("coin-icon").innerHTML = coinSvg;
     document.getElementById("shop-btn").addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(600); openShop(); });
     refresh();

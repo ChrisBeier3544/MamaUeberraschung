@@ -425,7 +425,7 @@ const App = (() => {
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */
   function setupPaws() {
     document.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button, input, select, .modal-card, #modal, .walker, #capy-wrap, .flake, .finale-overlay, .gehege-overlay")) return;
+      if (e.target.closest("button, input, select, .modal-card, #modal, .walker, #capy-wrap, .flake, .finale-overlay, .gehege-overlay, .gift-parcel, .post-run")) return;
       const p = el("div", { class: "paw", text: pick(["🐾", "🐾", "🐾", "💗", "⭐"]), style: `left:${e.clientX - 10}px;top:${e.clientY - 10}px;--r:${Math.random() * 60 - 30}deg` });
       fx().append(p); p.addEventListener("animationend", () => p.remove());
       sfx.tone(800 + Math.random() * 400, 0.06, "sine", 0.08);

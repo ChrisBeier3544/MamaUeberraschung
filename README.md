@@ -11,6 +11,8 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
   Der Himmel wird mit jeder Verbesserung blauer.
 - **18. Dezember:** Ein Paket schaltet sieben Bonus-Türchen (25.–31.12.) frei. Silvester endet die
   Geschichte mit einem Feuerwerk.
+- **Nikolaus-Geschenk:** Am 6.12. (oder beim ersten Besuch danach) bringt Postbote Bello mit dem Tierpost-Wagen ein Paket.
+  Angeklickt packt es sich aus: ein Brief der Tiere und 100 Taler. Text in `zoo.js` unter `GIFT`.
 - **Briefe:** Am 24. liegt ein Weihnachtsbrief unter dem Baum, zu Silvester kommt ein Neujahrsbrief.
 - **Versteckte Tiere:** 100 verschiedene gezeichnete Tiere verstecken sich überall: hinter Türchen und dem Titel,
   über dem Gehege, hinter Kalle, am Bildschirmrand, im Rätselfenster, im Shop und im Album – ab und zu läuft auch

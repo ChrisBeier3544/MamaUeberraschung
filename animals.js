@@ -291,6 +291,9 @@ const Animals = (() => {
         return RC(nx - 6 * s, ny - 1 * s, 6 * s, 16 * s, 3 * s, shade(col, -25)) + RC(nx - 11 * s, ny - 5 * s, 22 * s, 8 * s, 4 * s, col) + RC(nx - 9 * s, ny - 2.5 * s, 18 * s, 1.8 * s, 1, "#fff", 'opacity=".55"') + RC(nx - 6 * s, ny + 11 * s, 6 * s, 2 * s, 1, "#fff", 'opacity=".6"');
       case "fliege":
         return P(`M${f(nx)} ${f(ny)} L${f(nx - 6 * s)} ${f(ny - 4 * s)} L${f(nx - 6 * s)} ${f(ny + 4 * s)} Z M${f(nx)} ${f(ny)} L${f(nx + 6 * s)} ${f(ny - 4 * s)} L${f(nx + 6 * s)} ${f(ny + 4 * s)} Z`, col) + C(nx, ny, 1.8 * s, shade(col, -40));
+      case "postmuetze":
+        return RC(tx - 12 * s, ty - 7 * s, 24 * s, 10 * s, 4 * s, "#2f5fa8") + RC(tx - 12 * s, ty + 0.5 * s, 24 * s, 3 * s, 1.5 * s, "#ffd84d") +
+          P(`M${X(6)} ${Y(3)} q${f(9 * s)} ${f(0)} ${f(15 * s)} ${f(5 * s)} l${f(-15 * s)} ${f(-1 * s)}z`, "#1f3f78") + C(tx - 2 * s, ty - 2 * s, 2.4 * s, "#ffd84d");
       case "orange":
         return C(tx, ty - 6 * s, 7.5 * s, "#ff9f1c") + C(tx - 2.5 * s, ty - 8.5 * s, 2 * s, "#ffc46b") + P(`M${X(0)} ${Y(-13)} q${f(4 * s)} ${f(-5 * s)} ${f(8 * s)} ${f(-1 * s)} q${f(-4 * s)} ${f(2 * s)} ${f(-8 * s)} ${f(1 * s)}z`, "#4caf50");
     }
