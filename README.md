@@ -8,8 +8,10 @@ Ein knuffiger Online-Adventskalender voller süßer Tiere – mit 24 Rätseln un
 - **Türchen 24:** Alle 23 Buchstaben in die richtige Reihenfolge bringen → große Überraschung 🎄
 - Türchen öffnen sich erst am jeweiligen Dezembertag. Der Fortschritt wird im Browser gespeichert
   (also am besten immer auf demselben Gerät/Browser spielen).
-- Überall gibt es etwas zum Anklicken: Lichterkette, Schneeflocken, Titelbuchstaben, das Herz 💖 (6×!),
-  die Tierparade, Kalle das Kapibara (5× für die Orange 🍊), die Spähkatze, das Körbchen …
+- **Tiergehege:** Unten laufen ständig gezeichnete Tiere über die Seite – 100 verschiedene Varianten.
+  Wer eins anklickt, beamt es ins Gehege (Knopf unten rechts). Dort laufen alle gefundenen Tiere herum,
+  und das Sammelalbum zeigt, welche noch fehlen.
+- Außerdem zum Anklicken: Lichterkette, Schneeflocken, Titelbuchstaben, das Herz (6×), Kalle das Kapibara (5× für die Orange).
 
 ## Anpassen
 Ganz oben in `app.js` steht `CONFIG`:
@@ -18,7 +20,7 @@ Ganz oben in `app.js` steht `CONFIG`:
 - `year` – das Jahr
 
 ## Testen
-- `index.html?vorschau` – alle Türchen sind sofort offen
+- `index.html?vorschau` – alle Türchen sind sofort offen (mit Knopf zum Zurücksetzen)
 - `index.html?reset` – Fortschritt löschen (Achtung: vor dem Verschenken einmal aufrufen!)
 
 ## Online stellen (GitHub Pages)

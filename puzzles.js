@@ -1,448 +1,481 @@
 /* =========================================================
-   Die 24 Rätsel 🐾
+   Die 24 Rätsel
    ========================================================= */
 (() => {
-  const { el, shuffle, seeded, pick, sleep, sfx, burstAt, confetti, rain, toast, shakeEl, textAnswer } = App.h;
+  const { el, shuffle, seeded, pick, sleep, norm, sfx, burstAt, confetti, rain, toast, shakeEl, textAnswer } = App.h;
   const R = App.register;
+  const A = (sp, col = 0, acc = "", accColor = "#e85d75") => ({ sp, col, acc, accColor });
+  const pic = (v, opts = {}) => Animals.svg(v, { fit: true, ...opts });
   const once = (fn) => { let done = false; return (...a) => { if (!done) { done = true; fn(...a); } }; };
+  const small = () => innerWidth < 640;
+  const info = (text = "") => el("div", { class: "p-info", text });
+  const sameArt = (a, b) => a.sp === b.sp && a.col === b.col && a.acc === b.acc;
 
-  /* ---------- 1: Memory ---------- */
+  /* ---------- 1: Memory der Doppelgänger ---------- */
   R(1, {
-    emoji: "🐶", title: "Tier-Memory",
-    intro: "Finde alle Tierpaare! Dreh immer zwei Kärtchen um – passen sie zusammen, freuen sich die beiden riesig.",
-    hint: "Fang in einer Ecke an und arbeite dich Reihe für Reihe durch. Und merk dir die Waschbären – die sind frech! 🦝",
-    outro: "Gedächtnis wie ein Elefant 🐘 – nur viel süßer!",
+    art: A("katze", 1, "brille"), title: "Memory der Doppelgänger",
+    intro: "Zwölf Tierpaare liegen verdeckt auf dem Tisch. Aber Vorsicht: Einige Tiere haben einen Doppelgänger, der fast genauso aussieht – nur mit einem anderen Accessoire. Finde alle zwölf exakt gleichen Paare.",
+    outro: "Zwölf Paare – und kein einziger Doppelgänger hat dich hereingelegt.",
     render(root, { solve }) {
       solve = once(solve);
-      const animals = ["🐶", "🐱", "🦝", "🐰", "🐼", "🦊"];
-      const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(4,minmax(0,82px))" });
-      let open = [], lock = false, found = 0;
-      shuffle([...animals, ...animals]).forEach((a) => {
-        const c = el("div", { class: "mem-card" }, el("div", { class: "mem-inner" }, el("div", { class: "mem-face mem-back", text: "🐾" }), el("div", { class: "mem-face mem-front", text: a })));
-        c.dataset.a = a;
+      const set = [A("katze", 1, "brille"), A("katze", 1, "schal", "#e85d75"), A("hund", 0, "muetze"), A("hund", 0, "schleife", "#4f7fe0"), A("capy", 0, "orange"), A("capy", 0, "krone"),
+        A("waschbaer", 0, "blume", "#e85d75"), A("waschbaer", 0, "fliege", "#4f7fe0"), A("fuchs", 0, ""), A("fuchs", 0, "geweih"), A("pinguin", 0, "schal", "#3f9e6e"), A("pinguin", 0, "muetze")];
+      const cols = small() ? 4 : 6;
+      const grid = el("div", { class: "grid", style: `grid-template-columns:repeat(${cols},minmax(0,130px));gap:10px` });
+      const stat = info("0 Züge · 0 von 12 Paaren");
+      let open = [], lock = false, found = 0, moves = 0;
+      shuffle([...set.keys(), ...set.keys()]).forEach((k) => {
+        const c = el("div", { class: "mem-card" }, el("div", { class: "mem-inner" }, el("div", { class: "mem-face mem-back", text: "?" }), el("div", { class: "mem-face mem-front", html: pic(set[k]) })));
         c.onclick = () => {
           if (lock || c.classList.contains("flipped")) return;
-          c.classList.add("flipped"); sfx.tick(); open.push(c);
+          c.classList.add("flipped"); sfx.tick(); open.push([c, k]);
           if (open.length < 2) return;
-          const [x, y] = open; open = [];
-          if (x.dataset.a === y.dataset.a) {
-            setTimeout(() => { x.classList.add("matched"); y.classList.add("matched"); sfx.good(); burstAt(y, ["💖", "✨", x.dataset.a], 8, 60); }, 300);
-            if (++found === animals.length) setTimeout(solve, 1100);
-          } else {
-            lock = true;
-            setTimeout(() => { x.classList.remove("flipped"); y.classList.remove("flipped"); lock = false; }, 900);
-          }
+          const [[x, a], [y, b]] = open; open = []; moves++;
+          if (a === b) {
+            setTimeout(() => { x.classList.add("matched"); y.classList.add("matched"); sfx.good(); burstAt(y, ["✨", "💖"], 8, 60); }, 300);
+            if (++found === set.length) setTimeout(solve, 1100);
+          } else { lock = true; setTimeout(() => { x.classList.remove("flipped"); y.classList.remove("flipped"); lock = false; }, 1000); }
+          stat.textContent = `${moves} Züge · ${found} von 12 Paaren`;
         };
         grid.append(c);
       });
-      root.append(grid);
+      root.append(stat, grid);
     },
   });
 
-  /* ---------- 2: Reim-Rätsel ---------- */
+  /* ---------- 2: Wer bin ich? ---------- */
   R(2, {
-    emoji: "🦝", title: "Wer bin ich?",
-    intro: "Ein kleines Reim-Rätsel zum Aufwärmen:",
-    hint: "Ich bin ein „Bär“, aber eigentlich gar keiner. Und ich bin sehr reinlich… 🧼",
-    outro: "Richtig! Rocky der Waschbär lässt schön grüßen 🦝👋",
-    render(root, { solve }) {
-      root.append(
-        el("div", { class: "center", style: "font-size:19px;line-height:1.6;background:#fff;border-radius:18px;padding:14px;box-shadow:0 3px 0 #ead6c8" },
-          el("div", { class: "big-emoji", text: "❓" }),
-          el("div", { html: "Ich trag 'ne Maske, schwarz wie die Nacht,<br>hab schon so manche Mülltonne aufgemacht.<br>Mein Futter wasch ich gern im Bach –<br><b>wer bin ich?</b> Denk mal scharf nach! 🤔" }))
-      );
-      textAnswer(root, { answers: ["Waschbär", "Waschbaer", "Waschbar", "Waschbären"], placeholder: "Ich bin ein…", onRight: solve });
-    },
-  });
-
-  /* ---------- 3: Finde den Eindringling ---------- */
-  R(3, {
-    emoji: "🐹", title: "Wer gehört hier nicht hin?",
-    intro: "Irgendwer hat sich zwischen die anderen geschmuggelt! Finde den Eindringling – drei Runden lang, jede ein bisschen kniffliger.",
-    hint: "Geh Reihe für Reihe von links nach rechts mit dem Finger durch. Achte auf die Ohren und die Farbe! 👀",
-    outro: "Adleraugen! 🦅 Dir entgeht nichts.",
+    art: A("waschbaer", 0, "brille"), title: "Wer bin ich?",
+    intro: "Vier Tiere beschreiben sich selbst – aber nicht ganz direkt. Errätst du alle vier?",
+    outro: "Meerschweinchen, Koala, Seepferdchen, Pinguin: alle durchschaut.",
     render(root, { solve }) {
       solve = once(solve);
-      const rounds = [{ bg: "🐱", odd: "🦝", n: 5 }, { bg: "🐭", odd: "🐹", n: 6 }, { bg: "🦁", odd: "🐯", n: 7 }];
-      const info = el("div", { class: "center", style: "font-weight:600;margin-bottom:8px" });
+      const rs = [
+        ["Mein Name verspricht zweimal, was ich nicht halten kann: Ich lebe nicht im Meer – und ein Schwein bin ich auch nicht.", ["Meerschweinchen"]],
+        ["Man nennt mich gern Bär, doch ich bin keiner. Ich verschlafe fast den ganzen Tag – schuld ist mein Leibgericht, das kaum Energie liefert.", ["Koala", "Koalabär"]],
+        ["Ich bin ein Pferd, das nie galoppiert. Und bei uns trägt der Vater die Kinder aus.", ["Seepferdchen", "Seepferd"]],
+        ["Ich trage Frack und tanze nie. Ich habe Flügel und fliege nie. Ich lebe im Eis und friere nie.", ["Pinguin"]],
+      ];
       const box = el("div");
-      root.append(info, box);
-      const play = (r) => {
-        const { bg, odd, n } = rounds[r];
-        info.textContent = `Runde ${r + 1} von 3 – finde: ${odd}`;
+      root.append(box);
+      const play = (k) => {
         box.innerHTML = "";
-        const size = Math.min(54, Math.floor((Math.min(innerWidth, 600) - 80) / n));
-        const grid = el("div", { class: "grid", style: `grid-template-columns:repeat(${n},${size}px);gap:4px` });
-        const pos = Math.floor(Math.random() * n * n);
-        for (let i = 0; i < n * n; i++) {
-          const t = el("button", { class: "tile", text: i === pos ? odd : bg, style: `font-size:${size * 0.62}px;border-radius:10px` });
-          t.onclick = () => {
-            if (i === pos) { t.classList.add("good"); sfx.good(); burstAt(t, ["✨", "💖", odd], 10, 70); setTimeout(() => (r < 2 ? play(r + 1) : solve()), 800); }
-            else { sfx.bad(); shakeEl(t); toast(pick([`Das ist doch ein ganz normales ${bg} 😹`, "Nope, der gehört dazu! 🙈", "Schau nochmal genau hin 👀"])); }
-          };
-          grid.append(t);
-        }
-        box.append(grid);
+        box.append(info(`Rätsel ${k + 1} von ${rs.length}`), el("blockquote", { class: "riddle", text: rs[k][0] }));
+        textAnswer(box, { answers: rs[k][1], placeholder: "Ich bin …", onRight: () => { sfx.good(); burstAt(box, ["✨", "💖"], 10, 90); setTimeout(() => (k < rs.length - 1 ? play(k + 1) : solve()), 700); } });
       };
       play(0);
     },
   });
 
-  /* ---------- 4: Fütterung ---------- */
-  R(4, {
-    emoji: "🐰", title: "Fütterungszeit!",
-    intro: "Alle haben Hunger! Tippe zuerst auf ein Futter und dann auf das Tier, das es am liebsten mag.",
-    hint: "Der Affe mag's gelb und krumm, der Panda knabbert am liebsten Bambus 🎋, und das Eichhörnchen hortet Nüsse.",
-    outro: "Alle satt und glücklich! 😋 Du wärst die beste Tierpflegerin.",
+  /* ---------- 3: Nonogramm ---------- */
+  R(3, {
+    art: A("katze", 0, "schleife", "#4f7fe0"), title: "Das Pixel-Porträt",
+    intro: "Ein Nonogramm: Die Zahlen an jeder Zeile und Spalte verraten, wie viele Kästchen dort nacheinander ausgemalt werden – mehrere Zahlen bedeuten mehrere Blöcke mit mindestens einer Lücke dazwischen. Male das Bild aus. Mit „Kreuz“ kannst du Felder markieren, die sicher leer bleiben.",
+    outro: "Ein Katzengesicht – Pixel für Pixel selbst gemalt.",
     render(root, { solve }) {
       solve = once(solve);
-      const pairs = [["🐶", "🦴"], ["🐱", "🐟"], ["🐰", "🥕"], ["🐿️", "🌰"], ["🐼", "🎋"], ["🐵", "🍌"]];
-      let food = null, done = 0;
-      const animals = el("div", { class: "grid", style: "grid-template-columns:repeat(3,minmax(0,90px))" });
-      const foods = el("div", { class: "grid", style: "grid-template-columns:repeat(6,minmax(0,52px));margin-top:22px" });
-      shuffle(pairs).forEach(([a, f]) => {
-        const t = el("button", { class: "tile", text: a, style: "font-size:46px" });
-        t.dataset.f = f;
-        t.onclick = () => {
-          if (!food) { toast("Wähle zuerst ein Futter aus 🍽️"); shakeEl(t); return; }
-          if (food.textContent === f) {
-            food.classList.remove("sel"); food.classList.add("done"); food = null;
-            t.classList.add("good"); t.textContent = a + "😋"; t.style.fontSize = "30px"; t.disabled = true;
-            sfx.good(); burstAt(t, ["💖", "😋", "✨"], 10, 70);
-            if (++done === pairs.length) setTimeout(solve, 900);
-          } else { sfx.bad(); shakeEl(t); toast(pick(["Bäh! Das mag ich nicht 🤢", "Hmm… nö! 🙅", "Hast du was anderes? 🥺"])); }
-        };
-        animals.append(t);
-      });
-      shuffle(pairs).forEach(([, f]) => {
-        const t = el("button", { class: "tile", text: f, style: "font-size:30px" });
-        t.onclick = () => { food?.classList.remove("sel"); food = t; t.classList.add("sel"); sfx.pop(); };
-        foods.append(t);
-      });
-      root.append(animals, el("div", { class: "center", style: "margin-top:16px;color:var(--ink-soft)", text: "🍽️ Futterkiste:" }), foods);
+      const PIC = [".#........#.", ".##......##.", ".###....###.", ".##########.", "############", "##..####..##", "##..####..##", "############", "#####..#####", ".####..####.", "..########..", "....####...."];
+      const N = PIC.length;
+      const sol = PIC.map((r) => [...r].map((c) => c === "#"));
+      const runs = (arr) => { const o = []; let k = 0; for (const v of arr) { if (v) k++; else if (k) { o.push(k); k = 0; } } if (k) o.push(k); return o.length ? o : [0]; };
+      const rowC = sol.map(runs), colC = sol[0].map((_, c) => runs(sol.map((r) => r[c])));
+      const st = Array(N * N).fill(0);
+      let mode = 1, done = false;
+      const cs = small() ? Math.floor((innerWidth - 90) / (N + 2.2)) : 34;
+      const g = el("div", { class: "nono", style: `grid-template-columns:auto repeat(${N},${cs}px)` });
+      g.append(el("div"));
+      const colEls = colC.map((c) => { const d = el("div", { class: "nono-cc" }, ...c.map((n) => el("span", { text: n }))); g.append(d); return d; });
+      const rowEls = [], cells = [];
+      for (let r = 0; r < N; r++) {
+        const rc = el("div", { class: "nono-rc", text: rowC[r].join(" ") }); g.append(rc); rowEls.push(rc);
+        for (let c = 0; c < N; c++) {
+          const i = r * N + c;
+          const b = el("button", { class: "nono-cell" + (c % 4 === 3 && c < N - 1 ? " br" : "") + (r % 4 === 3 && r < N - 1 ? " bb" : ""), style: `width:${cs}px;height:${cs}px`, "aria-label": `Zeile ${r + 1}, Spalte ${c + 1}` });
+          b.onclick = () => { if (done) return; st[i] = st[i] === mode ? 0 : mode; sfx.tick(); draw(); };
+          g.append(b); cells.push(b);
+        }
+      }
+      const draw = () => {
+        cells.forEach((b, i) => { b.classList.toggle("on", st[i] === 1); b.classList.toggle("x", st[i] === 2); });
+        let all = true;
+        for (let r = 0; r < N; r++) { const ok = runs(st.slice(r * N, r * N + N).map((v) => v === 1)).join() === rowC[r].join(); rowEls[r].classList.toggle("ok", ok); all = all && ok; }
+        for (let c = 0; c < N; c++) { const ok = runs(Array.from({ length: N }, (_, r) => st[r * N + c] === 1)).join() === colC[c].join(); colEls[c].classList.toggle("ok", ok); all = all && ok; }
+        if (all && !done) { done = true; g.classList.add("solved"); sfx.good(); burstAt(g, ["✨", "💖"], 16, 140); setTimeout(solve, 1300); }
+      };
+      const bFill = el("button", { class: "btn btn-soft seg on", text: "■ Ausmalen" }), bX = el("button", { class: "btn btn-soft seg", text: "✕ Kreuz" });
+      bFill.onclick = () => { mode = 1; bFill.classList.add("on"); bX.classList.remove("on"); };
+      bX.onclick = () => { mode = 2; bX.classList.add("on"); bFill.classList.remove("on"); };
+      const reset = el("button", { class: "btn btn-soft", text: "Alles löschen", onclick: () => { if (!done) { st.fill(0); draw(); } } });
+      root.append(el("div", { class: "row", style: "margin-bottom:12px" }, bFill, bX, reset), el("div", { class: "scroll-x" }, g));
     },
   });
 
-  /* ---------- 5: Pinguine zählen ---------- */
-  R(5, {
-    emoji: "🐧", title: "Pinguin-Party auf dem Eis",
-    intro: "Auf der Eisscholle ist ganz schön was los! Wie viele Pinguine 🐧 watscheln hier herum?",
-    hint: "Drück auf „Einfrieren“, damit alle stillstehen. Zähl dann von links nach rechts. Robben 🦭 und Schneemänner ⛄ zählen nicht!",
-    outro: "Richtig, es waren 9 Pinguine! 🐧 Die feiern jetzt eine Eisparty.",
+  /* ---------- 4: Tier-Sudoku ---------- */
+  R(4, {
+    art: A("fuchs", 0, "brille"), title: "Tier-Sudoku",
+    intro: "Ein Sudoku mit sechs Tieren statt Zahlen: In jeder Zeile, jeder Spalte und jedem der sechs dick umrandeten Blöcke (2 × 3 Felder) muss jedes Tier genau einmal vorkommen. Tippe ein leeres Feld an und wähle dann unten ein Tier aus.",
+    outro: "Jedes Tier an seinem Platz. Sudoku-Profi!",
     render(root, { solve }) {
-      const scene = el("div", { class: "scene" });
-      const actors = [];
-      const add = (e, n) => { for (let i = 0; i < n; i++) actors.push(el("div", { class: "actor", text: e })); };
-      add("🐧", 9); add("🦭", 6); add("⛄", 4);
-      const place = () => actors.forEach((a) => { a.style.left = 4 + Math.random() * 84 + "%"; a.style.top = 6 + Math.random() * 76 + "%"; });
-      shuffle(actors).forEach((a) => {
-        a.onclick = () => { sfx.squeak(); a.animate([{ transform: "translateY(0)" }, { transform: "translateY(-20px) rotate(15deg)" }, { transform: "translateY(0)" }], { duration: 400 }); };
-        scene.append(a);
+      solve = once(solve);
+      const BASE = [[0, 1, 2, 3, 4, 5], [3, 4, 5, 0, 1, 2], [1, 2, 0, 4, 5, 3], [4, 5, 3, 1, 2, 0], [2, 0, 1, 5, 3, 4], [5, 3, 4, 2, 0, 1]];
+      const MASK = ["100010", "001100", "100001", "010010", "001100", "010001"];
+      const icons = [A("capy"), A("katze", 1), A("hund", 2), A("pinguin"), A("fuchs"), A("schwein")];
+      const perm = shuffle([0, 1, 2, 3, 4, 5]);
+      const val = BASE.map((row, r) => row.map((v, c) => (MASK[r][c] === "1" ? perm[v] : null))).flat();
+      const given = val.map((v) => v !== null);
+      let sel = null, done = false;
+      const cs = small() ? Math.floor((innerWidth - 80) / 6) : 74;
+      const g = el("div", { class: "sudoku", style: `grid-template-columns:repeat(6,${cs}px)` });
+      const cells = val.map((_, i) => {
+        const r = Math.floor(i / 6), c = i % 6;
+        const b = el("button", { class: "sd-cell" + (given[i] ? " given" : "") + (c === 2 ? " br" : "") + (r % 2 === 1 && r < 5 ? " bb" : ""), style: `height:${cs}px` });
+        b.onclick = () => { if (given[i] || done) return; sel = i; sfx.tick(); draw(); };
+        g.append(b); return b;
       });
+      const set = (v) => { if (sel === null || done) { toast("Tippe zuerst ein leeres Feld an."); return; } val[sel] = v; sfx.boop(300 + (v ?? 0) * 60); draw(); };
+      const pal = el("div", { class: "row", style: "margin-top:14px;gap:8px" }, ...icons.map((ic, k) => el("button", { class: "tile pal", html: pic(ic), onclick: () => set(k) })), el("button", { class: "btn btn-soft", text: "Leeren", onclick: () => set(null) }));
+      const bad = (i) => {
+        if (val[i] === null) return false;
+        const r = Math.floor(i / 6), c = i % 6, bx = Math.floor(r / 2), by = Math.floor(c / 3);
+        return val.some((v, j) => j !== i && v === val[i] && (Math.floor(j / 6) === r || j % 6 === c || (Math.floor(Math.floor(j / 6) / 2) === bx && Math.floor((j % 6) / 3) === by)));
+      };
+      const draw = () => {
+        cells.forEach((b, i) => { b.innerHTML = val[i] !== null ? pic(icons[val[i]]) : ""; b.classList.toggle("sel", sel === i); b.classList.toggle("bad", bad(i)); });
+        if (!done && val.every((v) => v !== null) && !val.some((_, i) => bad(i))) { done = true; sel = null; cells.forEach((b) => b.classList.remove("sel")); g.classList.add("solved"); sfx.good(); burstAt(g, ["✨", "💖"], 16, 140); setTimeout(solve, 1200); }
+      };
+      draw();
+      root.append(g, pal);
+    },
+  });
+
+  /* ---------- 5: Das große Gewusel ---------- */
+  R(5, {
+    art: A("pinguin", 0, "muetze"), title: "Das große Gewusel",
+    intro: "Auf der Winterwiese ist Hochbetrieb, und alle laufen kreuz und quer. Wie viele Tiere tragen eine rote Weihnachtsmütze?",
+    outro: "Genau neun Mützen. Bei dir geht keiner verloren.",
+    render(root, { solve }) {
+      const rnd = seeded(505);
+      const kinds = Object.keys(Animals.SPECIES).filter((k) => k !== "giraffe");
+      const others = ["", "", "krone", "geweih", "schal", "schleife", "brille", "blume", "fliege"];
+      const arts = [];
+      for (let i = 0; i < 46; i++) {
+        const sp = kinds[Math.floor(rnd() * kinds.length)];
+        arts.push(A(sp, Math.floor(rnd() * Animals.SPECIES[sp].colors.length), i < 9 ? "muetze" : others[Math.floor(rnd() * others.length)], ["#e85d75", "#3f9e6e", "#4f7fe0", "#f39c32"][i % 4]));
+      }
+      const scene = el("div", { class: "scene meadow", style: `height:${small() ? 380 : 470}px` });
+      const w = small() ? 52 : 74;
+      const actors = shuffle(arts).map((a) => { const d = el("div", { class: "actor", html: Animals.svg(a, { width: w, walk: true }) }); scene.append(d); return d; });
+      const place = () => actors.forEach((d) => { const nx = Math.random() * 90; d.classList.toggle("flip", nx < parseFloat(d.style.left || 50)); d.style.left = nx + "%"; d.style.top = 4 + Math.random() * 80 + "%"; });
       place();
       let frozen = false;
       const iv = setInterval(() => { if (!frozen) place(); }, 2600);
       root._cleanup = () => clearInterval(iv);
-      const fz = el("button", { class: "btn btn-soft", text: "🧊 Einfrieren" });
-      fz.onclick = () => { frozen = !frozen; fz.textContent = frozen ? "🔥 Auftauen" : "🧊 Einfrieren"; actors.forEach((a) => (a.style.transition = frozen ? "none" : "")); if (frozen) actors.forEach((a) => { const r = a.getBoundingClientRect(), s = scene.getBoundingClientRect(); a.style.left = ((r.left - s.left) / s.width) * 100 + "%"; a.style.top = ((r.top - s.top) / s.height) * 100 + "%"; }); sfx.boop(); };
-      root.append(scene, el("div", { class: "row", style: "margin-top:10px" }, fz));
-      textAnswer(root, { answers: ["9", "neun"], placeholder: "Anzahl Pinguine", type: "text", onRight: () => { clearInterval(iv); solve(); } });
+      const fz = el("button", { class: "btn btn-soft", text: "Alle anhalten" });
+      fz.onclick = () => {
+        frozen = !frozen; fz.textContent = frozen ? "Weiterlaufen lassen" : "Alle anhalten";
+        const s = scene.getBoundingClientRect();
+        actors.forEach((d) => {
+          if (frozen) { const r = d.getBoundingClientRect(); d.style.transition = "none"; d.style.left = ((r.left - s.left) / s.width) * 100 + "%"; d.style.top = ((r.top - s.top) / s.height) * 100 + "%"; }
+          else d.style.transition = "";
+          d.querySelector("svg").classList.toggle("walking", !frozen);
+        });
+        sfx.boop();
+      };
+      root.append(scene, el("div", { class: "row", style: "margin-top:12px" }, fz));
+      textAnswer(root, { answers: ["9", "neun"], placeholder: "Anzahl Mützen", onRight: () => { clearInterval(iv); solve(); } });
     },
   });
 
-  /* ---------- 6: Nikolaus-Buchstabensalat ---------- */
+  /* ---------- 6: Buchstabensalat ---------- */
   R(6, {
-    emoji: "🎅", title: "Nikolaus' Buchstabensalat",
-    intro: "Oh nein! Der Nikolaus ist mit seinem Sack gestolpert und alle Tiernamen sind durcheinandergepurzelt. Bring sie wieder in Ordnung!",
-    hint: "Wort 1 ist stachelig 🦔, Wort 2 hat lange Wimpern und sieht aus wie ein flauschiges Lama 🦙, Wort 3 hängt gemütlich am Ast und hat es nie eilig 🦥.",
-    outro: "Danke! Der Nikolaus hat dir zum Dank ein bisschen Schokolade in den Stiefel gelegt 🍫👢",
+    art: A("hund", 0, "muetze"), title: "Nikolaus' Buchstabensalat",
+    intro: "Dem Nikolaus ist der Sack gerissen, und drei ziemlich ungewöhnliche Tiernamen sind dabei in ihre Buchstaben zerfallen. Setz sie wieder zusammen.",
+    outro: "Schnabeltier, Erdmännchen, Gürteltier – der Nikolaus bedankt sich.",
     render(root, { solve }) {
       solve = once(solve);
-      const words = [["IGEL", "🦔"], ["ALPAKA", "🦙"], ["FAULTIER", "🦥"]];
+      const words = ["SCHNABELTIER", "ERDMÄNNCHEN", "GÜRTELTIER"];
       const box = el("div");
       root.append(box);
       const play = (w) => {
-        const [word, emo] = words[w];
+        const word = words[w];
         box.innerHTML = "";
         let letters = shuffle(word.split(""));
         while (letters.join("") === word) letters = shuffle(word.split(""));
         let typed = [];
-        const out = el("div", { class: "slot-word", style: "justify-content:center;margin:12px 0" });
-        const pool = el("div", { class: "pool" });
-        const btns = letters.map((ch) => {
-          const b = el("button", { text: ch });
-          b.onclick = () => { if (b.classList.contains("used")) return; b.classList.add("used"); typed.push(b); sfx.tick(); draw(); };
-          pool.append(b); return b;
-        });
+        const out = el("div", { class: "slot-word big", style: "justify-content:center;margin:16px 0;flex-wrap:wrap" });
+        const pool = el("div", { class: "pool big" });
+        letters.forEach((ch) => { const b = el("button", { text: ch }); b.onclick = () => { if (b.classList.contains("used")) return; b.classList.add("used"); typed.push(b); sfx.tick(); draw(); }; pool.append(b); });
         const draw = () => {
           out.innerHTML = "";
           for (let i = 0; i < word.length; i++) out.append(el("div", { class: "slot" + (typed[i] ? " filled" : ""), text: typed[i]?.textContent || "" }));
           if (typed.length === word.length) {
             if (typed.map((b) => b.textContent).join("") === word) {
-              [...out.children].forEach((s) => s.classList.add("right"));
-              sfx.good(); out.append(el("div", { style: "font-size:34px;margin-left:8px", text: emo })); burstAt(out, ["✨", emo, "💖"], 10, 80);
+              [...out.children].forEach((s) => s.classList.add("right")); sfx.good(); burstAt(out, ["✨", "💖"], 10, 100);
               setTimeout(() => (w < words.length - 1 ? play(w + 1) : solve()), 1100);
-            } else {
-              sfx.bad(); shakeEl(out);
-              setTimeout(() => { typed.forEach((b) => b.classList.remove("used")); typed = []; draw(); }, 600);
-            }
+            } else { sfx.bad(); shakeEl(out); setTimeout(() => { typed.forEach((b) => b.classList.remove("used")); typed = []; draw(); }, 700); }
           }
         };
-        const back = el("button", { class: "btn btn-soft", text: "⌫ Zurück", onclick: () => { const b = typed.pop(); if (b) b.classList.remove("used"); draw(); } });
-        box.append(el("div", { class: "center", style: "font-weight:600", text: `Tier ${w + 1} von ${words.length}` }), out, pool, el("div", { class: "row", style: "margin-top:12px" }, back));
+        box.append(info(`Tier ${w + 1} von ${words.length} · ${word.length} Buchstaben`), out, pool,
+          el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn btn-soft", text: "⌫ Letzten zurück", onclick: () => { const b = typed.pop(); if (b) b.classList.remove("used"); draw(); } }), el("button", { class: "btn btn-soft", text: "Alle zurück", onclick: () => { typed.forEach((b) => b.classList.remove("used")); typed = []; draw(); } })));
         draw();
       };
       play(0);
     },
   });
 
-  /* ---------- 7: Tier-Orchester (Simon) ---------- */
+  /* ---------- 7: Das Tier-Orchester ---------- */
   R(7, {
-    emoji: "🐸", title: "Das Tier-Orchester",
-    intro: "Das Orchester probt für das Weihnachtskonzert! Hör gut zu und spiel die Melodie nach. Jede Runde kommt ein Ton dazu – schaffst du 5 Töne?",
-    hint: "Sag dir die Tiere leise vor: „Hund, Frosch, Katze…“ – so kann man sie sich viel leichter merken! 🎶",
-    outro: "Bravo! Standing Ovations vom ganzen Orchester 👏🐸🐮🐶🐱",
+    art: A("ente", 0, "fliege", "#4f7fe0"), title: "Das Tier-Orchester",
+    intro: "Sechs Musiker, eine Melodie. Hör genau zu und spiel sie nach. Jede Runde kommt ein Ton dazu – das Konzert ist geschafft, wenn du sieben Töne fehlerfrei nachspielst.",
+    outro: "Sieben Töne, kein falscher. Standing Ovations vom ganzen Ensemble.",
     render(root, { solve }) {
       solve = once(solve);
-      const inst = [{ e: "🐶", f: 262, c: "#ffd0d0" }, { e: "🐱", f: 330, c: "#fff1b5" }, { e: "🐸", f: 392, c: "#c9f2d7" }, { e: "🐮", f: 523, c: "#cfe6ff" }];
-      const seq = Array.from({ length: 5 }, () => Math.floor(Math.random() * 4));
+      const inst = [[A("capy"), 262, "#ffd9cc"], [A("katze", 0), 294, "#fff1b5"], [A("hund", 0), 330, "#d6f2dd"], [A("pinguin"), 392, "#d7e8ff"], [A("ente"), 440, "#f3dcff"], [A("schaf"), 523, "#ffe0e8"]];
+      const LEN = 7;
+      const seq = Array.from({ length: LEN }, () => Math.floor(Math.random() * inst.length));
       let len = 1, pos = 0, listening = false, alive = true;
-      const info = el("div", { class: "center", style: "font-weight:600;font-size:18px;min-height:28px" });
-      const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(2,minmax(0,120px));gap:14px" });
-      const btns = inst.map((it, i) => {
-        const b = el("button", { class: "tile", text: it.e, style: `font-size:56px;background:${it.c}` });
-        b.onclick = () => press(i);
-        grid.append(b); return b;
-      });
-      const flash = async (i) => { btns[i].style.transform = "scale(1.15)"; btns[i].style.filter = "brightness(1.15) drop-shadow(0 0 10px gold)"; sfx.tone(inst[i].f, 0.35, "triangle", 0.25); await sleep(380); btns[i].style.transform = ""; btns[i].style.filter = ""; await sleep(150); };
+      const msg = info("Bereit?");
+      const grid = el("div", { class: "grid", style: `grid-template-columns:repeat(3,minmax(0,${small() ? 100 : 150}px));gap:14px` });
+      const btns = inst.map(([a, , bg], i) => { const b = el("button", { class: "tile orch", html: pic(a), style: `background:${bg}` }); b.onclick = () => press(i); grid.append(b); return b; });
+      const flash = async (i) => {
+        const b = btns[i]; b.classList.add("play"); b.querySelector("svg").classList.add("walking");
+        sfx.tone(inst[i][1], 0.4, "triangle", 0.25); await sleep(420);
+        b.classList.remove("play"); b.querySelector("svg").classList.remove("walking"); await sleep(140);
+      };
       const playSeq = async () => {
-        listening = false; info.textContent = "🎵 Gut zuhören…"; await sleep(600);
+        listening = false; msg.textContent = "Gut zuhören …"; await sleep(700);
         for (let k = 0; k < len && alive; k++) await flash(seq[k]);
         if (!alive) return;
-        pos = 0; listening = true; info.textContent = `Du bist dran! (${len} ${len === 1 ? "Ton" : "Töne"})`;
+        pos = 0; listening = true; msg.textContent = `Du bist dran: ${len} ${len === 1 ? "Ton" : "Töne"}`;
       };
       const press = async (i) => {
         if (!listening) return;
         flash(i);
-        if (i !== seq[pos]) { listening = false; sfx.bad(); info.textContent = "Ups, schiefer Ton! 🙉 Nochmal anhören…"; await sleep(1200); playSeq(); return; }
-        pos++;
-        if (pos === len) {
-          listening = false; burstAt(grid, ["🎵", "🎶", "✨"], 8, 100);
-          if (len === seq.length) { info.textContent = "Perfekt! 🎉"; setTimeout(solve, 700); return; }
-          len++; info.textContent = "Super! Weiter geht's 🎶"; await sleep(900); playSeq();
+        if (i !== seq[pos]) { listening = false; sfx.bad(); msg.textContent = "Schiefer Ton! Noch einmal von vorn anhören …"; await sleep(1300); playSeq(); return; }
+        if (++pos === len) {
+          listening = false;
+          if (len === LEN) { msg.textContent = "Perfekt gespielt!"; burstAt(grid, ["🎵", "🎶", "✨"], 14, 140); setTimeout(solve, 900); return; }
+          len++; msg.textContent = "Sehr gut – ein Ton mehr!"; await sleep(1000); playSeq();
         }
       };
-      const start = el("button", { class: "btn btn-green", text: "▶️ Konzert starten", onclick: () => { start.remove(); playSeq(); } });
+      const start = el("button", { class: "btn btn-green", text: "Konzert starten", onclick: () => { start.remove(); playSeq(); } });
       root._cleanup = () => (alive = false);
-      root.append(info, grid, el("div", { class: "row", style: "margin-top:14px" }, start));
-      info.textContent = "Bereit? 🎻";
+      root.append(msg, grid, el("div", { class: "row", style: "margin-top:16px" }, start));
     },
   });
 
-  /* ---------- 8: Kätzchen-Streichelparty ---------- */
+  /* ---------- 8: Der Code-Knacker ---------- */
   R(8, {
-    emoji: "🐱", title: "Streichel-Party",
-    intro: "Aus den Körbchen schauen Kätzchen heraus und wollen gestreichelt werden! Tippe schnell auf sie – 12 Streicheleinheiten brauchst du. Aber Vorsicht vor dem Igel 🦔, der pikst!",
-    hint: "Ganz in Ruhe – es gibt kein Zeitlimit. Wenn du den Igel erwischst, ist das auch nicht schlimm 🦔💕",
-    outro: "12 schnurrende Kätzchen! 😻 Du hast magische Streichelhände.",
+    art: A("waschbaer", 1, "krone"), title: "Der Code-Knacker",
+    intro: "Der Waschbär hat seine Keksdose mit einem Code aus vier verschiedenen Tieren gesichert. Rate die Reihenfolge! Nach jedem Versuch erfährst du: grüner Punkt = richtiges Tier am richtigen Platz, gelber Punkt = richtiges Tier, aber falscher Platz. Du hast 10 Versuche pro Code.",
+    outro: "Die Keksdose ist offen. Der Waschbär ist beeindruckt – und etwas beleidigt.",
     render(root, { solve }) {
       solve = once(solve);
-      const GOAL = 12;
-      let score = 0, iv = null;
-      const meter = el("div", { class: "meter" }, el("div"));
-      const info = el("div", { class: "center", style: "font-weight:600", text: `0 / ${GOAL} gestreichelt` });
-      const holes = el("div", { class: "holes" });
-      const hs = Array.from({ length: 9 }, () => {
-        const crit = el("div", { class: "critter" });
-        const h = el("button", { class: "hole", "aria-label": "Körbchen" }, crit);
-        h.onclick = () => {
-          if (!h.classList.contains("up")) return;
-          h.classList.remove("up");
-          if (crit.textContent === "🦔") { score = Math.max(0, score - 1); sfx.bad(); toast("Autsch! Der Igel pikst 🦔"); }
-          else { score++; sfx.meow(); burstAt(h, ["💖", "😻", "✨"], 6, 50); }
-          info.textContent = `${score} / ${GOAL} gestreichelt`;
-          meter.firstChild.style.width = (score / GOAL) * 100 + "%";
-          if (score >= GOAL) { clearInterval(iv); info.textContent = "Alle Kätzchen glücklich! 😻"; setTimeout(solve, 600); }
-        };
-        holes.append(h); return { h, crit };
-      });
-      const tick = () => {
-        const free = hs.filter((x) => !x.h.classList.contains("up"));
-        if (!free.length) return;
-        const x = pick(free);
-        x.crit.textContent = Math.random() < 0.18 ? "🦔" : pick(["🐱", "😺", "😸", "🐈", "😻"]);
-        x.h.classList.add("up");
-        setTimeout(() => x.h.classList.remove("up"), 1300);
+      const syms = [A("capy"), A("katze", 1), A("hund", 0), A("waschbaer"), A("pinguin"), A("schwein")];
+      let code = shuffle([0, 1, 2, 3, 4, 5]).slice(0, 4), guess = [], tries = 0;
+      const board = el("div", { class: "mm-board" });
+      const cur = el("div", { class: "mm-row current" });
+      const msg = info("Versuch 1 von 10");
+      const drawCur = () => {
+        cur.innerHTML = "";
+        for (let i = 0; i < 4; i++) { const s = el("button", { class: "mm-slot", html: guess[i] != null ? pic(syms[guess[i]]) : "" }); s.onclick = () => { guess.splice(i, 1); drawCur(); }; cur.append(s); }
       };
-      const start = el("button", { class: "btn btn-green", text: "▶️ Los geht's!", onclick: () => { start.remove(); iv = setInterval(tick, 750); } });
-      root._cleanup = () => clearInterval(iv);
-      root.append(info, meter, holes, el("div", { class: "row", style: "margin-top:12px" }, start));
+      const check = () => {
+        if (guess.length < 4) { shakeEl(cur); toast("Wähle zuerst vier Tiere."); return; }
+        tries++;
+        const black = guess.filter((g, i) => g === code[i]).length;
+        const common = [0, 1, 2, 3, 4, 5].reduce((n, s) => n + Math.min(guess.filter((g) => g === s).length, code.filter((c) => c === s).length), 0);
+        const white = common - black;
+        const row = el("div", { class: "mm-row" }, el("span", { class: "mm-n", text: tries }), ...guess.map((g) => el("div", { class: "mm-slot done", html: pic(syms[g]) })),
+          el("div", { class: "mm-pegs" }, ...Array.from({ length: black }, () => el("i", { class: "pg b" })), ...Array.from({ length: white }, () => el("i", { class: "pg w" })), ...Array.from({ length: 4 - black - white }, () => el("i", { class: "pg" }))));
+        board.append(row);
+        guess = []; drawCur();
+        if (black === 4) { sfx.good(); msg.textContent = "Geknackt!"; burstAt(row, ["✨", "🍪", "💖"], 14, 120); setTimeout(solve, 1000); return; }
+        sfx.tick();
+        if (tries >= 10) {
+          sfx.bad(); msg.textContent = "Zehn Versuche vorbei – der Waschbär wählt gleich einen neuen Code.";
+          board.append(el("div", { class: "row" }, el("span", { text: "Der alte Code war:" }), ...code.map((c) => el("div", { class: "mm-slot done", html: pic(syms[c]) }))));
+          setTimeout(() => { code = shuffle([0, 1, 2, 3, 4, 5]).slice(0, 4); tries = 0; board.innerHTML = ""; msg.textContent = "Neuer Code! Versuch 1 von 10"; }, 3500);
+        } else msg.textContent = `Versuch ${tries + 1} von 10`;
+      };
+      const pal = el("div", { class: "row", style: "gap:8px" }, ...syms.map((s, k) => el("button", { class: "tile pal", html: pic(s), onclick: () => { if (guess.length < 4) { guess.push(k); sfx.pop(); drawCur(); } } })));
+      root.append(msg, board, cur, pal, el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn", text: "Prüfen", onclick: check })));
+      drawCur();
     },
   });
 
-  /* ---------- 9: Emoji-Rebus ---------- */
+  /* ---------- 9: Redewendungen ---------- */
   R(9, {
-    emoji: "🦉", title: "Emoji-Bilderrätsel",
-    intro: "Zwei Bildchen ergeben zusammen ein Tier! Welches ist gemeint?",
-    hint: "Lies die Bildchen einfach nacheinander als Wörter vor und häng sie zusammen: „Haus“ + „Katze“ = …",
-    outro: "Du sprichst fließend Emoji! 🤓",
+    art: A("schwein", 0, "brille"), title: "Tierische Redewendungen",
+    intro: "Die deutsche Sprache ist voller Tiere. Ergänze die zehn Redewendungen.",
+    outro: "Da steppt der Bär: zehn von zehn!",
     render(root, { solve }) {
       solve = once(solve);
       const qs = [
-        ["🏠 + 🐱", "Hauskatze", ["Hausmaus", "Dachkatze"]],
-        ["❄️ + 🐆", "Schneeleopard", ["Eisbär", "Schneehase"]],
-        ["🌊 + 🐴", "Seepferdchen", ["Seehund", "Seestern"]],
-        ["🍯 + 🐝", "Honigbiene", ["Wespe", "Hummel"]],
-        ["🦔 + 🐟", "Igelfisch", ["Kugelfisch", "Stachelschwein"]],
+        ["Da steppt der ___.", "Bär", ["Hund", "Hase", "Elch"]],
+        ["Da liegt der ___ begraben.", "Hund", ["Hase", "Fuchs", "Igel"]],
+        ["Ich glaub, mein ___ pfeift!", "Schwein", ["Hamster", "Esel", "Dackel"]],
+        ["Die ___ im Sack kaufen.", "Katze", ["Gans", "Maus", "Ziege"]],
+        ["Mit jemandem ein ___ zu rupfen haben.", "Hühnchen", ["Gänschen", "Täubchen", "Entchen"]],
+        ["Wie ein ___ im Porzellanladen.", "Elefant", ["Nashorn", "Nilpferd", "Walross"]],
+        ["Da wird ja der ___ in der Pfanne verrückt!", "Hund", ["Fisch", "Frosch", "Hahn"]],
+        ["Wo sich ___ und Hase gute Nacht sagen.", "Fuchs", ["Igel", "Dachs", "Bär"]],
+        ["Nach der langen Feier hatte er am nächsten Morgen einen ___.", "Kater", ["Igel", "Hirsch", "Wurm"]],
+        ["Ihm ist wohl eine ___ über die Leber gelaufen.", "Laus", ["Maus", "Spinne", "Ameise"]],
       ];
       const box = el("div");
       root.append(box);
       const play = (k) => {
         const [q, right, wrong] = qs[k];
         box.innerHTML = "";
-        box.append(el("div", { class: "center", style: "font-weight:600", text: `Bild ${k + 1} von ${qs.length}` }),
-          el("div", { class: "center", style: "font-size:58px;margin:10px 0", text: q }));
-        const row = el("div", { class: "row" });
+        const sentence = el("div", { class: "quote", text: "„" + q + "“" });
+        const row = el("div", { class: "row", style: "gap:10px" });
         shuffle([right, ...wrong]).forEach((opt) => {
-          const b = el("button", { class: "btn btn-soft", text: opt, style: "font-size:18px;padding:12px 18px" });
+          const b = el("button", { class: "btn btn-soft opt", text: opt });
           b.onclick = () => {
-            if (opt === right) { b.style.background = "#c9f2d7"; sfx.good(); burstAt(b, ["✨", "💖"], 8, 60); setTimeout(() => (k < qs.length - 1 ? play(k + 1) : solve()), 800); }
+            if (opt === right) { b.classList.add("ok"); sentence.textContent = "„" + q.replace("___", right) + "“"; sfx.good(); setTimeout(() => (k < qs.length - 1 ? play(k + 1) : solve()), 900); }
             else { sfx.bad(); shakeEl(b); b.disabled = true; }
           };
           row.append(b);
         });
-        box.append(row);
+        box.append(info(`Redewendung ${k + 1} von ${qs.length}`), sentence, row);
       };
       play(0);
     },
   });
 
-  /* ---------- 10: Tier-Mathe ---------- */
+  /* ---------- 10: Das Waagen-Rätsel ---------- */
   R(10, {
-    emoji: "🧮", title: "Tierische Mathematik",
-    intro: "Jedes Tier steht für eine Zahl. Findest du heraus, welche – und was unten rauskommt?",
-    hint: "Fang oben an: Drei Hunde sind 12, also ist ein Hund 🐶 = 4. Damit kannst du die Katze ausrechnen, und mit der Katze das Häschen…",
-    outro: "🐶 = 4, 🐱 = 5, 🐰 = 2 – und 5 × 2 + 4 = 14. Mathe-Genie! 🎓",
+    art: A("capy", 1, "krone"), title: "Das Waagen-Rätsel",
+    intro: "Im Tierheim wird gewogen. Die drei oberen Waagen sind im Gleichgewicht. Wie viele Katzen wiegen genauso viel wie die Tiere auf der linken Seite der unteren Waage?",
+    outro: "Ein Hund wiegt drei Katzen, ein Kapibara fünf, ein Waschbär zwei: 5 + 5 + 2 = 12.",
     render(root, { solve }) {
-      const lines = [["🐶 + 🐶 + 🐶", "12"], ["🐶 + 🐱 + 🐱", "14"], ["🐱 + 🐰 + 🐰", "9"], ["🐱 × 🐰 + 🐶", "❓"]];
-      const box = el("div", { style: "background:#fff;border-radius:18px;padding:12px;box-shadow:0 3px 0 #ead6c8;max-width:380px;margin:0 auto" });
-      lines.forEach(([l, r], i) => box.append(el("div", { style: `display:flex;justify-content:space-between;font-size:30px;padding:6px 10px;${i === 3 ? "border-top:3px dashed #f3c8a8;margin-top:6px;padding-top:12px" : ""}` }, el("span", { text: l }), el("span", { text: "= " + r, style: "font-weight:700" }))));
-      root.append(box);
-      textAnswer(root, { answers: ["14", "vierzehn"], placeholder: "Ergebnis", onRight: solve });
+      const cat = A("katze", 0), dog = A("hund", 0), capy = A("capy"), coon = A("waschbaer");
+      const side = (arr) => el("div", { class: "pan" }, ...arr.map((a) => el("div", { class: "pan-a", html: pic(a) })));
+      const scale = (L, Rr) => el("div", { class: "scale" }, side(L), el("div", { class: "fulcrum", text: "=" }), side(Rr));
+      root.append(
+        scale([dog], [cat, cat, cat]),
+        scale([capy], [dog, cat, cat]),
+        scale([coon, cat], [dog]),
+        el("div", { class: "p-info", style: "margin-top:18px", text: "Und jetzt:" }),
+        el("div", { class: "scale q" }, side([capy, capy, coon]), el("div", { class: "fulcrum", text: "=" }), el("div", { class: "pan" }, el("div", { class: "pan-q", text: "? ×" }), el("div", { class: "pan-a", html: pic(cat) }))));
+      textAnswer(root, { answers: ["12", "zwölf"], placeholder: "Anzahl Katzen", onRight: solve });
     },
   });
 
-  /* ---------- 11: Schattenrätsel ---------- */
+  /* ---------- 11: Quiz ---------- */
   R(11, {
-    emoji: "🦒", title: "Schatten-Raten",
-    intro: "Im Dunkeln sehen alle Tiere gleich aus… oder? Welches Tier versteckt sich hinter dem Schatten?",
-    hint: "Achte auf die Umrisse: lange Hälse, Rüssel, Schneckenhäuser und Kängurubeutel verraten viel! 🔦",
-    outro: "Licht an! 💡 Du erkennst jedes Tier im Dunkeln.",
+    art: A("elefant", 0, "brille"), title: "Quiz für Tierkennerinnen",
+    intro: "Acht Fragen, jeweils vier Antworten – und nur eine stimmt.",
+    outro: "Acht von acht. Ab sofort bist du die Tier-Expertin der Familie.",
     render(root, { solve }) {
       solve = once(solve);
-      const pool = ["🦒", "🐘", "🦩", "🐿️", "🦔", "🐇", "🦘", "🐢", "🦉", "🐌", "🐓", "🦕", "🐊", "🐈"];
-      const rounds = ["🦒", "🦩", "🐘", "🦘", "🐌"];
+      const qs = [
+        ["Wie viele Stunden schläft ein Koala am Tag?", "18 bis 22 Stunden", ["6 bis 8 Stunden", "10 bis 12 Stunden", "14 bis 16 Stunden"], "Eukalyptus liefert kaum Energie – also wird viel geschlafen."],
+        ["Welches Tier hat drei Herzen?", "Der Oktopus", ["Der Regenwurm", "Der Blauwal", "Die Giraffe"], "Zwei Herzen pumpen Blut durch die Kiemen, eines durch den Körper."],
+        ["Welche Farbe hat die Haut unter dem Fell eines Eisbären?", "Schwarz", ["Weiß", "Rosa", "Grau-blau"], "Die schwarze Haut nimmt Sonnenwärme besser auf."],
+        ["Aus welcher Region stammen Kapibaras ursprünglich?", "Südamerika", ["Afrika", "Südostasien", "Australien"], "Sie leben an Flüssen und Seen, vom Amazonas bis nach Argentinien."],
+        ["Wie viele Zähne hat eine erwachsene Hauskatze?", "30", ["18", "26", "42"], "42 Zähne hat übrigens ein erwachsener Hund."],
+        ["Welches Säugetier kann wirklich aktiv fliegen?", "Die Fledermaus", ["Das Gleithörnchen", "Der Riesengleiter", "Der Kurzkopfgleitbeutler"], "Alle anderen gleiten nur."],
+        ["Wessen Fingerabdrücke sind denen des Menschen zum Verwechseln ähnlich?", "Die des Koalas", ["Die des Schimpansen", "Die des Waschbären", "Die des Otters"], "Selbst unter dem Mikroskop kaum zu unterscheiden."],
+        ["Wie lange dauert die Tragzeit eines Elefanten?", "Etwa 22 Monate", ["Etwa 9 Monate", "Etwa 14 Monate", "Etwa 30 Monate"], "Die längste Tragzeit aller Landsäugetiere."],
+      ];
       const box = el("div");
       root.append(box);
       const play = (k) => {
-        const ans = rounds[k];
+        const [q, right, wrong, why] = qs[k];
         box.innerHTML = "";
-        const shadow = el("div", { class: "center", text: ans, style: "font-size:110px;filter:brightness(0) opacity(.85);transition:filter .8s;margin:4px 0" });
-        box.append(el("div", { class: "center", style: "font-weight:600", text: `Schatten ${k + 1} von ${rounds.length}` }), shadow);
-        const opts = shuffle([ans, ...shuffle(pool.filter((p) => p !== ans)).slice(0, 3)]);
-        const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(4,minmax(0,72px))" });
-        opts.forEach((o) => {
-          const b = el("button", { class: "tile", text: o, style: "font-size:38px" });
+        const fb = el("div", { class: "feedback" });
+        const grid = el("div", { class: "opt-grid" });
+        shuffle([right, ...wrong]).forEach((opt) => {
+          const b = el("button", { class: "btn btn-soft opt", text: opt });
           b.onclick = () => {
-            if (o === ans) { shadow.style.filter = "none"; b.classList.add("good"); sfx.good(); burstAt(shadow, ["✨", "💡", "💖"], 10, 90); setTimeout(() => (k < rounds.length - 1 ? play(k + 1) : solve()), 1100); }
-            else { b.classList.add("bad"); sfx.bad(); shakeEl(b); }
+            if (opt === right) {
+              b.classList.add("ok"); sfx.good(); fb.textContent = "Richtig! " + why; grid.querySelectorAll("button").forEach((x) => (x.disabled = true));
+              box.append(el("div", { class: "row", style: "margin-top:10px" }, el("button", { class: "btn", text: k < qs.length - 1 ? "Nächste Frage" : "Fertig", onclick: () => (k < qs.length - 1 ? play(k + 1) : solve()) })));
+            } else { sfx.bad(); shakeEl(b); b.disabled = true; fb.textContent = "Leider nicht – versuch's nochmal."; }
           };
           grid.append(b);
         });
-        box.append(grid);
+        box.append(info(`Frage ${k + 1} von ${qs.length}`), el("div", { class: "quote", text: q }), grid, fb);
       };
       play(0);
     },
   });
 
-  /* ---------- 12: Wahr oder Falsch ---------- */
+  /* ---------- 12: Logikrätsel ---------- */
   R(12, {
-    emoji: "🦦", title: "Tierisch wahr oder falsch?",
-    intro: "Sieben verrückte Tier-Fakten. Welche stimmen – und welche sind geflunkert?",
-    hint: "Bei Tieren ist die Wahrheit oft verrückter als jede Erfindung! Mehr als die Hälfte ist wahr 😉",
-    outro: "Jetzt bist du offiziell Tier-Expertin! 🎓🐾",
+    art: A("hund", 3, "schal", "#4f7fe0"), title: "Die Nachbarinnen vom Lindenweg",
+    intro: "Im Lindenweg stehen vier Häuser nebeneinander, nummeriert von links (1) nach rechts (4). In jedem wohnt eine Frau mit genau einem Haustier. Finde mit Hilfe der Hinweise heraus, wer wo mit welchem Tier wohnt.",
+    outro: "Claudia mit Katze, Anna mit Kapibara, Doris mit Hund, Birgit mit Waschbär. Messerscharf kombiniert.",
     render(root, { solve }) {
-      solve = once(solve);
-      const facts = [
-        ["🦦", "Seeotter halten sich beim Schlafen an den Pfoten, damit sie nicht voneinander wegtreiben.", true, "Stimmt! Sie halten Händchen – zum Dahinschmelzen 🥹"],
-        ["🐱", "Katzen können Süßes schmecken.", false, "Falsch! Katzen fehlt der Geschmackssinn für Süßes. Der Kuchen gehört also ganz dir 🍰"],
-        ["🍊", "Kapibaras sind die größten Nagetiere der Welt.", true, "Stimmt! Bis zu 65 kg pure Gemütlichkeit 🤎"],
-        ["🦝", "Waschbären gehören zur Familie der Bären.", false, "Falsch! Sie gehören zu den Kleinbären – eng verwandt mit dem Nasenbären."],
-        ["🎲", "Wombats machen würfelförmige Häufchen.", true, "Stimmt wirklich! 💩🎲 Die Natur ist verrückt."],
-        ["🐠", "Goldfische haben nur ein 3-Sekunden-Gedächtnis.", false, "Falsch! Goldfische können sich Dinge monatelang merken 🧠"],
-        ["🐮", "Kühe haben beste Freundinnen und sind entspannter, wenn die dabei sind.", true, "Stimmt! Genau wie wir 💕"],
+      const clues = [
+        "Birgit wohnt im letzten Haus ganz rechts.",
+        "Doris wohnt direkt links neben Birgit.",
+        "Im ersten Haus wohnt eine Katze.",
+        "Anna ist allergisch gegen Katzen.",
+        "Birgits Haustier wäscht sein Futter, bevor es frisst.",
+        "Der Hund wohnt direkt neben dem Waschbären.",
       ];
-      const box = el("div");
-      root.append(box);
-      const play = (k) => {
-        const [emo, text, truth, expl] = facts[k];
-        box.innerHTML = "";
-        const card = el("div", { class: "center", style: "background:#fff;border-radius:18px;padding:14px;box-shadow:0 3px 0 #ead6c8" },
-          el("div", { style: "font-size:13px;color:var(--ink-soft)", text: `Fakt ${k + 1} von ${facts.length}` }),
-          el("div", { class: "big-emoji", text: emo }),
-          el("div", { style: "font-size:19px;line-height:1.4", text: text }));
-        const fb = el("div", { class: "feedback" });
-        const row = el("div", { class: "row", style: "margin-top:14px" });
-        [["Wahr ✅", true], ["Geflunkert ❌", false]].forEach(([lab, val]) => {
-          const b = el("button", { class: "btn" + (val ? " btn-green" : ""), text: lab });
-          b.onclick = () => {
-            if (val === truth) {
-              sfx.good(); burstAt(card, ["✨", "💖", emo], 8, 80); row.innerHTML = ""; fb.textContent = expl;
-              row.append(el("button", { class: "btn btn-soft", text: k < facts.length - 1 ? "Weiter ➡️" : "Fertig! 🎉", onclick: () => (k < facts.length - 1 ? play(k + 1) : solve()) }));
-            } else { sfx.bad(); shakeEl(card); fb.textContent = "Hmm, bist du sicher? 🤔 Probier's nochmal!"; }
-          };
-          row.append(b);
-        });
-        box.append(card, row, fb);
+      const people = ["Anna", "Birgit", "Claudia", "Doris"], pets = ["Hund", "Katze", "Kapibara", "Waschbär"];
+      const SOL = [["Claudia", "Katze"], ["Anna", "Kapibara"], ["Doris", "Hund"], ["Birgit", "Waschbär"]];
+      const list = el("ol", { class: "clues" }, ...clues.map((c) => el("li", { text: c })));
+      const houses = el("div", { class: "houses" });
+      const sels = SOL.map((_, i) => {
+        const sp = el("select", { id: "h" + i + "p", "aria-label": `Haus ${i + 1} Bewohnerin` }, el("option", { value: "", text: "Bewohnerin …" }), ...people.map((p) => el("option", { value: p, text: p })));
+        const st = el("select", { id: "h" + i + "t", "aria-label": `Haus ${i + 1} Haustier` }, el("option", { value: "", text: "Haustier …" }), ...pets.map((p) => el("option", { value: p, text: p })));
+        houses.append(el("div", { class: "house" }, el("div", { class: "roof" }), el("div", { class: "house-body" }, el("b", { text: "Haus " + (i + 1) }), sp, st)));
+        return [sp, st];
+      });
+      const fb = el("div", { class: "feedback" });
+      const check = () => {
+        const v = sels.map(([a, b]) => [a.value, b.value]);
+        if (v.some(([a, b]) => !a || !b)) { fb.textContent = "Bitte jedes Haus vollständig ausfüllen."; sfx.bad(); return; }
+        if (new Set(v.map((x) => x[0])).size < 4 || new Set(v.map((x) => x[1])).size < 4) { fb.textContent = "Jede Frau und jedes Tier gibt es nur einmal."; sfx.bad(); return; }
+        const wrong = v.filter((x, i) => x[0] !== SOL[i][0] || x[1] !== SOL[i][1]).length;
+        if (!wrong) solve();
+        else { sfx.bad(); shakeEl(houses); fb.textContent = `${wrong} ${wrong === 1 ? "Haus stimmt" : "Häuser stimmen"} noch nicht. Geh die Hinweise nochmal der Reihe nach durch.`; }
       };
-      play(0);
+      root.append(el("div", { class: "two-col" }, el("div", {}, el("b", { text: "Hinweise" }), list), el("div", {}, houses, el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn", text: "Lösung prüfen", onclick: check })), fb)));
     },
   });
 
-  /* ---------- 13: Igel-Labyrinth ---------- */
+  /* ---------- 13: Labyrinth ---------- */
   R(13, {
-    emoji: "🦔", title: "Igelchens Weg zum Apfel",
-    intro: "Der kleine Igel hat Hunger und will zu seinem Apfel 🍎. Hilf ihm durch den Winterwald! (Pfeiltasten, Knöpfe oder wischen)",
-    hint: "Geh zuerst nach rechts, dann nach unten, in der Mitte nach rechts und schließlich am rechten Rand ganz nach unten. 🌲",
-    outro: "Mampf mampf! 🍎🦔 Der Igel sagt danke und rollt sich zufrieden zusammen.",
+    art: A("igel", 0, "muetze"), title: "Der Winterwald",
+    intro: "Der Igel will vor dem ersten Frost noch zu seinem Apfel unten rechts – mitten durch einen ziemlich verwinkelten Winterwald. Steuere mit den Pfeiltasten, den Knöpfen oder durch Wischen über das Labyrinth.",
+    outro: "Angekommen. Der Igel rollt sich zufrieden mit seinem Apfel zusammen.",
     render(root, { solve }) {
       solve = once(solve);
-      const M = [
-        "###########",
-        "#H....#...#",
-        "#.###.#.#.#",
-        "#.#...#.#.#",
-        "#.#.###.#.#",
-        "#.#.....#.#",
-        "#.#####.#.#",
-        "#.....#.#.#",
-        "#####.#.#.#",
-        "#.......#A#",
-        "###########",
-      ];
-      let pr = 1, pc = 1, won = false;
-      const W = M[0].length;
-      const maze = el("div", { class: "maze", style: `grid-template-columns:repeat(${W},auto)` });
+      const cw = small() ? 9 : 17, ch = small() ? 12 : 10;
+      const W = cw * 2 + 1, Hh = ch * 2 + 1;
+      const M = Array.from({ length: Hh }, () => Array(W).fill(1));
+      const rnd = seeded(1313);
+      const stack = [[0, 0]], seen = new Set(["0,0"]);
+      M[1][1] = 0;
+      while (stack.length) {
+        const [x, y] = stack[stack.length - 1];
+        const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy, dx, dy]).filter(([nx, ny]) => nx >= 0 && ny >= 0 && nx < cw && ny < ch && !seen.has(nx + "," + ny));
+        if (!nb.length) { stack.pop(); continue; }
+        const [nx, ny, dx, dy] = nb[Math.floor(rnd() * nb.length)];
+        M[y * 2 + 1 + dy][x * 2 + 1 + dx] = 0; M[ny * 2 + 1][nx * 2 + 1] = 0;
+        seen.add(nx + "," + ny); stack.push([nx, ny]);
+      }
+      const gr = Hh - 2, gc = W - 2;
+      const size = Math.max(10, Math.min(26, Math.floor((Math.min(innerWidth, 1060) - (small() ? 60 : 120)) / W)));
+      const maze = el("div", { class: "maze", style: `grid-template-columns:repeat(${W},${size}px)` });
       const cells = [];
-      M.forEach((row, r) => [...row].forEach((ch, c) => { const d = el("div", { class: "cell " + (ch === "#" ? "wall" : "path") }); if (ch === "A") d.textContent = "🍎"; cells.push(d); maze.append(d); }));
+      M.forEach((row) => row.forEach((v) => { const d = el("div", { class: "cell " + (v ? "wall" : "path"), style: `width:${size}px;height:${size}px` }); cells.push(d); maze.append(d); }));
       const at = (r, c) => cells[r * W + c];
-      const draw = () => { cells.forEach((d) => { if (d.textContent === "🦔") d.textContent = ""; }); at(pr, pc).textContent = "🦔"; at(pr, pc).classList.add("trail"); };
+      const hog = Animals.svg(A("igel", 0, "muetze"), { fit: true });
+      at(gr, gc).innerHTML = `<svg viewBox="0 0 20 20" style="width:100%;height:100%"><circle cx="10" cy="11" r="7" fill="#e5383b"/><path d="M10 4 q3 -4 6 -1 q-3 1 -6 1z" fill="#4caf50"/></svg>`;
+      let pr = 1, pc = 1, won = false;
+      const draw = () => { cells.forEach((d) => { if (d.dataset.h) { d.innerHTML = ""; delete d.dataset.h; } }); const d = at(pr, pc); d.classList.add("trail"); d.innerHTML = hog; d.dataset.h = "1"; };
       const move = (dr, dc) => {
         if (won) return;
-        const nr = pr + dr, nc = pc + dc;
-        if (M[nr][nc] === "#") { sfx.tick(); shakeEl(maze); return; }
-        pr = nr; pc = nc; sfx.tone(500 + Math.random() * 200, 0.06, "sine", 0.1); draw();
-        if (M[pr][pc] === "A") { won = true; sfx.good(); burstAt(at(pr, pc), ["🍎", "💖", "✨"], 12, 80); setTimeout(solve, 900); }
+        if (M[pr + dr][pc + dc]) { sfx.tick(); return; }
+        pr += dr; pc += dc; sfx.tone(500 + Math.random() * 200, 0.05, "sine", 0.08); draw();
+        if (pr === gr && pc === gc) { won = true; sfx.good(); burstAt(at(pr, pc), ["🍎", "✨", "💖"], 12, 90); setTimeout(solve, 900); }
       };
       draw();
       const key = (e) => { const m = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key]; if (m) { e.preventDefault(); move(...m); } };
@@ -450,290 +483,276 @@
       root._cleanup = () => document.removeEventListener("keydown", key);
       let sx, sy;
       maze.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; });
-      maze.addEventListener("pointerup", (e) => { const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return; Math.abs(dx) > Math.abs(dy) ? move(0, Math.sign(dx)) : move(Math.sign(dy), 0); });
-      const b = (t, f, area) => el("button", { text: t, onclick: f, style: `grid-area:${area}` });
-      const pad = el("div", { class: "dpad" }, b("⬆️", () => move(-1, 0), "1/2"), b("⬅️", () => move(0, -1), "2/1"), b("⬇️", () => move(1, 0), "2/2"), b("➡️", () => move(0, 1), "2/3"));
-      root.append(maze, pad);
+      maze.addEventListener("pointerup", (e) => { const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return; Math.abs(dx) > Math.abs(dy) ? move(0, Math.sign(dx)) : move(Math.sign(dy), 0); });
+      const b = (t, f, area, lab) => el("button", { text: t, onclick: f, style: `grid-area:${area}`, "aria-label": lab });
+      root.append(el("div", { class: "scroll-x" }, maze), el("div", { class: "dpad" }, b("▲", () => move(-1, 0), "1/2", "hoch"), b("◀", () => move(0, -1), "2/1", "links"), b("▼", () => move(1, 0), "2/2", "runter"), b("▶", () => move(0, 1), "2/3", "rechts")));
     },
   });
 
-  /* ---------- 14: Kapibara-Wellness ---------- */
+  /* ---------- 14: Schiebepuzzle 4×4 ---------- */
   R(14, {
-    emoji: "🛁", title: "Kalles Wellness-Tag",
-    intro: "Kalle das Kapibara hat heute frei und möchte einen Wellness-Tag! Streichle ihn, bis er vor Glück ganz entspannt ist. 🧖",
-    hint: "Einfach ganz oft auf Kalle tippen. Kapibaras können nie genug Streicheleinheiten bekommen 🤎",
-    outro: "Kalle ist jetzt das entspannteste Kapibara der Welt. 🍊🐤🧘",
+    art: A("capy", 0, "orange"), title: "Kalles Porträt",
+    intro: "Kalles schönstes Foto ist in 15 Teile zerfallen. Schiebe die Teile über das freie Feld zurück an ihren Platz. Die kleinen Zahlen zeigen die richtige Reihenfolge (1 oben links bis 15).",
+    outro: "Das Porträt ist wieder heil. Kalle lässt sich das Bild einrahmen.",
     render(root, { solve }) {
       solve = once(solve);
-      const src = document.getElementById("capy").cloneNode(true);
-      const orange = src.querySelector("#capy-orange");
-      src.removeAttribute("id"); src.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
-      orange.removeAttribute("class"); orange.style.opacity = 0; orange.style.transition = "opacity .5s";
-      src.style.cssText = "width:min(260px,70vw);display:block;margin:0 auto;cursor:pointer;overflow:visible";
-      const stage = el("div", { style: "position:relative;width:fit-content;margin:10px auto 0" }, src);
-      const bird = el("div", { text: "🐤", style: "position:absolute;right:28%;top:12%;font-size:34px;opacity:0;transition:all .6s;transform:translateY(-40px)" });
-      const notes = el("div", { text: "🎶", style: "position:absolute;left:-6%;top:0;font-size:30px;opacity:0;transition:all .6s" });
-      const water = el("div", { style: "position:absolute;left:-6%;right:-6%;bottom:-6px;height:0;background:rgba(120,190,255,.55);border-radius:0 0 40px 40px;transition:height .8s" });
-      stage.append(water, bird, notes);
-      const meter = el("div", { class: "meter" }, el("div"));
-      const info = el("div", { class: "center", style: "font-weight:600;min-height:26px", text: "Kalle wartet… 🥺" });
-      let happy = 0;
-      const msgs = [[20, "Ooooh, das ist schön… 😌"], [35, "Eine Orange für den Kopf! 🍊"], [55, "Ein Vögelchen setzt sich dazu 🐤"], [75, "Zeit für ein warmes Bad ♨️"], [90, "Kalle summt vor Glück 🎶"]];
-      src.addEventListener("click", () => {
-        if (happy >= 100) return;
-        happy = Math.min(100, happy + 5);
-        meter.firstChild.style.width = happy + "%";
-        src.animate([{ transform: "scale(1)" }, { transform: "scale(1.06,.94)" }, { transform: "scale(1)" }], { duration: 300 });
-        sfx.tone(200 + happy * 3, 0.15, "sine", 0.2);
-        burstAt(src, ["🤎", "💖", "✨"], 4, 70);
-        for (const [t, m] of msgs) if (happy === t) info.textContent = m;
-        if (happy >= 35) orange.style.opacity = 1;
-        if (happy >= 55) { bird.style.opacity = 1; bird.style.transform = "none"; }
-        if (happy >= 75) water.style.height = "38%";
-        if (happy >= 90) notes.style.opacity = 1;
-        if (happy >= 100) { info.textContent = "100 % entspannt! 🧘🤎"; sfx.good(); setTimeout(solve, 900); }
-      });
-      root.append(info, stage, meter);
+      const capy = Animals.inner(A("capy", 0, "orange"));
+      const PICT = `<rect width="120" height="120" fill="#d7ecfb"/><circle cx="22" cy="20" r="11" fill="#ffe28a"/><rect y="84" width="120" height="36" fill="#bfe0b2"/><ellipse cx="96" cy="104" rx="22" ry="6" fill="#a9d4ea"/><g fill="#fff" opacity=".9"><circle cx="70" cy="14" r="2"/><circle cx="100" cy="28" r="1.6"/><circle cx="48" cy="34" r="1.4"/><circle cx="10" cy="56" r="1.6"/></g><g transform="translate(6 24) scale(.9)">${capy.content}</g>`;
+      const N = 4, goal = [...Array(N * N - 1).keys()].concat(null);
+      let b = goal.slice(), prev = -1;
+      const nb = (i) => { const r = Math.floor(i / N), c = i % N, o = []; if (r > 0) o.push(i - N); if (r < N - 1) o.push(i + N); if (c > 0) o.push(i - 1); if (c < N - 1) o.push(i + 1); return o; };
+      const swap = (i, j) => ([b[i], b[j]] = [b[j], b[i]]);
+      do { b = goal.slice(); prev = -1; for (let k = 0; k < 90; k++) { const e = b.indexOf(null); const m = pick(nb(e).filter((x) => x !== prev)); prev = e; swap(e, m); } } while (b.filter((x, i) => x === goal[i]).length > 5);
+      const ts = small() ? Math.floor((innerWidth - 80) / N) : 112;
+      const box = el("div", { class: "slider", style: `grid-template-columns:repeat(${N},${ts}px)` });
+      const stat = info();
+      let moves = 0, done = false;
+      const draw = () => {
+        box.innerHTML = "";
+        b.forEach((x, i) => {
+          const t = el("button", { class: x === null ? "empty" : "", style: `height:${ts}px` });
+          if (x !== null) { const r = Math.floor(x / N), c = x % N; t.innerHTML = `<svg viewBox="${c * 30} ${r * 30} 30 30" style="width:100%;height:100%;display:block">${PICT}</svg><small>${x + 1}</small>`; t.onclick = () => move(i); }
+          box.append(t);
+        });
+        stat.textContent = `${moves} Züge`;
+      };
+      const move = (i) => {
+        if (done) return;
+        const e = b.indexOf(null);
+        if (!nb(e).includes(i)) { sfx.tick(); return; }
+        swap(e, i); moves++; sfx.tone(380 + i * 25, 0.06, "sine", 0.12); draw();
+        if (b.every((x, k) => x === goal[k])) {
+          done = true; box.querySelector(".empty").innerHTML = `<svg viewBox="90 90 30 30" style="width:100%;height:100%;display:block">${PICT}</svg>`; box.classList.add("solved");
+          sfx.good(); burstAt(box, ["✨", "💖"], 16, 140); setTimeout(solve, 1300);
+        }
+      };
+      draw();
+      root.append(stat, box, el("div", { class: "row", style: "margin-top:14px;align-items:center" }, el("span", { class: "p-info", text: "Vorlage:" }), el("div", { class: "preview-pic", html: `<svg viewBox="0 0 120 120" width="90" height="90">${PICT}</svg>` })));
     },
   });
 
-  /* ---------- 15: Der Größe nach ---------- */
+  /* ---------- 15: Lebenserwartung ---------- */
   R(15, {
-    emoji: "🐘", title: "Klein, groß, riesig!",
-    intro: "Hier sind alle Tiere gleich groß – das stimmt aber nicht! Tippe sie der Reihe nach an: vom kleinsten bis zum größten.",
-    hint: "Das Kleinste krabbelt im Gras 🐜, das Größte schwimmt im Meer 🐋.",
-    outro: "Perfekt sortiert – von der Ameise bis zum Wal! 🐜➡️🐋",
+    art: A("schaf", 2, "blume", "#f39c32"), title: "Ein langes Leben",
+    intro: "Wer lebt am längsten? Tippe die sechs Tiere nach ihrer typischen Lebenserwartung an – vom kürzesten zum längsten Leben.",
+    outro: "Vom Hamster bis zur Riesenschildkröte – perfekt sortiert.",
     render(root, { solve }) {
       solve = once(solve);
-      const order = [["🐜", "Ameise"], ["🐭", "Maus"], ["🐈", "Katze"], ["🐎", "Pferd"], ["🐘", "Elefant"], ["🐋", "Blauwal"]];
+      const order = [["Hamster", "2–3 Jahre"], ["Kaninchen", "8–12 Jahre"], ["Hauskatze", "12–18 Jahre"], ["Pferd", "25–30 Jahre"], ["Ara (Papagei)", "50–80 Jahre"], ["Riesenschildkröte", "über 100 Jahre"]];
       let next = 0;
-      const line = el("div", { class: "row", style: "min-height:60px;background:#fff;border-radius:16px;padding:6px;margin-bottom:14px;box-shadow:inset 0 2px 6px rgba(0,0,0,.08)" });
-      const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(3,minmax(0,100px))" });
-      const tiles = shuffle(order).map(([e, n]) => {
-        const t = el("button", { class: "tile", style: "font-size:40px;flex-direction:column;display:flex;aspect-ratio:auto;padding:8px" }, el("span", { text: e }), el("span", { text: n, style: "font-size:14px" }));
+      const line = el("ol", { class: "rank" });
+      const grid = el("div", { class: "opt-grid" });
+      shuffle(order).forEach(([n, y]) => {
+        const t = el("button", { class: "btn btn-soft opt", text: n });
         t.onclick = () => {
-          if (e === order[next][0]) {
-            next++; t.classList.add("done"); sfx.boop(300 + next * 80);
-            const placed = el("span", { text: e, style: `font-size:${18 + next * 6}px;transition:.3s` }); line.append(placed);
-            if (next === order.length) { sfx.good(); burstAt(line, ["✨", "💖"], 12, 120); setTimeout(solve, 900); }
-          } else {
-            sfx.bad(); shakeEl(t); toast(next ? `Hmm… kommt ${e} wirklich direkt nach ${order[next - 1][0]}? 🤔` : `Ist ${e} wirklich das allerkleinste Tier? 🤔`);
-          }
+          if (n === order[next][0]) {
+            next++; t.disabled = true; t.classList.add("ok"); sfx.boop(300 + next * 70); line.append(el("li", {}, el("b", { text: n }), el("span", { text: " · " + y })));
+            if (next === order.length) { sfx.good(); burstAt(line, ["✨", "💖"], 12, 120); setTimeout(solve, 1100); }
+          } else { sfx.bad(); shakeEl(t); toast(next ? `Kommt ${n} wirklich direkt nach ${order[next - 1][0]}?` : `Hat ${n} wirklich das kürzeste Leben?`); }
         };
-        grid.append(t); return t;
+        grid.append(t);
       });
-      root.append(el("div", { class: "center", style: "font-size:14px;color:var(--ink-soft)", text: "Deine Reihe:" }), line, grid);
+      root.append(grid, el("div", { class: "p-info", style: "margin-top:16px", text: "Deine Reihenfolge:" }), line);
     },
   });
 
-  /* ---------- 16: Pfoten-Geheimschrift ---------- */
+  /* ---------- 16: Geheimschrift ---------- */
   R(16, {
-    emoji: "🐼", title: "Die Pfoten-Geheimschrift",
-    intro: "Die Tiere haben dir eine geheime Botschaft geschrieben! Jedes Tier steht für einen Buchstaben. Entschlüssle das Wort.",
-    hint: "Geh Tier für Tier durch und schau im Schlüssel nach. Das Wort ist etwas, das man gern im Arm hält… 🧸",
-    outro: "KUSCHELTIER! 🧸 Genau das bist du für uns alle.",
+    art: A("fuchs", 2, "brille"), title: "Die Geheimbotschaft",
+    intro: "Ein Tier hat dir eine verschlüsselte Nachricht geschickt. Jeder Buchstabe wurde um dieselbe Anzahl Stellen im Alphabet verschoben (Caesar-Verschlüsselung). Finde mit der Entschlüsselungsscheibe die richtige Verschiebung – kleiner Anhaltspunkt: Die Nachricht beginnt mit einem Wort, mit dem man von sich selbst spricht. Welches Tier hat geschrieben?",
+    outro: "„Ich schlafe kopfüber und sehe mit den Ohren“ – Grüße von der Fledermaus.",
     render(root, { solve }) {
-      const key = [["🐶", "K"], ["🐱", "U"], ["🐰", "S"], ["🦊", "C"], ["🐼", "H"], ["🐨", "E"], ["🐯", "L"], ["🦁", "T"], ["🐮", "I"], ["🐷", "R"], ["🐸", "A"], ["🐵", "M"], ["🐔", "N"], ["🐧", "O"]];
-      const msg = "🐶🐱🐰🦊🐼🐨🐯🦁🐮🐨🐷";
-      const table = el("div", { class: "grid", style: "grid-template-columns:repeat(7,minmax(0,52px));gap:6px" });
-      shuffle(key, seeded(16)).forEach(([e, l]) => {
-        const t = el("button", { class: "tile", style: "font-size:22px;display:flex;flex-direction:column;aspect-ratio:auto;padding:4px 0" }, el("span", { text: e }), el("b", { text: l, style: "font-size:16px" }));
-        t.onclick = () => { sfx.boop(300 + l.charCodeAt(0) * 4); t.classList.toggle("sel"); };
-        table.append(t);
-      });
+      const plain = "ICH SCHLAFE KOPFUEBER UND SEHE MIT DEN OHREN", K = 7;
+      const enc = plain.replace(/[A-Z]/g, (ch) => String.fromCharCode(((ch.charCodeAt(0) - 65 + K) % 26) + 65));
+      const AB = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+      let s = 0;
+      const top = el("div", { class: "wheel-row" }), bot = el("div", { class: "wheel-row cipher" }), lab = el("b");
+      const draw = () => { top.innerHTML = ""; bot.innerHTML = ""; AB.forEach((c, i) => { top.append(el("span", { text: c })); bot.append(el("span", { text: AB[(i + s) % 26] })); }); lab.textContent = `Verschiebung: ${s}`; };
+      draw();
+      const shift = (d) => { s = (s + d + 26) % 26; sfx.tick(); draw(); };
       root.append(
-        el("div", { class: "center", style: "font-size:14px;color:var(--ink-soft)", text: "🔑 Der Schlüssel (antippen zum Markieren):" }), table,
-        el("div", { class: "center", style: "font-size:14px;color:var(--ink-soft);margin-top:14px", text: "✉️ Die geheime Botschaft:" }),
-        el("div", { class: "center", style: "font-size:min(36px,7.5vw);letter-spacing:2px;background:#fff;border-radius:16px;padding:8px;margin-top:4px", text: msg })
-      );
-      textAnswer(root, { answers: ["Kuscheltier"], placeholder: "Geheimes Wort", onRight: solve });
+        el("div", { class: "p-info", text: "Die Nachricht:" }), el("div", { class: "cipher-text", text: enc }),
+        el("div", { class: "p-info", style: "margin-top:16px", text: "Entschlüsselungsscheibe – obere Reihe: Klartext, untere Reihe: Geheimtext" }),
+        el("div", { class: "scroll-x" }, el("div", { class: "wheel" }, top, bot)),
+        el("div", { class: "row", style: "margin-top:10px" }, el("button", { class: "btn btn-soft", text: "◀", onclick: () => shift(-1), "aria-label": "weniger" }), lab, el("button", { class: "btn btn-soft", text: "▶", onclick: () => shift(1), "aria-label": "mehr" })),
+        el("div", { class: "p-info", style: "margin-top:16px", text: "Notizzettel:" }),
+        el("textarea", { id: "cipher-notes", class: "notes", rows: "2", placeholder: "Hier kannst du mitschreiben …" }));
+      textAnswer(root, { answers: ["Fledermaus", "Fledermäuse"], placeholder: "Welches Tier?", onRight: solve });
     },
   });
 
-  /* ---------- 17: Tierbabys ---------- */
+  /* ---------- 17: Tierkinder ---------- */
   R(17, {
-    emoji: "🐑", title: "Wie heißen die Babys?",
-    intro: "Jedes Tierbaby hat einen eigenen Namen! Tippe links auf ein Tier und rechts auf den passenden Baby-Namen.",
-    hint: "Das Reh-Baby heißt wie ein Kitz-ligeres Wort… 😉 und das kleine Pferd galoppiert als „F…“ über die Wiese.",
-    outro: "Alle Tierbabys sind bei ihren Mamas! 🥹 So wie es sich gehört.",
+    art: A("schaf", 0, "schleife", "#e85d75"), title: "Wie heißt das Kleine?",
+    intro: "Acht Tiere, acht Namen für ihren Nachwuchs. Tippe links auf ein Tier und rechts auf den passenden Namen des Jungtiers.",
+    outro: "Alle Tierkinder sind wieder bei ihren Müttern.",
     render(root, { solve }) {
       solve = once(solve);
-      const pairs = [["🐴", "Pferd", "Fohlen"], ["🐷", "Schwein", "Ferkel"], ["🦌", "Reh", "Kitz"], ["🐄", "Kuh", "Kalb"], ["🐑", "Schaf", "Lamm"], ["🐕", "Hund", "Welpe"]];
+      const pairs = [["Pferd", "Fohlen"], ["Schwein", "Ferkel"], ["Reh", "Kitz"], ["Gans", "Gössel"], ["Känguru", "Joey"], ["Ziege", "Zicklein"], ["Kuh", "Kalb"], ["Schaf", "Lamm"]];
       let sel = null, done = 0;
-      const L = el("div", { style: "display:flex;flex-direction:column;gap:8px" }), Rr = el("div", { style: "display:flex;flex-direction:column;gap:8px" });
-      const mk = (text) => el("button", { class: "btn btn-soft", text, style: "font-size:17px;padding:10px 8px;width:100%" });
-      shuffle(pairs).forEach(([e, a, baby]) => {
-        const b = mk(`${e} ${a}`); b.dataset.k = baby;
-        b.onclick = () => { if (b.disabled) return; sel?.style.removeProperty("outline"); sel = b; b.style.outline = "3px solid var(--red)"; sfx.pop(); };
+      const L = el("div", { class: "match-col" }), Rr = el("div", { class: "match-col" });
+      shuffle(pairs).forEach(([a, baby]) => {
+        const b = el("button", { class: "btn btn-soft opt", text: a }); b.dataset.k = baby;
+        b.onclick = () => { if (b.disabled) return; sel?.classList.remove("picked"); sel = b; b.classList.add("picked"); sfx.pop(); };
         L.append(b);
       });
-      shuffle(pairs).forEach(([, , baby]) => {
-        const b = mk(baby);
+      shuffle(pairs).forEach(([, baby]) => {
+        const b = el("button", { class: "btn btn-soft opt", text: baby });
         b.onclick = () => {
           if (b.disabled) return;
-          if (!sel) { toast("Wähle zuerst links ein Tier 👈"); return; }
-          if (sel.dataset.k === baby) {
-            [sel, b].forEach((x) => { x.disabled = true; x.style.background = "#c9f2d7"; x.style.outline = ""; });
-            sfx.good(); burstAt(b, ["💖", "🍼", "✨"], 8, 60); sel = null;
-            if (++done === pairs.length) setTimeout(solve, 800);
-          } else { sfx.bad(); shakeEl(b); }
+          if (!sel) { toast("Wähle zuerst links ein Tier."); return; }
+          if (sel.dataset.k === baby) { [sel, b].forEach((x) => { x.disabled = true; x.classList.add("ok"); x.classList.remove("picked"); }); sfx.good(); sel = null; if (++done === pairs.length) setTimeout(solve, 800); }
+          else { sfx.bad(); shakeEl(b); }
         };
         Rr.append(b);
       });
-      root.append(el("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:420px;margin:0 auto" }, L, Rr));
+      root.append(el("div", { class: "match" }, L, Rr));
     },
   });
 
-  /* ---------- 18: Pinguin fängt Fische ---------- */
+  /* ---------- 18: Silbenrätsel ---------- */
   R(18, {
-    emoji: "🐟", title: "Pingus Fischfang",
-    intro: "Es regnet Fische! 🐟 Hilf Pingu, 10 Stück zu fangen. Bewege ihn mit dem Finger (oder der Maus/den Pfeiltasten) hin und her.",
-    hint: "Lass den Finger einfach auf dem Spielfeld und zieh Pingu immer unter den nächsten Fisch. Verpasste Fische sind nicht schlimm!",
-    outro: "Pingu ist pappsatt! 🐧🐟 Danke, Mama!",
+    art: A("ente", 2, "brille"), title: "Das Silbenrätsel",
+    intro: "Ein Klassiker: Aus den Silben unten lassen sich acht Tiernamen bilden. Jede Silbe wird genau einmal gebraucht. Trage zu jeder Beschreibung das passende Tier ein – verbrauchte Silben werden durchgestrichen.",
+    outro: "Alle 18 Silben verbraucht – wie im Rätselheft, nur tierischer.",
     render(root, { solve }) {
       solve = once(solve);
-      const GOAL = 10;
-      const area = el("div", { class: "catch-area" }, el("div", { class: "moon", text: "🌙" }));
-      const pingu = el("div", { class: "catcher", text: "🐧" });
-      area.append(pingu);
-      const info = el("div", { class: "center", style: "font-weight:600;margin-bottom:8px", text: `🐟 0 / ${GOAL}` });
-      let px = 0.5, score = 0, fish = [], last = 0, spawnT = 0, raf, running = false;
-      const setX = (clientX) => { const r = area.getBoundingClientRect(); px = Math.min(0.95, Math.max(0.05, (clientX - r.left) / r.width)); };
-      area.addEventListener("pointermove", (e) => setX(e.clientX));
-      area.addEventListener("pointerdown", (e) => { setX(e.clientX); if (!running) begin(); });
-      const key = (e) => { if (e.key === "ArrowLeft") px = Math.max(0.05, px - 0.07); if (e.key === "ArrowRight") px = Math.min(0.95, px + 0.07); };
-      document.addEventListener("keydown", key);
-      const loop = (t) => {
-        const dt = Math.min(50, t - (last || t)); last = t;
-        const H = area.clientHeight, Wd = area.clientWidth;
-        pingu.style.left = px * 100 + "%";
-        spawnT -= dt;
-        if (spawnT <= 0) { spawnT = 1000; const f = el("div", { class: "fall", text: pick(["🐟", "🐠", "🐟", "🦐"]) }); f._x = 0.06 + Math.random() * 0.88; f._y = -30; f.style.left = `calc(${f._x * 100}% - 15px)`; area.append(f); fish.push(f); }
-        fish = fish.filter((f) => {
-          f._y += dt * 0.13; f.style.top = f._y + "px";
-          if (f._y > H - 80 && f._y < H - 30 && Math.abs((f._x - px) * Wd) < 42) {
-            score++; info.textContent = `🐟 ${score} / ${GOAL}`; sfx.pop(); burstAt(pingu, ["💖", "✨"], 5, 40); f.remove();
-            if (score >= GOAL) { running = false; info.textContent = "Pingu ist satt! 🐧💖"; setTimeout(solve, 700); }
-            return false;
-          }
-          if (f._y > H) { f.remove(); return false; }
-          return true;
-        });
-        if (running) raf = requestAnimationFrame(loop);
-      };
-      const begin = () => { running = true; startBtn.remove(); last = 0; raf = requestAnimationFrame(loop); };
-      const startBtn = el("button", { class: "btn btn-green", text: "▶️ Los geht's!", onclick: begin });
-      root._cleanup = () => { running = false; cancelAnimationFrame(raf); document.removeEventListener("keydown", key); };
-      root.append(info, area, el("div", { class: "row", style: "margin-top:10px" }, startBtn));
+      const items = [["Gestreiftes Pferd der Savanne", ["ZE", "BRA"]], ["Trägt sein Haus immer bei sich", ["SCHNE", "CKE"]], ["Rosa Vogel, der gern auf einem Bein steht", ["FLA", "MIN", "GO"]], ["Das Schiff der Wüste", ["KA", "MEL"]],
+        ["Baumeister von Dämmen im Fluss", ["BI", "BER"]], ["Schwarz-weißer Bambusliebhaber", ["PAN", "DA"]], ["Hängt am liebsten reglos im Ast", ["FAUL", "TIER"]], ["Springt mit Beutel durch Australien", ["KÄN", "GU", "RU"]]];
+      const chips = {};
+      const pool = el("div", { class: "syll" }, ...shuffle(items.flatMap(([, s]) => s)).map((x) => { const c = el("span", { text: x }); (chips[x] = chips[x] || []).push(c); return c; }));
+      let solvedN = 0;
+      const list = el("div", { class: "syll-list" });
+      items.forEach(([clue, syl], k) => {
+        const word = syl.join("");
+        const inp = el("input", { class: "text-in", id: "syl" + k, placeholder: syl.length + " Silben", autocomplete: "off", spellcheck: "false" });
+        const row = el("div", { class: "syll-row" }, el("span", { class: "syll-n", text: k + 1 }), el("span", { class: "syll-clue", text: clue }), inp);
+        const check = () => {
+          if (inp.disabled) return;
+          if (norm(inp.value) === norm(word)) {
+            inp.disabled = true; inp.value = word.charAt(0) + word.slice(1).toLowerCase(); row.classList.add("ok"); sfx.good();
+            syl.forEach((x) => chips[x].find((c) => !c.classList.contains("used"))?.classList.add("used"));
+            if (++solvedN === items.length) setTimeout(solve, 900);
+          } else if (inp.value.trim()) { sfx.bad(); shakeEl(inp); }
+        };
+        inp.addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
+        inp.addEventListener("change", check);
+        list.append(row);
+      });
+      root.append(pool, list, el("div", { class: "row", style: "margin-top:12px" }, el("button", { class: "btn", text: "Prüfen", onclick: () => list.querySelectorAll("input").forEach((i) => i.dispatchEvent(new Event("change"))) })));
     },
   });
 
-  /* ---------- 19: Siebenschläfer wecken ---------- */
+  /* ---------- 19: Siebenschläfer 4×4 ---------- */
   R(19, {
-    emoji: "😴", title: "Weck die Siebenschläfer!",
-    intro: "Ein paar Tiere halten noch Winterschlaf – dabei ist doch Advent! Tippst du ein Tier an, wechseln es UND seine direkten Nachbarn (oben, unten, links, rechts) zwischen wach und schlafend. Weck alle auf!",
-    hint: "Psst: Tippe genau einmal oben in der Mitte, einmal rechts in der Mitte und einmal unten links. ⏰",
-    outro: "Guten Morgen, alle zusammen! ☀️ Jetzt kann die Adventsfeier beginnen.",
+    art: A("baer", 2, "muetze"), title: "Weck die Siebenschläfer!",
+    intro: "Sechzehn Tiere, und einige halten noch Winterschlaf. Tippst du ein Tier an, wechseln es und seine direkten Nachbarn (oben, unten, links, rechts) zwischen wach und schlafend. Schaffst du es, alle sechzehn gleichzeitig wach zu bekommen?",
+    outro: "Alle sechzehn hellwach. Die Adventsfeier kann beginnen.",
     render(root, { solve }) {
       solve = once(solve);
-      const animals = ["🐶", "🐱", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🐹"];
-      const scramble = [1, 5, 6];
-      const toggleSet = (s, i) => { const r = Math.floor(i / 3), c = i % 3; [[r, c], [r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([a, b]) => { if (a >= 0 && a < 3 && b >= 0 && b < 3) s[a * 3 + b] = !s[a * 3 + b]; }); };
-      const init = Array(9).fill(true); scramble.forEach((i) => toggleSet(init, i));
+      const N = 4;
+      const kinds = ["capy", "katze", "hund", "waschbaer", "fuchs", "pinguin", "igel", "hase", "schaf", "schwein", "otter", "ente", "baer", "panda_rot", "elefant", "giraffe"];
+      const arts = kinds.map((k) => A(k));
+      const tog = (s, i) => { const r = Math.floor(i / N), c = i % N; [[r, c], [r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([a, b]) => { if (a >= 0 && a < N && b >= 0 && b < N) s[a * N + b] = !s[a * N + b]; }); };
+      const init = Array(N * N).fill(true); [0, 6, 9, 15].forEach((i) => tog(init, i));
       let awake = init.slice(), moves = 0, done = false;
-      const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(3,minmax(0,88px));gap:10px" });
-      const info = el("div", { class: "center", style: "font-weight:600;margin-bottom:8px" });
-      const tiles = animals.map((a, i) => { const t = el("button", { class: "tile", style: "font-size:44px;position:relative" }); t.onclick = () => press(i); grid.append(t); return t; });
-      const draw = () => {
-        tiles.forEach((t, i) => { t.innerHTML = ""; t.append(el("span", { text: animals[i], style: awake[i] ? "" : "filter:grayscale(1) opacity(.45)" })); if (!awake[i]) t.append(el("span", { text: "💤", style: "position:absolute;top:2px;right:4px;font-size:20px" })); t.style.background = awake[i] ? "#fff6c9" : "#d9d6e8"; });
-        info.textContent = `${awake.filter(Boolean).length} von 9 wach · ${moves} Züge`;
-      };
+      const ts = small() ? Math.floor((innerWidth - 90) / N) : 104;
+      const grid = el("div", { class: "grid", style: `grid-template-columns:repeat(${N},${ts}px);gap:10px` });
+      const stat = info();
+      const tiles = arts.map((a, i) => { const t = el("button", { class: "tile sleeper", html: pic(a) + `<span class="zz">z z</span>` }); t.onclick = () => press(i); grid.append(t); return t; });
+      const draw = () => { tiles.forEach((t, i) => t.classList.toggle("asleep", !awake[i])); stat.textContent = `${awake.filter(Boolean).length} von 16 wach · ${moves} Züge`; };
       const press = (i) => {
         if (done) return;
-        toggleSet(awake, i); moves++; sfx.boop(300 + i * 50); draw();
-        if (awake.every(Boolean)) { done = true; sfx.good(); burstAt(grid, ["☀️", "✨", "💖"], 14, 120); setTimeout(solve, 1000); }
+        tog(awake, i); moves++; sfx.boop(300 + i * 30); draw();
+        if (awake.every(Boolean)) { done = true; sfx.good(); burstAt(grid, ["☀️", "✨", "💖"], 16, 140); setTimeout(solve, 1000); }
       };
       draw();
-      root.append(info, grid, el("div", { class: "row", style: "margin-top:12px" }, el("button", { class: "btn btn-soft", text: "🔄 Von vorne", onclick: () => { awake = init.slice(); moves = 0; draw(); } })));
+      root.append(stat, grid, el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn btn-soft", text: "Von vorne beginnen", onclick: () => { if (!done) { awake = init.slice(); moves = 0; draw(); } } })));
     },
   });
 
   /* ---------- 20: Fehlersuche ---------- */
   R(20, {
-    emoji: "🔍", title: "Finde die 4 Unterschiede",
-    intro: "Die Tierfamilie hat zwei Fotos gemacht – aber auf dem rechten haben ein paar Tiere die Plätze getauscht! Tippe die 4 Unterschiede im rechten Bild an.",
-    hint: "Vergleiche Reihe für Reihe: erst die oberste Reihe links mit der obersten Reihe rechts, dann die nächste… 🔎",
-    outro: "Alle gefunden! 🕵️‍♀️ Sherlock Holmes wäre neidisch.",
+    art: A("katze", 3, "brille"), title: "Finde die 6 Unterschiede",
+    intro: "Zwei Gruppenfotos derselben Tierfamilie – aber auf dem zweiten Bild haben sechs Tiere etwas verändert: ein anderes Accessoire oder eine andere Fellfarbe. Tippe die Unterschiede im zweiten Bild an.",
+    outro: "Sechs von sechs gefunden. Dir entgeht wirklich nichts.",
     render(root, { solve }) {
       solve = once(solve);
       const rnd = seeded(2020);
-      const set = ["🐶", "🐱", "🐰", "🦊", "🐻", "🐼", "🐨", "🐸", "🐷", "🐮", "🐵", "🐔"];
-      const N = 5;
-      const A = Array.from({ length: N * N }, () => set[Math.floor(rnd() * set.length)]);
-      const B = A.slice();
-      const diffs = shuffle(A.map((_, i) => i), rnd).slice(0, 4);
-      diffs.forEach((i) => { let n; do n = set[Math.floor(rnd() * set.length)]; while (n === A[i]); B[i] = n; });
+      const kinds = ["capy", "katze", "hund", "waschbaer", "fuchs", "pinguin", "hase", "schaf", "schwein", "ente", "baer", "igel"];
+      const accs = ["", "muetze", "schal", "schleife", "brille", "krone", "blume", "fliege"];
+      const N = 6;
+      const mk = () => { const sp = kinds[Math.floor(rnd() * kinds.length)]; return A(sp, Math.floor(rnd() * Animals.SPECIES[sp].colors.length), accs[Math.floor(rnd() * accs.length)], ["#e85d75", "#3f9e6e", "#4f7fe0", "#f39c32"][Math.floor(rnd() * 4)]); };
+      const L = Array.from({ length: N * N }, mk);
+      const Rt = L.map((a) => ({ ...a }));
+      const diffs = shuffle([...L.keys()], rnd).slice(0, 6);
+      diffs.forEach((i, k) => {
+        const a = Rt[i], cols = Animals.SPECIES[a.sp].colors.length;
+        if (k % 2 && cols > 1) a.col = (a.col + 1) % cols;
+        else { let n; do n = accs[Math.floor(rnd() * accs.length)]; while (n === a.acc); a.acc = n; }
+      });
       let found = 0;
-      const mkGrid = (arr, clickable) => {
-        const g = el("div", { class: "grid", style: `grid-template-columns:repeat(${N},min(30px,7vw));gap:3px;background:#fff;padding:8px;border-radius:14px;box-shadow:0 3px 0 #ead6c8` });
-        arr.forEach((e, i) => {
-          const c = el("div", { text: e, style: "font-size:min(22px,5.2vw);text-align:center;border-radius:8px;cursor:pointer;transition:background .3s" });
-          if (clickable) c.onclick = () => {
-            if (c._f) return;
-            if (diffs.includes(i)) { c._f = true; c.style.background = "#c9f2d7"; left.children[i].style.background = "#c9f2d7"; sfx.good(); burstAt(c, ["✨", "💖"], 6, 40); info.textContent = `${++found} / 4 gefunden`; if (found === 4) setTimeout(solve, 800); }
-            else { sfx.tick(); c.animate([{ transform: "scale(1)" }, { transform: "scale(.7)" }, { transform: "scale(1)" }], { duration: 250 }); }
+      const stat = info("0 von 6 gefunden");
+      const cs = small() ? Math.floor((innerWidth - 70) / N) : 64;
+      const mkGrid = (arr, click) => {
+        const g = el("div", { class: "diff-grid", style: `grid-template-columns:repeat(${N},${cs}px)` });
+        arr.forEach((a, i) => {
+          const c = el("div", { class: "diff-cell", html: pic(a), style: `height:${Math.round(cs * 0.8)}px` });
+          if (click) c.onclick = () => {
+            if (c.classList.contains("hit")) return;
+            if (diffs.includes(i)) { c.classList.add("hit"); left.children[i].classList.add("hit"); sfx.good(); stat.textContent = `${++found} von 6 gefunden`; if (found === 6) setTimeout(solve, 900); }
+            else { sfx.tick(); shakeEl(c); }
           };
           g.append(c);
         });
         return g;
       };
-      const left = mkGrid(A, false), right = mkGrid(B, true);
-      const info = el("div", { class: "center", style: "font-weight:600;margin-bottom:8px", text: "0 / 4 gefunden" });
-      root.append(info, el("div", { class: "row", style: "gap:14px;align-items:flex-start" },
-        el("div", { class: "center" }, el("div", { text: "📷 Foto 1", style: "font-size:14px" }), left),
-        el("div", { class: "center" }, el("div", { text: "📷 Foto 2 – hier tippen!", style: "font-size:14px" }), right)));
+      const left = mkGrid(L, false), right = mkGrid(Rt, true);
+      root.append(stat, el("div", { class: "row", style: "gap:22px;align-items:flex-start" },
+        el("div", {}, el("div", { class: "p-info", text: "Foto 1" }), left),
+        el("div", {}, el("div", { class: "p-info", text: "Foto 2 – hier antippen" }), right)));
     },
   });
 
-  /* ---------- 21: Keks-Krimi ---------- */
+  /* ---------- 21: Krimi ---------- */
   R(21, {
-    emoji: "🍪", title: "Der große Keks-Krimi",
-    intro: "Skandal in der Weihnachtsbäckerei! Der allerletzte Zimtstern ist verschwunden. Lies die Hinweise und tippe auf den Dieb!",
-    hint: "Streiche nacheinander alle durch, die es laut den Hinweisen NICHT gewesen sein können. Wer bleibt übrig? 🕵️",
-    outro: "Rocky hat gestanden: „Okay, okay… er war einfach soooo lecker!“ 🦝🍪 Zur Strafe muss er heute abspülen.",
+    art: A("waschbaer", 0, "muetze"), title: "Der Zimtstern-Krimi",
+    intro: "Heute Nachmittag um 15 Uhr verschwand der allerletzte Zimtstern vom Teller in der Küche. Sechs Verdächtige, ihre Aussagen und die Spuren vom Tatort: Wer war's? Tippe auf den Täter – aber nur, wenn du dir sicher bist.",
+    outro: "Rocky hat gestanden. Von wegen Speisekammer – er hat den Stern sogar noch gewaschen.",
     render(root, { solve }) {
       solve = once(solve);
-      const clues = [
-        "🧶 Am Tatort lag ein Haar von einem langen, buschigen Schwanz.",
-        "🦮 Bello war zur Tatzeit mit Mama Gassi – das hat sie selbst gesehen.",
-        "😴 Mimi hat die ganze Zeit auf dem Sofa geschnarcht. Ganz laut.",
-        "🧼 Der Dieb hat den Keks vor dem Essen ordentlich gewaschen. Ganz krümelig nass!",
+      const sus = [
+        [A("hund", 0), "Bello", "„Um drei war ich mit Mama im Park. Ehrenwort.“", "Mama bestätigt: Bello war im Park."],
+        [A("katze", 1), "Mimi", "„Ich lag auf dem Sofa.“", "Mimis Schwanz ist lang, aber glatt und dünn."],
+        [A("waschbaer"), "Rocky", "„Ich war in der Speisekammer. Ganz woanders!“", "Die Speisekammer liegt direkt neben der Küche."],
+        [A("capy"), "Kalle", "„Ich lag in der Badewanne. Wie immer.“", "Kalle hat nur einen winzigen Stummelschwanz."],
+        [A("fuchs"), "Frieda", "„Ich war im Flur.“", "Frieda hat eine ärztlich bescheinigte Zimtallergie."],
+        [A("pinguin"), "Paul", "„Ich war draußen am Teich.“", "Nachbarn haben Paul um 15 Uhr am Teich gesehen."],
       ];
-      const sus = [["🐶", "Bello", "Wuff?! Ich war doch Gassi! 🦮"], ["🐱", "Mimi", "Ich? Ich hab geschlafen! 😾"], ["🦝", "Rocky", null], ["🐰", "Hoppel", "Mein Schwänzchen ist doch winzig! 🐰"], ["🐹", "Pummel", "Ich hab nur Backen voller Körner, ehrlich! 🌻"]];
-      const list = el("div", { style: "background:#fff8d9;border-radius:16px;padding:10px 14px;border:2px dashed #f2d27a;font-size:16px;line-height:1.6" }, el("b", { text: "🔎 Hinweise:" }), ...clues.map((c) => el("div", { text: c })));
-      const grid = el("div", { class: "grid", style: "grid-template-columns:repeat(5,minmax(0,78px));gap:8px;margin-top:14px" });
-      sus.forEach(([e, n, excuse]) => {
-        const b = el("button", { class: "tile", style: "display:flex;flex-direction:column;aspect-ratio:auto;padding:8px 0;font-size:36px" }, el("span", { text: e }), el("span", { text: n, style: "font-size:13px" }));
+      const spuren = el("div", { class: "evidence" }, el("b", { text: "Spuren am Tatort" }),
+        el("ul", {}, el("li", { text: "Neben dem Teller lag ein langes, buschiges Schwanzhaar." }), el("li", { text: "Die Krümel lagen in einer kleinen Pfütze – als wäre der Keks vor dem Essen gewaschen worden." }), el("li", { text: "Wer nachweislich draußen war, kommt nicht in Frage." })));
+      const grid = el("div", { class: "suspects" });
+      sus.forEach(([a, n, say, fact]) => {
+        const b = el("button", { class: "suspect" }, el("div", { class: "s-pic", html: pic(a) }), el("b", { text: n }), el("q", { text: say }), el("small", { text: fact }));
         b.onclick = () => {
-          if (!excuse) { b.classList.add("good"); sfx.good(); burstAt(b, ["🍪", "🚨", "✨"], 12, 80); toast("🚨 Erwischt! Rocky hat noch Krümel im Gesicht!"); setTimeout(solve, 1200); }
-          else { b.classList.add("bad"); sfx.bad(); shakeEl(b); toast(`${e} ${excuse}`); }
+          if (n === "Rocky") { b.classList.add("ok"); sfx.good(); burstAt(b, ["✨", "🚨"], 14, 100); toast("Erwischt! Rocky hat noch Krümel im Fell."); setTimeout(solve, 1200); }
+          else { b.classList.add("no"); sfx.bad(); shakeEl(b); toast(`${n} war es nicht – schau dir die Spuren nochmal an.`); }
         };
         grid.append(b);
       });
-      root.append(list, el("div", { class: "center", style: "margin-top:12px;font-weight:600", text: "Die Verdächtigen:" }), grid);
+      root.append(spuren, grid);
     },
   });
 
   /* ---------- 22: Wortsuche ---------- */
   R(22, {
-    emoji: "🔤", title: "Tierischer Buchstabensalat",
-    intro: "In dem Buchstaben-Gitter verstecken sich 6 Tiere – waagerecht (→) oder senkrecht (↓). Tippe auf den ersten und dann auf den letzten Buchstaben eines Tiers!",
-    hint: "Such zuerst nach seltenen Buchstaben wie Z, K oder P. Alle Wörter laufen von links nach rechts oder von oben nach unten.",
-    outro: "Alle 6 Tiere gefunden! 🐶🐱🦔🦦🐼 – und ein Esel, der ganz stolz ist, dabei zu sein.",
+    art: A("otter", 0, "schal", "#3f9e6e"), title: "Das Buchstabengitter",
+    intro: "Im Gitter verstecken sich zehn Tiere – waagerecht (→), senkrecht (↓) oder diagonal (↘). Umlaute sind ausgeschrieben (ä = AE). Tippe auf den ersten und dann auf den letzten Buchstaben eines Tiers.",
+    outro: "Alle zehn gefunden – ganz ohne Lupe.",
     render(root, { solve }) {
       solve = once(solve);
-      const words = ["KATZE", "OTTER", "PANDA", "HUND", "IGEL", "ESEL"];
-      const N = 8;
+      const words = ["WASCHBAER", "KAPIBARA", "FLAMINGO", "GIRAFFE", "PINGUIN", "ALPAKA", "OTTER", "FUCHS", "PANDA", "IGEL"];
+      const N = 12;
       let grid, placed;
       for (let seed = 22; ; seed++) {
         const rnd = seeded(seed);
@@ -741,85 +760,83 @@
         let ok = true;
         for (const w of words) {
           let put = false;
-          for (let tries = 0; tries < 200 && !put; tries++) {
-            const dir = rnd() < 0.5 ? [0, 1] : [1, 0];
-            const r = Math.floor(rnd() * (N - (dir[0] ? w.length - 1 : 0))), c = Math.floor(rnd() * (N - (dir[1] ? w.length - 1 : 0)));
+          for (let t = 0; t < 400 && !put; t++) {
+            const dir = [[0, 1], [1, 0], [1, 1]][Math.floor(rnd() * 3)];
+            const r = Math.floor(rnd() * (N - dir[0] * (w.length - 1))), c = Math.floor(rnd() * (N - dir[1] * (w.length - 1)));
             const idx = [...w].map((_, k) => (r + dir[0] * k) * N + (c + dir[1] * k));
             if (idx.every((ix, k) => grid[ix] === null || grid[ix] === w[k])) { idx.forEach((ix, k) => (grid[ix] = w[k])); placed.push({ w, idx }); put = true; }
           }
           if (!put) { ok = false; break; }
         }
-        if (ok) { const AL = "ABDEFGHIKLMNOPRSTUW"; grid = grid.map((g) => g || AL[Math.floor(rnd() * AL.length)]); break; }
+        if (ok) { const AL = "ABCDEFGHIKLMNOPRSTUW"; grid = grid.map((g) => g || AL[Math.floor(rnd() * AL.length)]); break; }
       }
-      let first = null, found = new Set();
-      const listEl = el("div", { class: "word-list" });
-      const tags = words.map((w) => { const s = el("span", { text: w }); listEl.append(s); return s; });
-      const ws = el("div", { class: "ws", style: `grid-template-columns:repeat(${N},auto)` });
+      let first = null;
+      const found = new Set();
+      const tags = {};
+      const listEl = el("div", { class: "word-list" }, ...words.map((w) => (tags[w] = el("span", { text: w }))));
+      const cs = small() ? Math.floor((innerWidth - 70) / N) : 42;
+      const ws = el("div", { class: "ws", style: `grid-template-columns:repeat(${N},${cs}px)` });
       const btns = grid.map((ch, i) => {
-        const b = el("button", { text: ch });
+        const b = el("button", { text: ch, style: `width:${cs}px;height:${cs}px;font-size:${Math.round(cs * 0.5)}px` });
         b.onclick = () => {
           sfx.tick();
           if (first === null) { first = i; b.classList.add("sel"); return; }
           const a = first; first = null; btns[a].classList.remove("sel");
           const hit = placed.find((p) => !found.has(p.w) && ((p.idx[0] === a && p.idx[p.idx.length - 1] === i) || (p.idx[0] === i && p.idx[p.idx.length - 1] === a)));
-          if (hit) {
-            found.add(hit.w); hit.idx.forEach((ix) => btns[ix].classList.add("found")); tags[words.indexOf(hit.w)].classList.add("found");
-            sfx.good(); burstAt(b, ["✨", "💖"], 8, 60);
-            if (found.size === words.length) setTimeout(solve, 900);
-          } else if (a !== i) { shakeEl(ws); }
+          if (hit) { found.add(hit.w); hit.idx.forEach((ix) => btns[ix].classList.add("found")); tags[hit.w].classList.add("found"); sfx.good(); if (found.size === words.length) setTimeout(solve, 900); }
+          else if (a !== i) shakeEl(ws);
         };
         ws.append(b); return b;
       });
-      root.append(ws, listEl);
+      root.append(el("div", { class: "scroll-x" }, ws), listEl);
     },
   });
 
-  /* ---------- 23: Schiebepuzzle ---------- */
+  /* ---------- 23: Suchbild ---------- */
   R(23, {
-    emoji: "🧩", title: "Das Familienfoto",
-    intro: "Alle Tiere wollen aufs Weihnachts-Familienfoto – aber sie stehen völlig durcheinander! Schiebe sie in die richtige Reihenfolge (1 bis 8, das freie Feld unten rechts).",
-    hint: "Bring zuerst die obere Reihe (1, 2, 3) in Ordnung und rühr sie dann nicht mehr an. Danach links die 4 und die 7… und den Rest schiebst du im Kreis herum. 🔄",
-    outro: "Klick! 📸 Das schönste Familienfoto aller Zeiten.",
+    art: A("giraffe", 0, "muetze"), title: "Das Weihnachts-Suchbild",
+    intro: "Alle Tiere haben sich zum großen Weihnachtsfoto versammelt. Fünf ganz bestimmte Gäste werden gesucht – finde genau diese fünf in der Menge. Achte auf Farbe und Accessoire, es gibt Doppelgänger!",
+    outro: "Alle fünf Gäste gefunden. Das Foto kann gemacht werden.",
     render(root, { solve }) {
       solve = once(solve);
-      const goal = ["🐶", "🐱", "🐰", "🦊", "🐻", "🐼", "🐨", "🐹", null];
-      let b = goal.slice(), prev = -1;
-      const nb = (i) => { const r = Math.floor(i / 3), c = i % 3, o = []; if (r > 0) o.push(i - 3); if (r < 2) o.push(i + 3); if (c > 0) o.push(i - 1); if (c < 2) o.push(i + 1); return o; };
-      const swap = (i, j) => ([b[i], b[j]] = [b[j], b[i]]);
-      do {
-        b = goal.slice(); prev = -1;
-        for (let k = 0; k < 22; k++) { const e = b.indexOf(null); const opts = nb(e).filter((x) => x !== prev); const m = pick(opts); prev = e; swap(e, m); }
-      } while (b.every((x, i) => x === goal[i]));
-      let moves = 0, done = false;
-      const info = el("div", { class: "center", style: "font-weight:600;margin-bottom:8px" });
-      const box = el("div", { class: "slider" });
-      const preview = el("div", { class: "center", style: "font-size:14px;color:var(--ink-soft);margin-top:10px", text: "So soll's aussehen: " + goal.slice(0, 8).map((g, i) => `${i + 1}${g}`).join(" ") });
-      const draw = () => {
-        box.innerHTML = "";
-        b.forEach((x, i) => {
-          const t = el("button", { class: x ? "" : "empty" });
-          if (x) { t.append(el("small", { text: goal.indexOf(x) + 1 }), x); t.onclick = () => move(i); }
-          box.append(t);
-        });
-        info.textContent = `${moves} Züge`;
-      };
-      const move = (i) => {
-        if (done) return;
-        const e = b.indexOf(null);
-        if (!nb(e).includes(i)) { sfx.tick(); return; }
-        swap(e, i); moves++; sfx.tone(400 + i * 40, 0.08, "sine", 0.12); draw();
-        if (b.every((x, k) => x === goal[k])) { done = true; sfx.good(); burstAt(box, ["📸", "✨", "💖"], 14, 120); setTimeout(solve, 1000); }
-      };
-      draw();
-      root.append(info, box, preview);
+      const rnd = seeded(2323);
+      const targets = [A("katze", 4, "krone"), A("hund", 2, "schal", "#4f7fe0"), A("schaf", 1, "brille"), A("pinguin", 1, "blume", "#e85d75"), A("capy", 2, "geweih")];
+      const kinds = ["capy", "katze", "hund", "waschbaer", "fuchs", "pinguin", "igel", "hase", "schaf", "schwein", "otter", "ente", "baer", "panda_rot"];
+      const accs = ["", "muetze", "schal", "schleife", "brille", "krone", "geweih", "blume", "fliege"];
+      const cols = small() ? 6 : 11, rows = small() ? 11 : 8, total = cols * rows;
+      const crowd = [];
+      while (crowd.length < total - targets.length) {
+        const sp = kinds[Math.floor(rnd() * kinds.length)];
+        const a = A(sp, Math.floor(rnd() * Animals.SPECIES[sp].colors.length), accs[Math.floor(rnd() * accs.length)], ["#e85d75", "#3f9e6e", "#4f7fe0", "#f39c32"][Math.floor(rnd() * 4)]);
+        if (!targets.some((t) => sameArt(t, a))) crowd.push(a);
+      }
+      targets.forEach((t, k) => { crowd[k * 7] = { ...t, acc: t.acc === "muetze" ? "schleife" : "muetze" }; });
+      const slots = shuffle([...Array(total).keys()], rnd);
+      const all = Array(total);
+      targets.forEach((t, k) => (all[slots[k]] = { a: t, target: k }));
+      let ci = 0; for (let i = 0; i < total; i++) if (!all[i]) all[i] = { a: crowd[ci++], target: -1 };
+      const cw = small() ? (innerWidth - 60) / cols : 88, chh = small() ? 54 : 66;
+      const scene = el("div", { class: "scene meadow", style: `height:${rows * chh + 30}px;width:${cols * cw + 20}px;max-width:none` });
+      const tagEls = [];
+      const want = el("div", { class: "wanted" }, ...targets.map((t) => { const d = el("div", { class: "want", html: `<div class="w-pic">${pic(t)}</div><small>${Animals.desc(t)}</small>` }); tagEls.push(d); return d; }));
+      let found = 0;
+      all.forEach(({ a, target }, i) => {
+        const r = Math.floor(i / cols), c = i % cols;
+        const d = el("div", { class: "actor" + (rnd() < 0.5 ? " flip" : ""), html: Animals.svg(a, { width: cw * 0.86 }), style: `left:${10 + c * cw + (rnd() - 0.5) * cw * 0.25}px;top:${10 + r * chh + (rnd() - 0.5) * chh * 0.2}px;z-index:${r};transition:none` });
+        d.onclick = () => {
+          if (target >= 0 && !d.classList.contains("hit")) { d.classList.add("hit"); tagEls[target].classList.add("ok"); sfx.good(); burstAt(d, ["✨", "💖"], 8, 60); if (++found === targets.length) setTimeout(solve, 900); }
+          else if (target < 0) { sfx.tick(); shakeEl(d); }
+        };
+        scene.append(d);
+      });
+      root.append(el("div", { class: "p-info", text: "Gesucht werden:" }), want, el("div", { class: "scroll-x", style: "margin-top:14px" }, scene));
     },
   });
 
   /* ---------- 24: Das große Finale ---------- */
   R(24, {
-    emoji: "🎄", title: "Das Weihnachtsgeheimnis",
-    intro: "Heute ist Heiligabend! 🎄 Bring alle 23 Buchstaben aus deinem Körbchen in die richtige Reihenfolge und lüfte das Geheimnis. Tippe einen Buchstaben an, um ihn in die nächste freie Lücke zu legen – tippe auf eine Lücke, um ihn zurückzunehmen.",
-    hint: App.config.finalClue,
+    art: A("capy", 2, "muetze"), title: "Das Weihnachtsgeheimnis",
+    intro: "Heiligabend! Bring alle 23 Buchstaben aus deinem Körbchen in die richtige Reihenfolge und lüfte das Geheimnis. Tippe einen Buchstaben an, um ihn in die nächste freie Lücke zu legen – tippe auf eine gefüllte Lücke, um ihn zurückzunehmen. " + App.config.finalClue,
     render(root, { solve }) {
       const words = App.words, target = App.letters.join("");
       const missing = [];
@@ -827,18 +844,16 @@
 
       if (App.isSolved(24)) {
         root.append(el("div", { class: "center" },
-          el("div", { class: "big-emoji", text: "💝" }),
-          el("p", { style: "font-size:22px;font-weight:700;color:var(--red)", text: words.join(" ") }),
-          el("button", { class: "btn btn-green", text: "🎁 Überraschung nochmal ansehen", onclick: () => finale() })));
+          el("p", { style: "font-size:26px;font-weight:700;color:var(--red)", text: words.join(" ") }),
+          el("button", { class: "btn btn-green", text: "Überraschung nochmal ansehen", onclick: () => finale() })));
         return;
       }
       if (missing.length) {
         root.append(el("div", { class: "center" },
-          el("div", { class: "big-emoji", text: "🐶👃" }),
-          el("p", { style: "font-size:17px", text: `Oh! In deinem Körbchen fehlen noch ${missing.length} Buchstaben (Türchen ${missing.join(", ")}). Du kannst die Türchen noch lösen – oder Bello erschnüffelt sie für dich.` }),
+          el("p", { style: "font-size:18px", text: `In deinem Körbchen fehlen noch ${missing.length} Buchstaben (Türchen ${missing.join(", ")}). Du kannst diese Türchen noch lösen – oder Bello erschnüffelt die fehlenden Buchstaben für dich.` }),
           el("div", { class: "row" },
-            el("button", { class: "btn btn-soft", text: "🏠 Erst die Türchen lösen", onclick: () => App.closeModal() }),
-            el("button", { class: "btn btn-green", text: "🐶 Bello, such!", onclick: () => { root.innerHTML = ""; sfx.boop(); build(); } }))));
+            el("button", { class: "btn btn-soft", text: "Erst die Türchen lösen", onclick: () => App.closeModal() }),
+            el("button", { class: "btn btn-green", text: "Bello, such!", onclick: () => { root.innerHTML = ""; sfx.boop(); build(); } }))));
         return;
       }
       build();
@@ -846,91 +861,59 @@
       function build() {
         const pool = [];
         for (let d = 1; d <= 23; d++) pool.push({ ch: App.letterFor(d), day: d, used: false });
-        const slots = Array(target.length).fill(null); // -> pool index
-        const locked = new Set();
-        const wordStarts = []; let p = 0; words.forEach((w) => { wordStarts.push(p); p += w.length; });
+        const slots = Array(target.length).fill(null);
+        const starts = []; let p = 0; words.forEach((w) => { starts.push(p); p += w.length; });
         const slotWrap = el("div", { class: "slots" });
-        const poolWrap = el("div", { class: "pool" });
+        const poolWrap = el("div", { class: "pool big" });
         const fb = el("div", { class: "feedback" });
-        let slotEls = [];
+        const slotEls = [];
         words.forEach((w, wi) => {
           const sw = el("div", { class: "slot-word" });
           for (let k = 0; k < w.length; k++) {
-            const idx = wordStarts[wi] + k;
+            const idx = starts[wi] + k;
             const s = el("button", { class: "slot" });
-            s.onclick = () => { if (slots[idx] == null || locked.has(idx)) return; pool[slots[idx]].used = false; slots[idx] = null; sfx.tick(); draw(); };
+            s.onclick = () => { if (slots[idx] == null) return; pool[slots[idx]].used = false; slots[idx] = null; sfx.tick(); draw(); fb.textContent = ""; };
             sw.append(s); slotEls[idx] = s;
           }
           slotWrap.append(sw);
         });
         const poolBtns = pool.map((pp, i) => {
           const b = el("button", { text: pp.ch, title: "Türchen " + pp.day });
-          b.onclick = () => {
-            const free = slots.findIndex((s, k) => s == null && !locked.has(k));
-            if (free < 0 || pp.used) return;
-            pp.used = true; slots[free] = i; sfx.boop(300 + free * 20); draw(); check();
-          };
+          b.onclick = () => { const free = slots.indexOf(null); if (free < 0 || pp.used) return; pp.used = true; slots[free] = i; sfx.boop(300 + free * 20); draw(); check(); };
           poolWrap.append(b); return b;
         });
         const draw = () => {
-          slotEls.forEach((s, k) => { s.textContent = slots[k] != null ? pool[slots[k]].ch : ""; s.className = "slot" + (slots[k] != null ? " filled" : "") + (locked.has(k) ? " right" : ""); });
+          slotEls.forEach((s, k) => { s.textContent = slots[k] != null ? pool[slots[k]].ch : ""; s.className = "slot" + (slots[k] != null ? " filled" : ""); });
           poolBtns.forEach((b, i) => b.classList.toggle("used", pool[i].used));
         };
         const check = () => {
-          if (slots.some((s) => s == null)) { fb.textContent = ""; return; }
+          if (slots.includes(null)) return;
           const guess = slots.map((s) => pool[s].ch).join("");
-          if (guess === target) {
-            slotEls.forEach((s) => s.classList.add("right"));
-            fb.textContent = "💖💖💖";
-            solve(); setTimeout(finale, 1200);
-          } else {
-            const right = [...guess].filter((c, k) => c === target[k]).length;
-            sfx.bad(); shakeEl(slotWrap);
-            fb.textContent = `Noch nicht ganz! ${right} von ${target.length} Buchstaben stehen schon richtig 🐾`;
-          }
+          if (guess === target) { slotEls.forEach((s) => s.classList.add("right")); fb.textContent = ""; solve(); setTimeout(finale, 1200); }
+          else { const right = [...guess].filter((c, k) => c === target[k]).length; sfx.bad(); shakeEl(slotWrap); fb.textContent = `Noch nicht ganz: ${right} von ${target.length} Buchstaben stehen schon richtig.`; }
         };
-        const clearAll = () => { slots.forEach((s, k) => { if (s != null && !locked.has(k)) { pool[s].used = false; slots[k] = null; } }); fb.textContent = ""; draw(); };
-        let revealed = 0;
-        const reveal = () => {
-          if (revealed >= words.length - 1) { toast("Das letzte Wort schaffst du alleine! 💪"); return; }
-          clearAll();
-          const wi = revealed++;
-          for (let k = 0; k < words[wi].length; k++) {
-            const idx = wordStarts[wi] + k;
-            const pi = pool.findIndex((pp) => !pp.used && pp.ch === target[idx]);
-            pool[pi].used = true; slots[idx] = pi; locked.add(idx);
-          }
-          sfx.squeak(); draw(); check();
-          toast(`🐶 Bello hat das ${wi + 1}. Wort erschnüffelt!`);
-        };
-        root.append(slotWrap, poolWrap, fb,
-          el("div", { class: "row", style: "margin-top:14px" },
-            el("button", { class: "btn btn-soft", text: "🔄 Alles zurück", onclick: () => { clearAll(); sfx.tick(); } }),
-            el("button", { class: "btn btn-soft", text: "🐶 Ein Wort verraten", onclick: reveal })));
+        root.append(slotWrap, poolWrap, fb, el("div", { class: "row", style: "margin-top:14px" }, el("button", { class: "btn btn-soft", text: "Alle Buchstaben zurück", onclick: () => { slots.forEach((s, k) => { if (s != null) { pool[s].used = false; slots[k] = null; } }); fb.textContent = ""; draw(); } })));
         draw();
       }
 
       function finale() {
-        App.closeModal();
-        App.refreshDoor(24);
+        App.closeModal(); App.refreshDoor(24);
         const C = App.config;
-        const animals = ["🐶", "🐱", "🦝", "🐰", "🦊", "🐼", "🐧", "🦔", "🐹", "🦦"];
+        const parade = [A("capy", 0, "orange"), A("katze", 0, "muetze"), A("hund", 0, "schal"), A("waschbaer", 0, "krone"), A("pinguin", 0, "fliege", "#e85d75"), A("giraffe", 0, "geweih"), A("igel", 0, "muetze")];
         const ov = el("div", { class: "finale-overlay" });
-        const animRow = el("div", { class: "finale-animals" }, ...animals.map((a, i) => el("span", { text: a, style: `animation-delay:${i * 0.08}s` })));
-        const sentence = el("div", { style: "font-size:clamp(26px,6vw,44px);font-weight:700;color:var(--green);margin:14px 0" }, App.words.join(" ") + " 💖");
-        ov.append(el("div", { class: "finale-card" },
-          animRow,
+        const row = el("div", { class: "finale-animals" }, ...parade.map((a) => el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.6 }) })));
+        ov.append(el("div", { class: "finale-card" }, row,
           el("h2", { text: C.finalTitle }),
-          sentence,
+          el("div", { class: "finale-sentence", text: App.words.join(" ") }),
           el("div", { class: "msg", text: C.finalMessage }),
-          el("p", { style: "font-size:20px;font-weight:600;margin-top:16px", text: C.signature }),
+          el("p", { class: "sig", text: C.signature }),
           el("div", { class: "row", style: "margin-top:16px" },
-            el("button", { class: "btn", text: "🎉 Nochmal Konfetti!", onclick: () => { confetti(); sfx.jingle(); } }),
+            el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { confetti(); sfx.jingle(); } }),
             el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => ov.remove() }))));
-        animRow.addEventListener("click", (e) => { if (e.target.tagName === "SPAN") { sfx.boop(300 + Math.random() * 500); burstAt(e.target, ["💖", "✨"], 8, 60); } });
+        row.addEventListener("click", (e) => { const fa = e.target.closest(".fa"); if (fa) { sfx.boop(300 + Math.random() * 500); burstAt(fa, ["💖", "✨"], 8, 60); } });
         document.body.append(ov);
-        sfx.jingle();
-        confetti(); setTimeout(() => rain(["💖", "💗", "🎄", "⭐", "🎁", "🐾"], 70), 1500); setTimeout(() => confetti(), 3500);
+        sfx.jingle(); confetti();
+        setTimeout(() => rain(["💖", "💗", "🎄", "⭐", "🎁"], 70), 1500); setTimeout(() => confetti(), 3500);
       }
     },
   });

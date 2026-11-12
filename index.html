@@ -18,7 +18,6 @@
   <div id="lights" aria-hidden="true"></div>
 
   <header>
-    <div id="peek-cat" title="Miau?">🐱</div>
     <h1 id="title" aria-label="Mamas tierischer Adventskalender"></h1>
     <p class="subtitle">24 Türchen · 23 Buchstaben · 1 Geheimnis <span id="title-heart">💖</span></p>
     <div id="countdown"></div>
@@ -71,7 +70,7 @@
   </div>
 
   <!-- Tierparade -->
-  <div id="parade" aria-hidden="false"></div>
+  <div id="parade"></div>
 
   <button id="sound-toggle" title="Ton an/aus">🔔</button>
 
@@ -80,7 +79,7 @@
     <div class="modal-card">
       <button class="modal-close" aria-label="Schließen">✖</button>
       <div class="modal-head">
-        <div class="modal-emoji"></div>
+        <div class="modal-art"></div>
         <div>
           <div class="modal-day"></div>
           <h2 class="modal-title"></h2>
@@ -88,10 +87,6 @@
       </div>
       <p class="modal-intro"></p>
       <div class="modal-body"></div>
-      <div class="modal-foot">
-        <button class="btn btn-soft hint-btn">💡 Tipp</button>
-        <div class="hint-text hidden"></div>
-      </div>
     </div>
   </div>
 
@@ -99,6 +94,7 @@
   <div id="fx" aria-hidden="true"></div>
 
   <script src="app.js"></script>
+  <script src="animals.js"></script>
   <script src="puzzles.js"></script>
   <script>App.start();</script>
 </body>

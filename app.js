@@ -200,7 +200,7 @@ const App = (() => {
       const inside = el("div", { class: "door-inside" });
       const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: day === 24 ? "background:linear-gradient(135deg,#e85d75,#ffb84d)" : null },
         el("span", { class: "num", text: day }),
-        el("span", { class: "d-emoji", text: day === 24 ? "🎄" : p.emoji }),
+        el("span", { class: "d-art", html: p.art && (typeof Animals !== "undefined") ? Animals.svg(p.art, { fit: true }) : "🎁" }),
         el("span", { class: "knob" })
       );
       const wrap = el("div", { class: "door-wrap" }, inside, door);
@@ -221,17 +221,18 @@ const App = (() => {
     if (!isUnlocked(day)) d.door.append(el("span", { class: "lock", text: "🔒" }));
     d.door.classList.toggle("open", solved);
     d.inside.innerHTML = "";
-    if (solved && day !== 24) d.inside.append(el("div", {}, el("div", { class: "in-emoji", text: p.emoji }), el("div", { class: "in-letter", text: letterFor(day) })));
-    else if (solved) d.inside.append(el("div", { class: "in-emoji", text: "💝" }));
-    else d.inside.append(el("div", { class: "in-emoji", text: p.emoji }));
+    if (solved && day !== 24) d.inside.append(el("div", {}, el("div", { class: "in-letter", text: letterFor(day) }), el("div", { class: "in-art", html: Animals.svg(p.art, { fit: true }) })));
+    else if (solved) d.inside.append(el("div", { class: "in-letter", text: "♥" }));
+    else d.inside.append(el("div", { class: "in-art", html: p.art ? Animals.svg(p.art, { fit: true }) : "" }));
   }
 
+  const T = (n) => `${n} ${n === 1 ? "Tag" : "Tage"}`;
   const LOCKED_MSGS = [
-    (n) => `Psst! Noch ${n} Mal schlafen 😴`,
-    (n) => `Nicht schummeln, Mama! 🐶 Noch ${n} ${n === 1 ? "Tag" : "Tage"}!`,
-    (n) => `Die Katze sitzt noch auf dem Türchen 🐱 (${n} ${n === 1 ? "Tag" : "Tage"})`,
-    (n) => `Der Waschbär hat abgeschlossen 🦝🔑 – noch ${n} ${n === 1 ? "Tag" : "Tage"}`,
-    (n) => `Geduld, kleine Schneeflocke ❄️ Noch ${n} ${n === 1 ? "Tag" : "Tage"}`,
+    (n) => `Nicht schummeln, Mama! Noch ${T(n)}.`,
+    (n) => `Die Katze sitzt noch auf diesem Türchen. Noch ${T(n)}.`,
+    (n) => `Der Waschbär hat abgeschlossen. Noch ${T(n)}.`,
+    (n) => `Gut Ding will Weile haben – noch ${T(n)}.`,
+    (n) => `Hier wird noch geprobt. Premiere in ${T(n)}.`,
   ];
 
   function onDoor(day) {
@@ -248,24 +249,17 @@ const App = (() => {
   }
 
   /* ---------- Modal ---------- */
-  const PRAISE = [
-    "Wuff-tastisch! 🐶", "Miau-gnifique! 🐱", "Super gemacht, Mama! 💖", "Waschbär-genial! 🦝", "Pfoten hoch, du Heldin! 🐾",
-    "Knuffig UND klug! 🐰", "Kapibara-mäßig entspannt gelöst! 🍊", "Du bist der Hammer! 🐹", "Tierisch gut! 🦊", "Einfach Bär-ig! 🐻",
-  ];
+  const PRAISE = ["Bravo, Mama!", "Glänzend kombiniert!", "Messerscharf gelöst!", "Respekt!", "Elegant gemacht!", "Klasse!", "Sauber gelöst!", "Tierisch gut!", "Ganz große Klasse!", "Wie immer souverän!"];
   let currentDay = null;
 
   function openPuzzle(day) {
     currentDay = day;
     const p = puzzles[day];
     const m = document.getElementById("modal");
-    m.querySelector(".modal-emoji").textContent = day === 24 ? "🎄" : p.emoji;
+    m.querySelector(".modal-art").innerHTML = p.art ? Animals.svg(p.art, { fit: true, walk: true }) : "";
     m.querySelector(".modal-day").textContent = `Türchen ${day} · ${day}. Dezember`;
     m.querySelector(".modal-title").textContent = p.title;
     m.querySelector(".modal-intro").textContent = p.intro || "";
-    const hintBtn = m.querySelector(".hint-btn"), hintTxt = m.querySelector(".hint-text");
-    hintTxt.classList.add("hidden"); hintTxt.textContent = p.hint || "";
-    hintBtn.classList.toggle("hidden", !p.hint);
-    hintBtn.onclick = () => { hintTxt.classList.toggle("hidden"); sfx.squeak(); };
     const body = m.querySelector(".modal-body");
     body.innerHTML = "";
     m.classList.remove("hidden");
@@ -299,17 +293,15 @@ const App = (() => {
     const body = m.querySelector(".modal-body");
     if (body._cleanup) { body._cleanup(); body._cleanup = null; }
     m.querySelector(".modal-intro").textContent = "";
-    m.querySelector(".hint-btn").classList.add("hidden");
-    m.querySelector(".hint-text").classList.add("hidden");
     body.innerHTML = "";
     const letter = letterFor(day);
     const btn = el("button", { class: "btn btn-green", text: again ? "Zurück zum Kalender 🏠" : "Ins Körbchen legen 🧺" });
-    const replay = el("button", { class: "btn btn-soft", text: "🔁 Nochmal spielen", onclick: () => { body.innerHTML = ""; m.querySelector(".hint-btn").classList.toggle("hidden", !puzzles[day].hint); puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
+    const replay = el("button", { class: "btn btn-soft", text: "🔁 Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
     const letterBox = el("div", { class: "r-letter", text: letter });
     letterBox.addEventListener("click", () => { sfx.pop(); burstAt(letterBox, ["💖", "✨"], 10); });
     body.append(el("div", { class: "reward" },
       el("h3", { text: again ? "Dein Buchstabe von heute" : pick(PRAISE) }),
-      el("p", { text: again ? "Den hast du schon sicher im Körbchen 🧺" : "Dein Buchstabe für heute ist:" }),
+      el("p", { text: again ? "Der liegt schon sicher im Körbchen." : "Dein Buchstabe für heute:" }),
       letterBox,
       el("p", { text: puzzles[day].outro || "" }),
       el("div", { class: "row" }, btn, again ? replay : null)
@@ -412,31 +404,6 @@ const App = (() => {
     }, 700);
   }
 
-  /* ---------- Deko: Tierparade ---------- */
-  const WALKERS = ["🐶", "🐱", "🦝", "🐰", "🦔", "🐧", "🐹", "🦊", "🐼", "🐨", "🐻", "🐥", "🦦", "🐿️", "🐑", "🐷", "🐢", "🦆"];
-  const SAYINGS = ["Hallo Mama! 👋", "Kraul mich! 🥺", "Hast du Kekse? 🍪", "Ich hab dich lieb! 💖", "Wuff! 🐾", "Boop! 👃", "Kuscheln? 🤗", "Ich geh spazieren 🌲", "Frohen Advent! 🎄", "Hihi, das kitzelt!", "Schnee! ❄️", "Huiii! 🎉", "Mama ist die Beste!", "Leckerli? 🥕", "*schnurr* 😻"];
-  function spawnWalker() {
-    const box = document.getElementById("parade");
-    if (document.hidden || box.childElementCount >= 4) return;
-    const ltr = Math.random() < 0.5;
-    const em = pick(WALKERS);
-    const dur = 16 + Math.random() * 10;
-    const inner = el("span", { class: "w-inner", text: em });
-    const w = el("div", { class: "walker" + (ltr ? " flip" : ""), style: `--from:${ltr ? "-60px" : "calc(100vw + 10px)"};--to:${ltr ? "calc(100vw + 10px)" : "-60px"};animation-duration:${dur}s` }, inner);
-    w.addEventListener("animationend", (e) => { if (e.target === w) w.remove(); });
-    w.addEventListener("click", (e) => {
-      e.stopPropagation();
-      w.classList.remove("jumping"); void w.offsetWidth; w.classList.add("jumping");
-      sfx.boop(400 + Math.random() * 400);
-      burstAt(w, ["💖", "✨", "🐾"], 6, 50);
-      w.querySelector(".bubble")?.remove();
-      const b = el("div", { class: "bubble", text: pick(SAYINGS) });
-      w.append(b); requestAnimationFrame(() => b.classList.add("show"));
-      setTimeout(() => b.remove(), 2200);
-    });
-    box.append(w);
-  }
-
   /* ---------- Deko: Kapibara ---------- */
   const CAPY = ["Hallo Mama! 🍊", "Ich bin Kalle, das Kapibara 🥰", "Ganz entspannt bleiben… 🧘", "Hast du heute schon ein Türchen geöffnet?", "Streichelst du mich? 🥺", "Kapibaras sind mit allen befreundet 💕", "Orange auf dem Kopf = Stil 🍊", "Ich mag Badewannen 🛁", "Rätseln macht hungrig 🍉", "Du schaffst das! 💪", "*kuschel* 🤎"];
   function setupCapy() {
@@ -456,22 +423,10 @@ const App = (() => {
     setInterval(() => { if (!document.hidden && Math.random() < 0.5) say(pick(CAPY)); }, 22000);
   }
 
-  /* ---------- Deko: Spähkatze ---------- */
-  function setupCat() {
-    const cat = document.getElementById("peek-cat");
-    const cats = ["🐱", "😺", "😸", "😻", "🐈"];
-    cat.addEventListener("click", (e) => {
-      e.stopPropagation(); sfx.meow(); cat.textContent = pick(cats);
-      cat.classList.add("out"); burstAt(cat, ["💖", "🐾"], 6, 50);
-      toast(pick(["Miau! 😺", "Ich hab dich beobachtet 👀", "Ich bewache das Körbchen 🧺", "Schnurrrr… 😻", "Hast du Thunfisch? 🐟"]));
-      setTimeout(() => cat.classList.remove("out"), 1800);
-    });
-  }
-
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */
   function setupPaws() {
     document.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button, input, .modal-card, #modal, .walker, #capy-wrap, .flake, .finale-overlay")) return;
+      if (e.target.closest("button, input, select, .modal-card, #modal, .walker, #capy-wrap, .flake, .finale-overlay, .gehege-overlay")) return;
       const p = el("div", { class: "paw", text: pick(["🐾", "🐾", "🐾", "💗", "⭐"]), style: `left:${e.clientX - 10}px;top:${e.clientY - 10}px;--r:${Math.random() * 60 - 30}deg` });
       fx().append(p); p.addEventListener("animationend", () => p.remove());
       sfx.tone(800 + Math.random() * 400, 0.06, "sine", 0.08);
@@ -496,8 +451,8 @@ const App = (() => {
   function start() {
     load();
     buildTitle(); buildLights(); buildCalendar(); renderBasket();
-    updateCountdown(); setupCapy(); setupCat(); setupPaws(); startSnow();
-    setTimeout(spawnWalker, 800); setInterval(spawnWalker, 5500);
+    updateCountdown(); setupCapy(); setupPaws(); startSnow();
+    if ((typeof Animals !== "undefined")) Animals.init();
     const st = document.getElementById("sound-toggle");
     st.textContent = soundOn ? "🔔" : "🔕";
     st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; st.textContent = soundOn ? "🔔" : "🔕"; try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });
