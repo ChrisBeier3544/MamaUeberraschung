@@ -82,7 +82,26 @@ const Zoo = (() => {
     ["schaukel", "Reifenschaukel", 90, "Am großen Baum.", [930, 160, 90, 150]],
     ["statue", "Kalle-Statue", 250, "Golden. Gelassen. Ewig.", [215, 420, 90, 100]],
   ];
-  const ALL = [...ITEMS, ...EXTRAS];
+  // Kleinigkeiten für zwischendurch – günstig und jederzeit kaufbar
+  const SMALL = [
+    ["ball", "Bunter Ball", 15, "Zum Kicken und Hinterherjagen.", [566, 420, 48, 46]],
+    ["wasserschale", "Wassernapf", 15, "Frisches Wasser für alle.", [710, 362, 60, 32]],
+    ["giesskanne", "Gießkanne", 15, "Damit die Blumen blühen.", [746, 552, 68, 42]],
+    ["meisen", "Meisenknödel", 15, "Für die gefiederten Nachbarn.", [450, 250, 55, 92]],
+    ["kissen", "Kuschelkissen", 20, "Weich, rosa, heiß begehrt.", [18, 442, 80, 44]],
+    ["kranz", "Kranz am Zaun", 20, "Tannengrün mit roter Schleife.", [402, 192, 56, 62]],
+    ["vogel", "Rotkehlchen", 20, "Sitzt am liebsten auf dem Zaun.", [678, 172, 48, 34]],
+    ["briefkasten", "Wunschzettel-Briefkasten", 25, "Für Post an den Weihnachtsmann.", [32, 238, 60, 82]],
+    ["strohballen", "Strohballen", 25, "Zum Draufsitzen und Reinkuscheln.", [304, 464, 92, 46]],
+    ["eiszapfen", "Eiszapfen", 25, "Glitzern am Zaun in der Sonne.", [598, 230, 206, 40]],
+    ["kerzen", "Lichtertüten", 25, "Kleine Lichter am Wegrand.", [428, 428, 166, 112]],
+    ["windrad", "Windrad", 30, "Dreht sich bei jedem Lüftchen.", [836, 276, 68, 104]],
+    ["holz", "Holzstapel", 30, "Für kalte Tage.", [548, 552, 86, 46]],
+    ["teddy", "Teddybär", 35, "Wohnt auf der Kuschelhöhle.", [68, 284, 56, 50]],
+    ["sternschnuppe", "Sternschnuppe", 40, "Wer sie sieht, darf sich etwas wünschen.", [56, 50, 138, 76]],
+  ];
+  const ALL = [...ITEMS, ...EXTRAS, ...SMALL];
+  const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; return [x + w / 2, Math.max(300, Math.min(585, y + h + 6))]; };
   const info = (key) => ALL.find((i) => i[0] === key);
   const dayOfItem = (key) => +Object.keys(STORY).find((d) => STORY[d].item === key) || 0;
 
@@ -100,6 +119,7 @@ const Zoo = (() => {
   const tree = (x, y, s = 1, c = "#4f9e5c") => `<rect x="${x - 7 * s}" y="${y - 60 * s}" width="${14 * s}" height="${60 * s}" fill="#7a5537"/><circle cx="${x}" cy="${y - 85 * s}" r="${38 * s}" fill="${c}"/><circle cx="${x - 26 * s}" cy="${y - 64 * s}" r="${26 * s}" fill="${c}"/><circle cx="${x + 26 * s}" cy="${y - 66 * s}" r="${28 * s}" fill="${mix(c, "#000000", 0.12)}"/>`;
 
   const DRAW = {
+    rasen: () => `<ellipse cx="500" cy="372" rx="118" ry="58" fill="#a8d78f"/>` + Array.from({ length: 14 }, (_, i) => `<path d="M${410 + (i % 7) * 28} ${352 + Math.floor(i / 7) * 34} q2 -10 4 0 q2 -10 4 0" stroke="#6fae5c" stroke-width="2.5" fill="none"/>`).join(""),
     zaun: () => { let o = ""; for (let x = 5; x < 1000; x += 48) o += `<rect x="${x}" y="196" width="11" height="58" rx="3" fill="#a0703f"/>`; return `<rect y="206" width="1000" height="9" fill="#b9824f"/><rect y="230" width="1000" height="9" fill="#b9824f"/>` + o; },
     baeume: () => tree(262, 262, 1) + tree(972, 262, 1.15, "#5aa86a"),
     teich: () => `<ellipse cx="800" cy="452" rx="152" ry="56" fill="#7fbfe0"/><ellipse cx="800" cy="446" rx="130" ry="42" fill="#a6d8f0"/><ellipse cx="740" cy="440" rx="22" ry="6" fill="#5aa86a"/><path d="M820 455 q12 -5 24 0 M760 470 q12 -5 24 0" stroke="#fff" stroke-width="2.5" fill="none"/>`,
@@ -137,11 +157,26 @@ const Zoo = (() => {
     vogelbad: () => `<rect x="728" y="458" width="14" height="40" fill="#b9b2a8"/><ellipse cx="735" cy="498" rx="22" ry="6" fill="#a59d93"/><ellipse cx="735" cy="456" rx="30" ry="9" fill="#b9b2a8"/><ellipse cx="735" cy="454" rx="24" ry="5" fill="#9fd8f0"/><circle cx="752" cy="440" r="7" fill="#e85d75"/><path d="M758 440 l6 1 l-6 2z" fill="#f39c32"/>`,
     wimpel: () => `<path d="M260 120 Q630 170 990 120" stroke="#8a5a3b" stroke-width="2" fill="none"/>` + Array.from({ length: 22 }, (_, i) => { const x = 270 + i * 33, y = 120 + Math.sin(((x - 260) / 730) * Math.PI) * 24; return `<polygon points="${x},${y} ${x + 20},${y + 1} ${x + 10},${y + 22}" fill="${["#e85d75", "#ffd84d", "#58b6ff", "#4fd18b", "#c77dff"][i % 5]}"/>`; }).join(""),
     schaukel: () => `<path d="M948 182 v86 M990 182 v86" stroke="#8a7a66" stroke-width="3"/><circle cx="969" cy="278" r="16" fill="none" stroke="#2f2f35" stroke-width="9"/>`,
+    ball: () => `<circle cx="590" cy="446" r="16" fill="#fff"/><path d="M574 446 a16 16 0 0 1 32 0z" fill="#e85d75"/><path d="M590 430 a16 16 0 0 1 0 32" fill="none" stroke="#58b6ff" stroke-width="5"/><ellipse cx="590" cy="463" rx="14" ry="3" fill="#000" opacity=".12"/>`,
+    wasserschale: () => `<ellipse cx="740" cy="384" rx="26" ry="9" fill="#9aa4b1"/><ellipse cx="740" cy="380" rx="22" ry="6" fill="#9fd8f0"/><path d="M730 379 q5 -2 10 0" stroke="#fff" stroke-width="2" fill="none"/>`,
+    giesskanne: () => `<rect x="760" y="566" width="34" height="26" rx="5" fill="#4fae7f"/><path d="M794 572 l16 -12 l3 4 l-15 14z" fill="#4fae7f"/><path d="M766 566 q11 -14 22 0" stroke="#388a61" stroke-width="4" fill="none"/>`,
+    meisen: () => `<rect x="467" y="262" width="5" height="76" fill="#7a5537"/><path d="M469 268 h20" stroke="#7a5537" stroke-width="4"/><path d="M487 268 v12" stroke="#c9b79c" stroke-width="2"/><circle cx="487" cy="290" r="10" fill="#c9a26b"/><path d="M479 284 l16 12 M495 284 l-16 12" stroke="#4f9e5c" stroke-width="1.5"/>`,
+    kissen: () => `<rect x="24" y="452" width="68" height="30" rx="13" fill="#ff8fa3"/><circle cx="58" cy="467" r="3" fill="#e85d75"/><path d="M30 456 q28 8 56 0" stroke="#ffb3c1" stroke-width="2" fill="none"/>`,
+    kranz: () => `<circle cx="430" cy="222" r="17" fill="none" stroke="#2f8a52" stroke-width="9"/><circle cx="418" cy="214" r="3" fill="#e5383b"/><circle cx="442" cy="228" r="3" fill="#e5383b"/><circle cx="436" cy="208" r="3" fill="#e5383b"/><path d="M430 238 l-10 12 M430 238 l10 12" stroke="#e85d75" stroke-width="4"/><circle cx="430" cy="238" r="4" fill="#e85d75"/>`,
+    vogel: () => `<ellipse cx="702" cy="192" rx="13" ry="11" fill="#8a5a3b"/><circle cx="712" cy="184" r="7" fill="#8a5a3b"/><ellipse cx="706" cy="194" rx="8" ry="7" fill="#e8743a"/><circle cx="714" cy="182" r="1.6" fill="#1a1a1a"/><path d="M718 184 l5 1 l-5 2z" fill="#3a2a24"/><path d="M690 192 l-8 -4 l2 8z" fill="#6b4a35"/>`,
+    briefkasten: () => `<rect x="60" y="272" width="5" height="44" fill="#7a5537"/><rect x="40" y="246" width="44" height="28" rx="10" fill="#ffd84d" stroke="#d4a72c" stroke-width="2"/><rect x="50" y="256" width="20" height="4" rx="2" fill="#5a3b2e"/><path d="M82 252 v-12 h10 v6 h-10" fill="#e5383b"/>`,
+    strohballen: () => `<rect x="308" y="478" width="50" height="30" rx="8" fill="#e8c46b"/><rect x="344" y="470" width="48" height="38" rx="8" fill="#dcb354"/><path d="M314 486 h38 M314 496 h38 M350 480 h36 M350 492 h36" stroke="#c9a03d" stroke-width="2"/>`,
+    eiszapfen: () => Array.from({ length: 16 }, (_, i) => `<path d="M${604 + i * 12.5} 239 l5 ${12 + ((i * 7) % 16)} l5 -${12 + ((i * 7) % 16)}z" fill="#d6f0fb" stroke="#a9d8ee" stroke-width="1"/>`).join(""),
+    kerzen: () => [[448, 470], [574, 450], [440, 532], [584, 516]].map(([x, y]) => `<circle cx="${x}" cy="${y - 8}" r="14" fill="#ffe28a" opacity=".35"/><path d="M${x - 8} ${y} l2 -18 h12 l2 18z" fill="#fff3d6" stroke="#e6cfa0"/><circle cx="${x}" cy="${y - 8}" r="3" fill="#ffb347"/>`).join(""),
+    windrad: () => `<rect x="868" y="304" width="4" height="72" fill="#7a5537"/><path d="M870 304 l-22 -12 l12 -10z" fill="#e85d75"/><path d="M870 304 l12 -22 l10 12z" fill="#ffd84d"/><path d="M870 304 l22 12 l-12 10z" fill="#58b6ff"/><path d="M870 304 l-12 22 l-10 -12z" fill="#4fd18b"/><circle cx="870" cy="304" r="3" fill="#fff"/>`,
+    holz: () => [[566, 588], [592, 588], [618, 588], [579, 566], [605, 566]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="12" fill="#9c6b45"/><circle cx="${x}" cy="${y}" r="7" fill="#d9a877"/><circle cx="${x}" cy="${y}" r="2.5" fill="#9c6b45"/>`).join(""),
+    teddy: () => `<circle cx="96" cy="316" r="15" fill="#b07a52"/><circle cx="96" cy="296" r="11" fill="#b07a52"/><circle cx="87" cy="288" r="5" fill="#b07a52"/><circle cx="105" cy="288" r="5" fill="#b07a52"/><ellipse cx="96" cy="300" rx="5" ry="4" fill="#e3c4a2"/><circle cx="92" cy="294" r="1.6" fill="#2b1a10"/><circle cx="100" cy="294" r="1.6" fill="#2b1a10"/><ellipse cx="96" cy="318" rx="8" ry="9" fill="#e3c4a2"/><path d="M88 307 l8 4 l8 -4 l-8 -3z" fill="#e85d75"/>`,
+    sternschnuppe: () => `<path d="M70 110 Q120 96 160 80" stroke="#fff6c9" stroke-width="5" stroke-linecap="round" opacity=".7" fill="none"/><path d="M90 108 Q125 98 158 84" stroke="#ffe28a" stroke-width="2" fill="none"/><polygon points="170,62 175,74 188,75 178,83 181,96 170,89 159,96 162,83 152,75 165,74" fill="#ffd84d"/>`,
     statue: () => `<rect x="226" y="482" width="70" height="30" fill="#d9d2c6"/><rect x="220" y="476" width="82" height="8" fill="#ece6dc"/><g transform="translate(228 430) scale(.55)">${typeof Animals !== "undefined" ? Animals.inner({ sp: "capy", col: 2, acc: "krone" }).content : ""}</g>`,
   };
-  const BACK = ["rodel", "wimpel", "baeume", "zaun", "lichter", "schaukel", "vogelhaus", "kletter", "tanne", "bank", "buehne", "stand", "huette", "teleskop"];
-  const MID = ["hoehle", "karussell", "futter", "spielplatz", "onsen", "teich", "eisbahn", "bruecke", "pilze", "statue", "zwerg", "vogelbad", "laternen"];
-  const FRONT = ["feuer", "kakao", "iglu", "blumen", "schild", "fotowand", "schneemann"];
+  const BACK = ["sternschnuppe", "rodel", "wimpel", "baeume", "zaun", "lichter", "eiszapfen", "kranz", "vogel", "schaukel", "vogelhaus", "kletter", "meisen", "tanne", "bank", "buehne", "stand", "huette", "teleskop"];
+  const MID = ["briefkasten", "hoehle", "teddy", "kissen", "karussell", "futter", "spielplatz", "onsen", "wasserschale", "windrad", "teich", "eisbahn", "bruecke", "ball", "pilze", "statue", "strohballen", "zwerg", "vogelbad", "laternen"];
+  const FRONT = ["feuer", "kerzen", "kakao", "iglu", "blumen", "holz", "giesskanne", "schild", "fotowand", "schneemann"];
 
   function brokenFence() {
     const r = rnd(42);
@@ -197,14 +232,17 @@ const Zoo = (() => {
   let H;
   const coinSvg = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f6c544" stroke="#d49b16" stroke-width="2"/><circle cx="12" cy="12" r="7" fill="none" stroke="#d49b16" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" font-family="Arial, sans-serif" fill="#a3720f">T</text></svg>`;
 
+  // Teile nach Weihnachten bleiben geheim, bis am 18.12. das Paket geöffnet wurde
+  const visibleItems = () => ITEMS.filter(([k]) => dayOfItem(k) <= 24 || App.bonusVisible());
   function refresh(newKey) {
     document.querySelectorAll(".zoo-scene").forEach((n) => (n.innerHTML = scene(newKey)));
     const c = document.getElementById("coin-count"); if (c) c.textContent = st.coins;
-    const done = st.owned.filter((k) => ITEMS.some((i) => i[0] === k)).length;
+    const vis = visibleItems();
+    const done = vis.filter(([k]) => owns(k)).length;
     const pr = document.getElementById("zoo-progress");
-    if (pr) pr.innerHTML = `<div class="zp-bar"><div style="width:${(done / ITEMS.length) * 100}%"></div></div><span>${done} von ${ITEMS.length} Verbesserungen</span>`;
+    if (pr) pr.innerHTML = `<div class="zp-bar"><div style="width:${(done / vis.length) * 100}%"></div></div><span>${done} von ${vis.length} Verbesserungen</span>`;
     const sb = document.getElementById("shop-btn");
-    if (sb) sb.classList.toggle("has-new", ALL.some(([k, , p]) => !owns(k) && available(k) && p <= st.coins));
+    if (sb) sb.classList.toggle("has-new", [...ITEMS, ...EXTRAS].some(([k, , p]) => !owns(k) && available(k) && p <= st.coins));
   }
 
   function addCoins(n, from) {
@@ -227,7 +265,7 @@ const Zoo = (() => {
     st.coins -= it[2]; st.owned.push(key); save();
     H.sfx.win();
     refresh(key);
-    if (typeof Animals !== "undefined") Animals.refreshPens();
+    if (typeof Animals !== "undefined") { Animals.refreshPens(); const [ax, ay] = anchorOf(key); setTimeout(() => Animals.celebrate(ax, ay, it[1]), 1300); }
     document.getElementById("zoo")?.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => { const z = document.getElementById("zoo-pen"); if (z) H.burstAt(z, ["✨", "⭐", "💖"], 20, 220); }, 400);
     H.toast(`Neu im Gehege: ${it[1]}!`, 3500);
@@ -237,7 +275,7 @@ const Zoo = (() => {
 
   function openShop(highlight) {
     const ov = H.el("div", { class: "gehege-overlay shop-overlay", role: "dialog", "aria-label": "Shop" });
-    const close = () => { ov.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", esc); };
+    const close = () => { if (typeof Animals !== "undefined") Animals.clearIn(ov); ov.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", esc); };
     const esc = (e) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", esc);
     const coinsEl = H.el("div", { class: "coins big", html: `${coinSvg}<b>${st.coins}</b> Taler` });
@@ -258,9 +296,11 @@ const Zoo = (() => {
     };
     const todayKeys = ITEMS.filter(([k]) => available(k) && !owns(k));
     if (todayKeys.length) area.append(H.el("h3", { text: "Kann sofort ins Gehege" }), H.el("div", { class: "shop-grid" }, ...todayKeys.map((i) => card(i))));
+    area.append(H.el("h3", { text: "Kleinigkeiten für zwischendurch" }), H.el("div", { class: "shop-grid small" }, ...SMALL.map((i) => card(i, true))));
     area.append(H.el("h3", { text: "Extras zum Verschönern" }), H.el("div", { class: "shop-grid" }, ...EXTRAS.map((i) => card(i, true))));
-    area.append(H.el("h3", { text: "Alle Verbesserungen der Geschichte" }), H.el("div", { class: "shop-grid" }, ...ITEMS.filter(([k]) => !todayKeys.some((t) => t[0] === k)).map((i) => card(i))));
+    area.append(H.el("h3", { text: "Alle Verbesserungen der Geschichte" }), H.el("div", { class: "shop-grid" }, ...visibleItems().filter(([k]) => !todayKeys.some((t) => t[0] === k)).map((i) => card(i))));
     document.body.append(ov); document.body.style.overflow = "hidden";
+    if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
     setTimeout(() => ov.querySelector(".shop-card.hl")?.scrollIntoView({ block: "center", behavior: "smooth" }), 150);
   }
 

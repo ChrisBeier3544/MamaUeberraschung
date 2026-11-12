@@ -376,15 +376,22 @@ const Animals = (() => {
   let H, btn;
   const onScreen = new Set();
 
-  function spawn() {
-    const box = document.getElementById("parade");
-    const max = innerWidth < 600 ? 4 : 7;
-    if (document.hidden || box.childElementCount >= max || document.querySelector(".gehege-overlay")) return;
+  function pickVariant() {
     const pool = VARIANTS.filter((v) => !onScreen.has(v.id) && available(v));
-    if (!pool.length) return;
+    if (!pool.length) return null;
     const wt = (v) => RARITY[v.rarity].w * (found.has(v.id) ? 1 : UNFOUND_BOOST);
     let t = Math.random() * pool.reduce((n, v) => n + wt(v), 0), v = pool[pool.length - 1];
     for (const c of pool) { t -= wt(c); if (t <= 0) { v = c; break; } }
+    return v;
+  }
+
+  // Unten laufen nur noch ab und zu Tiere vorbei – die meisten verstecken sich.
+  function spawn() {
+    const box = document.getElementById("parade");
+    const max = innerWidth < 600 ? 1 : 2;
+    if (document.hidden || box.childElementCount >= max || Math.random() < 0.6 || document.querySelector(".gehege-overlay")) return;
+    const v = pickVariant();
+    if (!v) return;
     const sp = SPECIES[v.sp];
     const w = sp.W * sp.scale * (innerWidth < 600 ? 0.68 : 0.95);
     const ltr = Math.random() < 0.5;
@@ -403,7 +410,8 @@ const Animals = (() => {
     if (div.dataset.gone) return;
     div.dataset.gone = "1";
     const r = div.getBoundingClientRect();
-    div.style.left = r.left + "px"; div.style.animation = "none";
+    if (div.classList.contains("walker")) { div.style.left = r.left + "px"; div.style.animation = "none"; }
+    hiders.delete(div);
     div.classList.add("beam");
     const s = H.sfx;
     s.tone(300, 0.5, "sine", 0.18, 1600); s.tone(600, 0.4, "triangle", 0.08, 2400, 0.1);
@@ -431,6 +439,64 @@ const Animals = (() => {
     if (isNew && found.size === VARIANTS.length) setTimeout(() => { H.confetti(); H.sfx.jingle(); H.toast("🏆 Alle 100 Tiere gefunden! Das Gehege ist komplett!", 6000); }, 1400);
   }
 
+  /* ---------- Verstecke: Tiere lugen überall hervor ---------- */
+  const hiders = new Set();
+  function makeHider(v, parent, style, o = {}) {
+    const sp = SPECIES[v.sp];
+    const w = o.w || 70, svgH = (w * sp.H) / sp.W, boxH = Math.round(svgH * (o.show || 0.55));
+    let pos = style;
+    if (o.edge === "left") pos = `position:fixed;left:0;top:${o.y}px;transform-origin:0 0;transform:translateX(${boxH}px) rotate(90deg);z-index:6`;
+    if (o.edge === "right") pos = `position:fixed;left:${innerWidth - boxH}px;top:${o.y}px;transform-origin:0 0;transform:translateY(${w}px) rotate(-90deg);z-index:6`;
+    const h = H.el("div", { class: "hider r-" + v.rarity, style: `width:${w}px;height:${boxH}px;${pos}` });
+    h.innerHTML = `<div class="w-in" style="animation-delay:-${(Math.random() * 7).toFixed(1)}s;animation-duration:${(7 + Math.random() * 4).toFixed(1)}s"><div class="${Math.random() < 0.5 ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
+    h.addEventListener("click", (e) => { e.stopPropagation(); teleport(h, v); });
+    if (o.modal) h.dataset.modal = "1";
+    onScreen.add(v.id); hiders.add(h);
+    parent.append(h);
+    if (o.life) setTimeout(() => dropHider(h, v), o.life);
+    h._v = v;
+    return h;
+  }
+  function dropHider(h, v) {
+    if (!h.isConnected || h.dataset.gone) { hiders.delete(h); return; }
+    hiders.delete(h); onScreen.delete(v.id);
+    h.classList.add("leaving"); setTimeout(() => h.remove(), 700);
+  }
+  const rndPct = (a, b) => (a + Math.random() * (b - a)).toFixed(0) + "%";
+  const SPOTS = [
+    () => { const ws = [...document.querySelectorAll("#calendar .door-wrap, #bonus:not(.hidden) .door-wrap")]; return ws.length ? [H.pick(ws), `left:${rndPct(5, 45)};bottom:100%;z-index:0`, { w: innerWidth < 600 ? 44 : 58 }] : null; },
+    () => { const ws = [...document.querySelectorAll("#calendar .door-wrap")]; return ws.length ? [H.pick(ws), `left:${rndPct(5, 45)};bottom:100%;z-index:0`, { w: innerWidth < 600 ? 44 : 58 }] : null; },
+    () => [document.querySelector("header"), `left:${rndPct(6, 82)};top:${innerWidth < 600 ? 40 : 30}px;z-index:1`, { w: innerWidth < 600 ? 50 : 72, show: 0.5 }],
+    () => [document.getElementById("zoo"), `left:${rndPct(8, 80)};bottom:100%`, { w: innerWidth < 600 ? 56 : 80, show: 0.5 }],
+    () => [document.getElementById("calendar"), `left:${rndPct(8, 80)};bottom:100%`, { w: innerWidth < 600 ? 56 : 78, show: 0.5 }],
+    () => [document.body, `position:fixed;left:${innerWidth < 600 ? 92 : 150}px;bottom:4px;z-index:5`, { w: innerWidth < 600 ? 46 : 62, show: 0.6 }],
+    () => [document.body, "", { edge: "left", y: innerHeight * (0.25 + Math.random() * 0.4), w: innerWidth < 600 ? 50 : 66, show: 0.5 }],
+    () => [document.body, "", { edge: "right", y: innerHeight * (0.2 + Math.random() * 0.4), w: innerWidth < 600 ? 50 : 66, show: 0.5 }],
+  ];
+  function hideLoop() {
+    if (document.hidden || document.querySelector(".gehege-overlay")) return;
+    const onPage = [...hiders].filter((h) => h.isConnected && !h.dataset.modal).length;
+    if (onPage >= (innerWidth < 600 ? 2 : 3)) return;
+    const v = pickVariant(); if (!v) return;
+    const spot = H.pick(SPOTS)(); if (!spot || !spot[0]) return;
+    makeHider(v, spot[0], spot[1], { ...spot[2], life: 45000 + Math.random() * 45000 });
+  }
+  // Verstecke in Rätselfenster, Shop und Album
+  function hideIn(kind, container) {
+    if (!container || Math.random() > ({ modal: 0.65, shop: 0.5, album: 0.4 }[kind] || 0.5)) return;
+    const v = pickVariant(); if (!v) return;
+    if (kind === "modal") {
+      const spots = [`right:66px;top:6px`, `left:${rndPct(20, 70)};top:0`, `right:24px;bottom:0`, `left:20px;bottom:0`];
+      makeHider(v, container, "position:absolute;" + H.pick(spots), { w: innerWidth < 600 ? 50 : 64, modal: true });
+    } else if (kind === "shop") {
+      const cards = [...container.querySelectorAll(".shop-card")]; if (!cards.length) return;
+      makeHider(v, H.pick(cards), `right:10px;bottom:100%`, { w: 54, modal: true });
+    } else makeHider(v, container, `right:${rndPct(25, 60)};bottom:0`, { w: 60, modal: true });
+  }
+  function clearIn(container) {
+    container?.querySelectorAll(".hider").forEach((h) => { if (!h.dataset.gone) { hiders.delete(h); onScreen.delete(h._v.id); } h.remove(); });
+  }
+
   function updateBtn(bump) {
     btn.querySelector(".g-count").textContent = `${found.size}/100`;
     if (bump) { btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump"); }
@@ -442,7 +508,7 @@ const Animals = (() => {
     const timers = new Set();
     const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (alive) fn(); }, ms); timers.add(t); };
     const ov = H.el("div", { class: "gehege-overlay", role: "dialog", "aria-label": "Tiergehege" });
-    const close = () => { alive = false; timers.forEach(clearTimeout); ov.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", esc); };
+    const close = () => { alive = false; timers.forEach(clearTimeout); clearIn(ov); ov.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", esc); };
     const esc = (e) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", esc);
     const tabPen = H.el("button", { class: "g-tab active", text: "Gehege" });
@@ -461,6 +527,7 @@ const Animals = (() => {
     tabPen.onclick = () => show("pen"); tabAlbum.onclick = () => show("album");
     document.body.append(ov); document.body.style.overflow = "hidden";
     show("pen");
+    hideIn("album", ov.querySelector(".g-head"));
   }
 
   const DECOR = `<svg class="pen-decor" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
@@ -477,48 +544,110 @@ const Animals = (() => {
     mountPen(field, later);
   }
 
+  let inlineCtrls = [];
   function mountPen(field, later) {
     field.innerHTML = "";
     field.append(H.el("div", { class: "zoo-scene", html: typeof Zoo !== "undefined" ? Zoo.scene() : DECOR }));
+    const ctrls = [];
+    if (field.id === "zoo-pen") inlineCtrls = ctrls;
     const mine = VARIANTS.filter((v) => found.has(v.id));
     if (!mine.length) {
-      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Unten laufen ständig Tiere vorbei. Klick sie an, dann ziehen sie ins Gehege ein – und bringen ein paar Taler mit." })));
+      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere – hinter Türchen, am Bildschirmrand, sogar in den Rätseln. Klick sie an, dann ziehen sie hier ein." })));
       return;
     }
+    mine.forEach((v) => ctrls.push(penAnimal(field, v, later)));
+  }
+
+  function penAnimal(field, v, later, o = {}) {
+    const sp = SPECIES[v.sp];
     const small = innerWidth < 600;
     const k = field.classList.contains("inline") ? (small ? 0.42 : 0.7) : small ? 0.62 : 1;
-    mine.forEach((v) => {
-      const sp = SPECIES[v.sp];
-      const w = sp.W * sp.scale * k;
-      const a = H.el("div", { class: "pen-animal" });
-      const wrap = H.el("div", { class: "pa-in" });
-      wrap.innerHTML = svg(v, { width: w });
-      a.append(wrap);
-      let x = Math.random() * 88, y = 48 + Math.random() * 46;
-      a.style.left = x + "%"; a.style.top = y + "%"; a.style.zIndex = Math.round(y);
-      const move = () => {
-        const nx = Math.max(0, Math.min(90, x + (Math.random() - 0.5) * 50)), ny = Math.max(46, Math.min(96, y + (Math.random() - 0.5) * 30));
-        const fw = field.clientWidth, fh = field.clientHeight;
-        const dist = Math.hypot(((nx - x) / 100) * fw, ((ny - y) / 100) * fh);
-        const dur = Math.max(0.8, dist / (sp.speed * 0.7));
-        a.classList.toggle("flip", nx < x);
-        a.querySelector("svg").classList.add("walking");
-        a.style.transition = `left ${dur}s linear, top ${dur}s linear`;
-        a.style.left = nx + "%"; a.style.top = ny + "%"; a.style.zIndex = Math.round(ny);
-        x = nx; y = ny;
-        later(() => { a.querySelector("svg")?.classList.remove("walking"); later(move, 800 + Math.random() * 3500); }, dur * 1000);
-      };
-      later(move, Math.random() * 3000);
-      a.addEventListener("click", (e) => {
-        e.stopPropagation();
-        a.querySelector(".pen-tag")?.remove();
-        const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: desc(v) }), H.el("span", { html: rarityChip(v) }));
-        a.append(tag);
-        wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
-        H.sfx.boop(300 + Math.random() * 400);
-        setTimeout(() => tag.remove(), 2600);
-      });
-      field.append(a);
+    const w = sp.W * sp.scale * k;
+    const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : "") });
+    const wrap = H.el("div", { class: "pa-in" });
+    wrap.innerHTML = svg(v, { width: w });
+    a.append(wrap);
+    const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? Math.random() * 88, y: o.y ?? 48 + Math.random() * 46 };
+    a.style.left = c.x + "%"; a.style.top = c.y + "%"; a.style.zIndex = Math.round(c.y);
+    c.walkTo = (nx, ny, done, fast) => {
+      const fw = field.clientWidth, fh = field.clientHeight;
+      const dist = Math.hypot(((nx - c.x) / 100) * fw, ((ny - c.y) / 100) * fh);
+      const dur = fast ? Math.min(3.2, Math.max(0.8, dist / 160)) : Math.max(0.6, dist / (sp.speed * 0.8));
+      a.classList.toggle("flip", nx < c.x);
+      a.querySelector("svg").classList.add("walking");
+      a.style.transition = `left ${dur}s linear, top ${dur}s linear`;
+      a.style.left = nx + "%"; a.style.top = ny + "%"; a.style.zIndex = Math.round(ny);
+      c.x = nx; c.y = ny;
+      later(() => { a.querySelector("svg")?.classList.remove("walking"); done && done(); }, dur * 1000);
+    };
+    const move = () => {
+      if (!a.isConnected) return;
+      if (c.busy) { later(move, 1500); return; }
+      const nx = Math.max(0, Math.min(90, c.x + (Math.random() - 0.5) * 50)), ny = Math.max(46, Math.min(96, c.y + (Math.random() - 0.5) * 30));
+      c.walkTo(nx, ny, () => later(move, 800 + Math.random() * 3500));
+    };
+    c.goTo = (nx, ny, done) => { c.busy = true; c.walkTo(nx, ny, done, true); };
+    c.say = (text, ms = 4600) => {
+      a.querySelector(".pen-say")?.remove();
+      const b = H.el("div", { class: "pen-say" }, H.el("b", { text: v.name }), text);
+      a.append(b);
+      // Sprechblase im Gehege halten
+      const fr = field.getBoundingClientRect(), br = b.getBoundingClientRect();
+      const shift = Math.max(0, fr.left + 6 - br.left) - Math.max(0, br.right - (fr.right - 6));
+      if (shift) b.style.marginLeft = shift + "px";
+      setTimeout(() => b.remove(), ms);
+    };
+    if (!o.guest) later(move, Math.random() * 3000);
+    a.addEventListener("click", (e) => {
+      e.stopPropagation();
+      a.querySelector(".pen-tag")?.remove();
+      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }));
+      a.append(tag);
+      wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
+      H.sfx.boop(300 + Math.random() * 400);
+      setTimeout(() => tag.remove(), 2600);
+    });
+    field.append(a);
+    return c;
+  }
+
+  /* ---------- Nach einem Kauf: drei Tiere schauen sich das Neue an ---------- */
+  const PRAISE = [
+    "Hier fühle ich mich gleich viel wohler.", "Genau das hat uns gefehlt!", "Danke, Mama – das ist wunderbar!", "Jetzt ist es richtig gemütlich hier.",
+    "Wie hübsch! Das muss ich sofort Kalle zeigen.", "Ich glaube, das wird mein neuer Lieblingsplatz.", "So ein schönes Zuhause hatte ich noch nie.",
+    "Ich bin ganz gerührt.", "Unser Gehege wird immer schöner!", "Mama hat wirklich Geschmack.",
+  ];
+  const GUESTS = [{ sp: "capy", col: 0, acc: "orange", name: "Kalle" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75", name: "Mimi" }, { sp: "hund", col: 0, acc: "schal", accColor: "#4f7fe0", name: "Bello" }];
+  function celebrate(sx, sy, itemName) {
+    const field = document.getElementById("zoo-pen");
+    if (!field || !field.clientWidth) return;
+    const W = field.clientWidth, Hh = field.clientHeight, sc = Math.max(W / 1000, Hh / 600);
+    const ox = (W - 1000 * sc) / 2, oy = (Hh - 600 * sc) / 2;
+    const toPct = (x, y) => [((ox + x * sc) / W) * 100, ((oy + y * sc) / Hh) * 100];
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const empty = field.querySelector(".pen-empty");
+    if (empty) empty.classList.add("hidden");
+    const actors = H.shuffle(inlineCtrls.filter((c) => c.a.isConnected)).slice(0, 3);
+    while (actors.length < 3) {
+      const g = GUESTS[actors.length];
+      const left = actors.length % 2 === 0;
+      actors.push(penAnimal(field, g, inlineLater, { guest: true, x: left ? -6 : 98, y: 75 }));
+    }
+    const lines = H.shuffle(PRAISE).slice(0, 2);
+    actors.forEach((c, i) => {
+      const [px, py] = toPct(sx + (i - 1) * 75, sy + (i === 1 ? 18 : 0));
+      const aw = (c.a.offsetWidth / W) * 100;
+      const tx = clamp(px - aw / 2, 0, 94), ty = clamp(py, 44, 98);
+      setTimeout(() => c.goTo(tx, ty, () => {
+        c.a.classList.toggle("flip", tx + aw / 2 > toPct(sx, sy)[0]);
+        c.say(i === 0 ? `Oh, ${itemName}! Wie schön!` : lines[i - 1]);
+        H.sfx.tone(500 + i * 120, 0.12, "triangle", 0.12);
+        setTimeout(() => {
+          c.busy = false;
+          if (c.guest) { c.a.style.opacity = "0"; setTimeout(() => c.a.remove(), 700); }
+          if (empty && i === 2) setTimeout(() => empty.classList.remove("hidden"), 800);
+        }, 5000);
+      }), 500 + i * 450);
     });
   }
 
@@ -530,7 +659,7 @@ const Animals = (() => {
       sum.append(H.el("div", { class: "rar-box", html: `<span class="rar r-${k}">${r.label}</span><b>${all.filter((v) => found.has(v.id)).length} / ${all.length}</b>` }));
     });
     const waiting = VARIANTS.filter((v) => !available(v)).length;
-    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
+    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Die Tiere verstecken sich überall auf der Seite, seltene leuchten ein wenig. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
       const vs = VARIANTS.filter((v) => v.sp === key);
@@ -577,6 +706,7 @@ const Animals = (() => {
     btn = H.el("button", { id: "gehege-btn", "aria-label": "Tiergehege öffnen" });
     btn.innerHTML = `<svg viewBox="0 0 40 30" width="30" height="22" aria-hidden="true"><g fill="#8a5a3b"><rect x="3" y="6" width="5" height="22" rx="2"/><rect x="17" y="6" width="5" height="22" rx="2"/><rect x="31" y="6" width="5" height="22" rx="2"/><rect x="0" y="11" width="40" height="4" rx="2"/><rect x="0" y="20" width="40" height="4" rx="2"/></g></svg><span>Gehege</span><span class="g-count"></span>`;
     btn.addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(500); openGehege(); });
+    setTimeout(hideLoop, 2500); setTimeout(hideLoop, 6000); setInterval(hideLoop, 8000);
     document.body.append(btn);
     updateBtn();
     announceWaves();
@@ -585,5 +715,5 @@ const Animals = (() => {
     setInterval(spawn, 2600);
   }
 
-  return { SPECIES, VARIANTS, RARITY, refreshPens, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { SPECIES, VARIANTS, RARITY, refreshPens, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();

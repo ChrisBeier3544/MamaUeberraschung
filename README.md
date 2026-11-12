@@ -12,8 +12,11 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - **18. Dezember:** Ein Paket schaltet sieben Bonus-Türchen (25.–31.12.) frei. Silvester endet die
   Geschichte mit einem Feuerwerk.
 - **Briefe:** Am 24. liegt ein Weihnachtsbrief unter dem Baum, zu Silvester kommt ein Neujahrsbrief.
-- **Tierparade:** Unten laufen 100 verschiedene gezeichnete Tiere vorbei. Wer eins anklickt, holt es ins
-  Gehege, bekommt ein Polaroid-Foto und ein paar Bonus-Taler (seltene Tiere bringen mehr).
+- **Versteckte Tiere:** 100 verschiedene gezeichnete Tiere verstecken sich überall: hinter Türchen und dem Titel,
+  über dem Gehege, hinter Kalle, am Bildschirmrand, im Rätselfenster, im Shop und im Album – ab und zu läuft auch
+  eins unten vorbei. Wer eins anklickt, holt es ins Gehege, bekommt ein Polaroid-Foto und Bonus-Taler.
+- **Kleinigkeiten:** 15 günstige Deko-Teile (15–40 Taler) für zwischendurch. Nach jedem Kauf laufen drei Tiere
+  hin und sagen, wie schön es ist (ohne eigene Tiere kommen Kalle, Mimi und Bello zu Besuch).
   Manche Tiere ziehen erst ab Nikolaus, dem 13. oder dem 20. Dezember ein.
 - Türchen öffnen sich erst am jeweiligen Tag. Der Fortschritt wird im Browser gespeichert
   (also immer auf demselben Gerät und im selben Browser spielen).

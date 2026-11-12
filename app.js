@@ -287,6 +287,7 @@ const App = (() => {
     document.body.style.overflow = "hidden";
     if (state.solved[day]) showReward(day, true);
     else p.render(body, { solve: () => solved(day), day });
+    if (!state.solved[day] && typeof Animals !== "undefined") Animals.hideIn("modal", m.querySelector(".modal-card"));
   }
 
   function closeModal() {
@@ -297,6 +298,7 @@ const App = (() => {
     const body = m.querySelector(".modal-body");
     if (body._cleanup) { body._cleanup(); body._cleanup = null; }
     body.innerHTML = "";
+    if (typeof Animals !== "undefined") Animals.clearIn(m.querySelector(".modal-card"));
     if (currentDay) refreshDoor(currentDay);
     currentDay = null;
   }
@@ -462,7 +464,7 @@ const App = (() => {
     register: (day, def) => (puzzles[day] = def),
     isSolved: (d) => !!state.solved[d],
     markSolved: (d) => { state.solved[d] = true; save(); },
-    closeModal, refreshDoor, isUnlocked, preview: PREVIEW,
+    closeModal, refreshDoor, isUnlocked, preview: PREVIEW, bonusVisible,
     h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, shakeEl, textAnswer },
   };
 })();
