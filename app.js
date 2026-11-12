@@ -259,7 +259,7 @@ const App = (() => {
     const d = doors[day];
     if (!isUnlocked(day)) {
       d.door.classList.remove("shake"); void d.door.offsetWidth; d.door.classList.add("shake");
-      sfx.bad(); toast(pick(LOCKED_MSGS)(daysUntil(day)));
+      sfx.bad(); toast(Texts.say("gesperrt", { T: T(daysUntil(day)) }));
       return;
     }
     sfx.boop(500 + day * 15);
@@ -333,7 +333,7 @@ const App = (() => {
     const replay = el("button", { class: "btn btn-soft", text: "Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
     const letterBtn = day === 24 ? el("button", { class: "btn", text: "Den Brief unter dem Baum öffnen", onclick: () => { closeModal(); Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); } }) : null;
     body.append(el("div", { class: "reward" },
-      el("h3", { text: again ? "Dieses Kapitel ist geschafft" : pick(PRAISE) }),
+      el("h3", { text: again ? "Dieses Kapitel ist geschafft" : Texts.say("lob") }),
       again ? null : coinBox,
       puzzles[day].outro ? el("p", { class: "r-solution", text: puzzles[day].outro }) : null,
       el("div", { class: "r-story" }, el("div", { class: "r-item", html: Zoo.preview(st.item) }), el("p", { text: st.outro })),
@@ -416,10 +416,10 @@ const App = (() => {
       sfx.tone(220, 0.2, "sine", 0.25, 330);
       burstAt(capy, ["🤎", "💖", "🍊", "✨"], 7, 70);
       if (clicks % 5 === 0) { orange.classList.toggle("gone"); say(orange.classList.contains("gone") ? "Huch! Meine Orange! 🍊💨" : "Ah, da ist sie wieder 🍊😌"); }
-      else say(pick(CAPY));
+      else say(Texts.say("kalle"));
     });
     setTimeout(() => say(CAPY[0]), 1200);
-    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? `Psst, Mama: ${n === 1 ? "ein Tier hat" : n + " Tiere haben"} Hunger! Futter gibt's im Shop.` : pick(CAPY)); }, 22000);
+    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle")); }, 22000);
   }
 
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */

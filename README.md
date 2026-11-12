@@ -21,7 +21,7 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - **Füttern:** Jede Tierart frisst etwas anderes (16 Sorten, je 1 Taler im Shop unter „Futter“). Im Gehege ein Tier
   antippen und „Füttern“ wählen. Wer 24 Stunden nichts bekommt, wird traurig.
 - **Großes Gehege:** Über den Gehege-Knopf öffnet sich eine große Ansicht zum Zoomen (Mausrad, zwei Finger, +/−) und Verschieben.
-- **Spielecke:** „Mandarinen-Regen“ und „Pinguin-Rutsche“. Neue Rekorde und bestimmte Punktzahlen bringen heimlich Taler
+- **Spielecke:** „Heuballen-Turm“, „Waschbär-Alarm“ und „Pinguin-Rutsche“. Neue Rekorde und bestimmte Punktzahlen bringen heimlich Taler
   (Regeln in `games.js` unter `RULES`).
 - Türchen öffnen sich erst am jeweiligen Tag. Der Fortschritt wird im Browser gespeichert
   (also immer auf demselben Gerät und im selben Browser spielen).
@@ -29,6 +29,7 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 ## Anpassen
 - `app.js` → `CONFIG`: Jahr, Weihnachtsbrief (`christmasMessage`), Neujahrsbrief (`newYearMessage`), Unterschrift.
 - `zoo.js` → `STORY`: die Texte der Kapitel und wie viele Taler es gibt; `ITEMS`/`EXTRAS`: Shop-Artikel und Preise.
+- `texts.js`: alle Sprechblasen (je 20 Varianten, ohne schnelle Wiederholung).
 - `puzzles.js`: die Rätsel. `photos.js`: die 100 Polaroid-Bildunterschriften.
 - `animals.js`: `RARITY` (Seltenheit), `WAVES` (Einzugstage der Tiere).
 

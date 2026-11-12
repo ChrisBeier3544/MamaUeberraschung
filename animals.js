@@ -8,7 +8,7 @@ const Animals = (() => {
   const C = (cx, cy, r, fill, x = "") => `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="${fill}" ${x}/>`;
   const RC = (x, y, w, h, r, fill, ex = "") => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" rx="${f(r)}" fill="${fill}" ${ex}/>`;
   const P = (d, fill, ex = "") => `<path d="${d}" fill="${fill}" ${ex}/>`;
-  const S = (d, stroke, w, ex = "") => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${f(w)}" stroke-linecap="round" stroke-linejoin="round" ${ex}/>`;
+  const S = (d, stroke, w, ex = "") => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${f(w)}"${ex.includes("stroke-linecap") ? "" : ' stroke-linecap="round"'} stroke-linejoin="round" ${ex}/>`;
   const eye = (x, y, r = 2.6) => C(x, y, r, "#2b1a10") + C(x + r * 0.35, y - r * 0.4, r * 0.4, "#fff");
   const blush = (x, y, rx = 4, ry = 2.5) => E(x, y, rx, ry, "#ff8fa3", 'opacity=".45"');
   const leg = (x, top, bot, w, fill, cls) => `<rect class="${cls}" x="${f(x - w / 2)}" y="${top}" width="${w}" height="${bot - top}" rx="${f(w / 2)}" fill="${fill}"/>`;
@@ -702,7 +702,7 @@ const Animals = (() => {
       wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-26px) rotate(-6deg)" }, { transform: "translateY(0)" }, { transform: "translateY(-16px) rotate(6deg)" }, { transform: "translateY(0)" }], { duration: 900, easing: "ease-out" });
       H.burstAt(c.a, ["💖", "💕", "✨"], 12, 70);
       H.sfx.good();
-      c.say(`Mmmh, ${fname}! ${was ? "Endlich! " : ""}${H.pick(YUM)}`, 3600);
+      c.say(`${Texts.say("futterAn", { food: fname })} ${Texts.say("futterNach")}`, 3600);
     }, 700);
     updateHunger();
   }
@@ -733,7 +733,7 @@ const Animals = (() => {
       const g = GUESTS[actors.length];
       actors.push(penAnimal(field, g, inlineLater, { guest: true, x: actors.length % 2 ? 98 : -6, y: 80 }));
     }
-    const lines = [`Oh, ${itemName}! Wie schön!`, ...H.shuffle(PRAISE).slice(0, 2)];
+    const lines = [Texts.say("neuesTeil", { item: itemName }), Texts.say("freude"), Texts.say("freude")];
     const offs = [[-130, 30], [0, 52], [130, 30]];
     const [ix] = M.pct(sx, sy);
     // jedes Tier geht los, sobald das vorige zu sprechen beginnt; gesprochen wird streng nacheinander
@@ -766,6 +766,12 @@ const Animals = (() => {
     karussell: "Noch eine Runde!", kletter: "Ich bin ganz oben!", schaukel: "Höher!", blumen: "Die duften so gut!", tanne: "Wie schön geschmückt!",
     schneemann: "Hallo, Herr Schneemann!", iglu: "Schön kühl hier drin.", teddy: "Mein Kuschelfreund!", briefkasten: "Wunschzettel ist eingeworfen!",
     giesskanne: "Blumen gießen!", holz: "Holz für kalte Abende.", windrad: "Es dreht sich!", zwerg: "Guten Tag, Herr Zwerg!", statue: "Kalle in Gold!",
+  };
+  // jede Sache gehört zu einer Spruch-Gruppe mit 20 Varianten (texts.js)
+  const ACT_GROUP = {
+    wasserschale: "trinken", teich: "trinken", vogelbad: "trinken", futter: "essen", stand: "essen", kakao: "essen",
+    kissen: "schlafen", strohballen: "schlafen", hoehle: "schlafen", bank: "schlafen", iglu: "schlafen", teddy: "schlafen",
+    onsen: "waermen", feuer: "waermen", spielplatz: "spielen", rodel: "spielen", eisbahn: "spielen", karussell: "spielen", kletter: "spielen", schaukel: "spielen",
   };
   const LIVE = ["ball", "vogel"];
   let props = {};
@@ -809,7 +815,7 @@ const Animals = (() => {
     if (!field || !field.clientWidth) return;
     if (props.vogel && Math.random() < 0.35) birdVisit();
     const sadOnes = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && c.a.classList.contains("sad"));
-    if (sadOnes.length && Math.random() < 0.5) { H.pick(sadOnes).say(H.pick(["Ich hab solchen Hunger …", "Bekomme ich heute nichts?", "Mein Bauch knurrt …", "Ein kleiner Snack wäre schön …"]), 3200); return; }
+    if (sadOnes.length && Math.random() < 0.5) { H.pick(sadOnes).say(Texts.say("traurig"), 3200); return; }
     const keys = Object.keys(ACT).filter((k) => Zoo.owns(k)).concat(props.ball ? ["ball", "ball"] : []);
     const free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest && !c.a.classList.contains("sad"));
     if (!keys.length || !free.length) return;
@@ -820,8 +826,8 @@ const Animals = (() => {
     else { const [ax, ay] = Zoo.anchorOf(key); [tx, ty] = M.pct(ax + (Math.random() - 0.5) * 60, ay + Math.random() * 20); }
     const aw = (c.a.offsetWidth / M.W) * 100;
     c.goTo(clampN(tx - aw / 2, 0, 94), clampN(ty, 46, 98), () => {
-      if (key === "ball") { kickBall(c); c.say("Fang!", 1800); }
-      else c.say(ACT[key], 2800);
+      if (key === "ball") { kickBall(c); c.say(Texts.say("ball"), 1800); }
+      else c.say(Math.random() < 0.35 ? ACT[key] : Texts.say(ACT_GROUP[key] || "staunen"), 2800);
       setTimeout(() => (c.busy = false), 3200);
     }, true);
   }

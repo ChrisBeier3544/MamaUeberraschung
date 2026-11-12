@@ -406,7 +406,7 @@ const Zoo = (() => {
     }
     rule.ms.forEach((m) => { const k = game + m; if (score >= m && !st.ms[k]) { st.ms[k] = true; coins += 25; notes.push(`${m} Punkte geknackt: 25 Taler`); } });
     save();
-    return { old, high: st.high[game], coins, notes };
+    return { old, high: st.high[game] || 0, coins, notes };
   }
 
   return { STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };

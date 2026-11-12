@@ -6,9 +6,11 @@
 const Games = (() => {
   let H;
   const RULES = {
-    mandarinen: { min: 5, per: 3, ms: [30, 60, 100] },
+    turm: { min: 5, per: 2, ms: [15, 30, 50] },
+    waschbaer: { min: 10, per: 3, ms: [40, 80, 150] },
     pinguin: { min: 100, per: 40, ms: [500, 1000, 2000] },
   };
+  const ok = (img) => img.complete && img.naturalWidth > 0;
   const sprite = (v, w) => { const img = new Image(); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(Animals.svg(v, { width: w })); return img; };
 
   function open() {
@@ -28,7 +30,8 @@ const Games = (() => {
         H.el("div", { class: "game-high", text: `Rekord: ${Zoo.high(id)}` }),
         H.el("button", { class: "btn btn-green", text: "Spielen", onclick: play }));
       area.append(H.el("div", { class: "game-menu" },
-        card("mandarinen", "Mandarinen-Regen", "Kalle liebt Mandarinen! Fang so viele wie möglich – aber Vorsicht vor den Schneebällen. Goldene Mandarinen zählen fünffach.", { sp: "capy", col: 0, acc: "orange" }, () => play(mandarinen, "mandarinen")),
+        card("turm", "Heuballen-Turm", "Schaf Leo will ganz hoch hinaus. Tippe, um den schwingenden Heuballen fallen zu lassen. Was übersteht, fällt herunter – also genau zielen!", { sp: "schaf", col: 0, acc: "muetze" }, () => play(turm, "turm")),
+        card("waschbaer", "Waschbär-Alarm", "Die Waschbären plündern die Keksdosen! Tippe sie an, bevor sie mit einem Keks entwischen. Aber Vorsicht: Manchmal schaut auch Kalle heraus.", { sp: "waschbaer", col: 0, acc: "krone" }, () => play(waschbaer, "waschbaer")),
         card("pinguin", "Pinguin-Rutsche", "Erna rutscht auf dem Bauch übers Eis. Tippe zum Springen, weich Eisblöcken und Schneemännern aus und schnapp dir die Fische.", { sp: "pinguin", col: 1, acc: "muetze" }, () => play(pinguin, "pinguin"))));
     };
     const play = (game, id) => {
@@ -44,14 +47,14 @@ const Games = (() => {
       const ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
       const startPanel = () => {
         panel.innerHTML = ""; panel.classList.remove("hidden");
-        panel.append(H.el("b", { text: "Bereit?" }), H.el("span", { text: id === "pinguin" ? "Tippen, Klicken oder Leertaste zum Springen." : "Bewege Kalle mit dem Finger, der Maus oder den Pfeiltasten." }),
+        panel.append(H.el("b", { text: "Bereit?" }), H.el("span", { text: { pinguin: "Tippen, Klicken oder Leertaste zum Springen.", turm: "Tippen, Klicken oder Leertaste lässt den Heuballen fallen.", waschbaer: "Tippe die Waschbären an – aber nicht Kalle!" }[id] }),
           H.el("button", { class: "btn btn-green", text: "Los geht's!", onclick: () => { panel.classList.add("hidden"); stop = game(cv, ctx, W, Hh, over); } }));
       };
       const over = (score) => {
         stop();
         const res = Zoo.gameResult(id, score, RULES[id]);
         panel.innerHTML = ""; panel.classList.remove("hidden");
-        panel.append(H.el("b", { text: score > res.old ? "Neuer Rekord!" : "Vorbei!" }), H.el("span", { class: "game-score", text: `${score} Punkte` }), H.el("span", { text: `Rekord: ${res.high}` }));
+        panel.append(H.el("b", { text: score > res.old ? "Neuer Rekord!" : "Vorbei!" }), H.el("span", { class: "game-score", text: `${score} ${score === 1 ? "Punkt" : "Punkte"}` }), H.el("span", { text: `Rekord: ${res.high}` }));
         if (res.coins) {
           panel.append(H.el("div", { class: "game-secret" }, H.el("b", { text: "Überraschung!" }), H.el("span", { text: `Kalle ist so beeindruckt, dass er dir ${res.coins} Taler schenkt.` })));
           const r = panel.getBoundingClientRect();
@@ -67,53 +70,111 @@ const Games = (() => {
     menu();
   }
 
-  /* ---------- Spiel 1: Mandarinen-Regen ---------- */
-  function mandarinen(cv, ctx, W, Hh, over) {
-    const capy = sprite({ sp: "capy", col: 0, acc: "" }, 200);
-    const pw = W * 0.17, ph = pw * 0.75, py = Hh - ph - 14;
-    let px = W / 2, keys = 0, items = [], score = 0, lives = 3, t = 0, spawn = 0, last = 0, raf, alive = true, flash = 0;
-    const move = (e) => { const r = cv.getBoundingClientRect(); px = Math.max(pw / 2, Math.min(W - pw / 2, e.clientX - r.left)); };
-    cv.addEventListener("pointermove", move); cv.addEventListener("pointerdown", move);
-    const kd = (e) => { if (e.key === "ArrowLeft") keys = -1; if (e.key === "ArrowRight") keys = 1; };
-    const ku = (e) => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") keys = 0; };
-    document.addEventListener("keydown", kd); document.addEventListener("keyup", ku);
-    const orange = (x, y, r, gold) => {
-      ctx.fillStyle = gold ? "#ffd84d" : "#ff9f1c"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-      ctx.fillStyle = gold ? "#fff6c9" : "#ffc46b"; ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.28, 0, 7); ctx.fill();
-      ctx.fillStyle = "#4caf50"; ctx.beginPath(); ctx.ellipse(x + r * 0.3, y - r * 0.95, r * 0.45, r * 0.2, -0.5, 0, 7); ctx.fill();
-      if (gold) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + r + 4, y - r); ctx.lineTo(x + r + 10, y - r - 6); ctx.stroke(); }
+  /* ---------- Spiel 1: Heuballen-Turm ---------- */
+  function turm(cv, ctx, W, Hh, over) {
+    const sheep = sprite({ sp: "schaf", col: 0, acc: "muetze" }, 160);
+    const bh = Math.round(Hh * 0.075), baseW = W * 0.42, groundY = Hh - 26;
+    let stack = [{ x: (W - baseW) / 2, w: baseW }], cur, falling = [], score = 0, cam = 0, camT = 0, last = 0, raf, alive = true, done = false, perfectT = 0, combo = 0;
+    const topY = (i) => groundY - (i + 1) * bh;
+    const newBlock = () => { const top = stack[stack.length - 1]; const sp = W * (0.36 + Math.min(0.9, stack.length * 0.035)); const left = Math.random() < 0.5; cur = { x: left ? 0 : W - top.w, w: top.w, dir: left ? 1 : -1, speed: sp }; };
+    newBlock();
+    const drop = () => {
+      if (done) return;
+      const top = stack[stack.length - 1];
+      let l = Math.max(cur.x, top.x), r = Math.min(cur.x + cur.w, top.x + top.w);
+      if (r - l <= 2) { falling.push({ x: cur.x, w: cur.w, y: topY(stack.length), vy: 0 }); done = true; H.sfx.bad(); setTimeout(() => { alive = false; over(score); }, 900); return; }
+      if (Math.abs(cur.x - top.x) < 5) { l = top.x; r = top.x + top.w; perfectT = 0.8; combo++; score += 1; H.sfx.tone(880 + combo * 60, 0.15, "triangle", 0.15); }
+      else { combo = 0; H.sfx.tone(420, 0.08, "sine", 0.14, 300); if (cur.x < l) falling.push({ x: cur.x, w: l - cur.x, y: topY(stack.length), vy: 0 }); if (cur.x + cur.w > r) falling.push({ x: r, w: cur.x + cur.w - r, y: topY(stack.length), vy: 0 }); }
+      stack.push({ x: l, w: r - l }); score++;
+      camT = Math.max(0, (stack.length - 5) * bh);
+      newBlock();
+    };
+    const pd = (e) => { e.preventDefault(); drop(); };
+    const kd = (e) => { if (e.key === " " || e.key === "ArrowDown") { e.preventDefault(); drop(); } };
+    cv.addEventListener("pointerdown", pd); document.addEventListener("keydown", kd);
+    const bale = (x, y, w) => {
+      ctx.fillStyle = "#e8c46b"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, bh - 2, 6) : ctx.rect(x, y, w, bh - 2); ctx.fill();
+      ctx.strokeStyle = "#c9a03d"; ctx.lineWidth = 2; for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(x + 4, y + (k * (bh - 2)) / 3); ctx.lineTo(x + w - 4, y + (k * (bh - 2)) / 3); ctx.stroke(); }
+      ctx.fillStyle = "#d9534f"; if (w > 24) { ctx.fillRect(x + w * 0.25, y, 4, bh - 2); ctx.fillRect(x + w * 0.75 - 4, y, 4, bh - 2); }
     };
     const loop = (ts) => {
       if (!alive) return;
-      const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts; t += dt;
-      px = Math.max(pw / 2, Math.min(W - pw / 2, px + keys * W * 0.9 * dt));
-      spawn -= dt;
-      if (spawn <= 0) {
-        spawn = Math.max(0.32, 0.9 - t * 0.012);
-        const rnd = Math.random(), snowP = Math.min(0.32, 0.14 + t * 0.003);
-        items.push({ x: 20 + Math.random() * (W - 40), y: -20, vy: Hh * (0.36 + t * 0.006) * (0.85 + Math.random() * 0.3), type: rnd < snowP ? "snow" : rnd < snowP + 0.05 ? "gold" : "orange", r: W * 0.026 });
-      }
-      items = items.filter((it) => {
-        it.y += it.vy * dt;
-        if (it.y > py + ph * 0.15 && it.y < py + ph * 0.7 && Math.abs(it.x - px) < pw * 0.48) {
-          if (it.type === "snow") { lives--; flash = 0.3; H.sfx.bad(); if (lives <= 0) { alive = false; setTimeout(() => over(score), 300); } }
-          else { score += it.type === "gold" ? 5 : 1; H.sfx.pop(); }
-          return false;
-        }
-        return it.y < Hh + 30;
-      });
-      // Zeichnen
-      const g = ctx.createLinearGradient(0, 0, 0, Hh); g.addColorStop(0, "#bfe3f7"); g.addColorStop(1, "#eef8ff"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, Hh);
-      ctx.fillStyle = "#fff"; ctx.fillRect(0, Hh - 20, W, 20);
-      items.forEach((it) => { if (it.type === "snow") { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(it.x, it.y, it.r * 1.1, 0, 7); ctx.fill(); ctx.strokeStyle = "#b9d4e6"; ctx.lineWidth = 2; ctx.stroke(); } else orange(it.x, it.y, it.r, it.type === "gold"); });
-      if (capy.complete) ctx.drawImage(capy, px - pw / 2, py, pw, ph);
-      if (flash > 0) { flash -= dt; ctx.fillStyle = `rgba(255,255,255,${flash * 2})`; ctx.fillRect(0, 0, W, Hh); }
+      const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts;
+      if (!done) { cur.x += cur.dir * cur.speed * dt; if (cur.x > W - cur.w) cur.dir = -1; if (cur.x < 0) cur.dir = 1; }
+      cam += (camT - cam) * Math.min(1, dt * 5);
+      falling.forEach((f) => { f.vy += Hh * 2.4 * dt; f.y += f.vy * dt; });
+      falling = falling.filter((f) => f.y < Hh + cam + 60);
+      const g = ctx.createLinearGradient(0, 0, 0, Hh); g.addColorStop(0, "#9fd0ef"); g.addColorStop(1, "#e9f6ff"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, Hh);
+      ctx.fillStyle = "rgba(255,255,255,.8)"; [[0.2, 0.18], [0.7, 0.12], [0.45, 0.3]].forEach(([cx, cy]) => { ctx.beginPath(); ctx.ellipse(cx * W, cy * Hh + cam * 0.3, 50, 16, 0, 0, 7); ctx.fill(); });
+      ctx.save(); ctx.translate(0, cam);
+      ctx.fillStyle = "#a8d78f"; ctx.fillRect(0, groundY, W, 400);
+      stack.forEach((b, i) => bale(b.x, topY(i), b.w));
+      falling.forEach((f) => bale(f.x, f.y, f.w));
+      const top = stack[stack.length - 1];
+      if (ok(sheep)) { const sw = Math.min(top.w * 0.9, W * 0.13), sh = sw * 0.76; ctx.drawImage(sheep, top.x + top.w / 2 - sw / 2, topY(stack.length - 1) - sh + 4, sw, sh); }
+      if (!done) bale(cur.x, topY(stack.length) - (bh * 1.2), cur.w);
+      ctx.restore();
+      if (perfectT > 0) { perfectT -= dt; ctx.fillStyle = `rgba(232,93,117,${Math.min(1, perfectT * 2)})`; ctx.font = "700 26px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(combo > 1 ? `Perfekt! ×${combo}` : "Perfekt!", W / 2, Hh * 0.22); ctx.textAlign = "left"; }
       ctx.fillStyle = "#5a3b2e"; ctx.font = "700 20px Fredoka, Arial, sans-serif"; ctx.fillText(`${score}`, 14, 30);
-      for (let i = 0; i < 3; i++) { ctx.fillStyle = i < lives ? "#e85d75" : "#e7d5cc"; ctx.font = "22px Arial"; ctx.fillText("♥", W - 32 - i * 26, 30); }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    return () => { alive = false; cancelAnimationFrame(raf); document.removeEventListener("keydown", kd); document.removeEventListener("keyup", ku); cv.removeEventListener("pointermove", move); cv.removeEventListener("pointerdown", move); };
+    return () => { alive = false; cancelAnimationFrame(raf); cv.removeEventListener("pointerdown", pd); document.removeEventListener("keydown", kd); };
+  }
+
+  /* ---------- Spiel 3: Waschbär-Alarm ---------- */
+  function waschbaer(cv, ctx, W, Hh, over) {
+    const coon = sprite({ sp: "waschbaer", col: 0, acc: "" }, 160), kalle = sprite({ sp: "capy", col: 0, acc: "orange" }, 160);
+    const cols = 3, rows = 2, cw = W / cols, rh = (Hh - 50) / rows;
+    const bins = Array.from({ length: cols * rows }, (_, i) => ({ cx: cw * (i % cols) + cw / 2, by: 50 + rh * (Math.floor(i / cols) + 1) - 12, who: null, t: 0, up: 0, hit: 0 }));
+    const binW = Math.min(cw * 0.62, 150), binH = binW * 0.72;
+    let score = 0, cookies = 5, t = 0, spawn = 0.6, last = 0, raf, alive = true, msg = null;
+    const pd = (e) => {
+      e.preventDefault();
+      const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      bins.forEach((b) => {
+        if (!b.who || b.hit) return;
+        const top = b.by - binH - binW * 0.62 * b.up;
+        if (Math.abs(x - b.cx) < binW * 0.5 && y > top && y < b.by) {
+          b.hit = 0.35;
+          if (b.who === "coon") { score++; H.sfx.pop(); msg = { text: H.pick(["Erwischt!", "Hab dich!", "Keks gerettet!", "Zack!", "Nix da!"]), x: b.cx, y: top, t: 0.7 }; }
+          else { cookies--; H.sfx.bad(); msg = { text: "Aua! Das war Kalle!", x: b.cx, y: top, t: 1 }; if (cookies <= 0) end(); }
+        }
+      });
+    };
+    cv.addEventListener("pointerdown", pd);
+    const end = () => { if (!alive) return; alive = false; setTimeout(() => over(score), 500); };
+    const loop = (ts) => {
+      if (!alive) return;
+      const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts; t += dt;
+      spawn -= dt;
+      if (spawn <= 0) {
+        spawn = Math.max(0.38, 1.0 - t * 0.012);
+        const free = bins.filter((b) => !b.who);
+        if (free.length) { const b = H.pick(free); b.who = Math.random() < 0.16 ? "kalle" : "coon"; b.t = Math.max(0.75, 1.6 - t * 0.012); b.up = 0; b.hit = 0; }
+      }
+      bins.forEach((b) => {
+        if (!b.who) return;
+        if (b.hit > 0) { b.hit -= dt; b.up = Math.max(0, b.up - dt * 5); if (b.hit <= 0) b.who = null; return; }
+        b.t -= dt; b.up = Math.min(1, b.up + dt * 6);
+        if (b.t <= 0) { if (b.who === "coon") { cookies--; H.sfx.tone(260, 0.2, "sawtooth", 0.06, 180); msg = { text: "Keks weg!", x: b.cx, y: b.by - binH - 40, t: 0.8 }; if (cookies <= 0) end(); } b.who = null; }
+      });
+      // Zeichnen
+      const g = ctx.createLinearGradient(0, 0, 0, Hh); g.addColorStop(0, "#c98f74"); g.addColorStop(1, "#b47a60"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, Hh);
+      ctx.strokeStyle = "rgba(0,0,0,.08)"; ctx.lineWidth = 2; for (let y = 20; y < Hh; y += 24) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      bins.forEach((b) => {
+        if (b.who) { const img = b.who === "coon" ? coon : kalle; const sw = binW * 0.85, sh = sw * (b.who === "coon" ? 0.75 : 0.75); if (ok(img)) ctx.drawImage(img, b.cx - sw / 2, b.by - binH - sh * 0.75 * b.up + sh * 0.2, sw, sh); }
+        ctx.fillStyle = "#8c96a3"; ctx.beginPath(); ctx.moveTo(b.cx - binW / 2, b.by - binH); ctx.lineTo(b.cx + binW / 2, b.by - binH); ctx.lineTo(b.cx + binW * 0.42, b.by); ctx.lineTo(b.cx - binW * 0.42, b.by); ctx.fill();
+        ctx.strokeStyle = "#76808d"; ctx.lineWidth = 4; [-0.22, 0, 0.22].forEach((k) => { ctx.beginPath(); ctx.moveTo(b.cx + k * binW, b.by - binH + 8); ctx.lineTo(b.cx + k * binW * 0.85, b.by - 6); ctx.stroke(); });
+        ctx.fillStyle = "#9aa4b1"; ctx.fillRect(b.cx - binW * 0.55, b.by - binH - 8, binW * 1.1, 10);
+      });
+      if (msg && msg.t > 0) { msg.t -= dt; ctx.fillStyle = `rgba(255,255,255,${Math.min(1, msg.t * 2)})`; ctx.font = "700 18px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(msg.text, msg.x, msg.y); ctx.textAlign = "left"; }
+      ctx.fillStyle = "#fff"; ctx.font = "700 20px Fredoka, Arial, sans-serif"; ctx.fillText(`${score}`, 14, 30);
+      for (let i = 0; i < 5; i++) { ctx.fillStyle = i < cookies ? "#d9a05c" : "rgba(255,255,255,.25)"; ctx.beginPath(); ctx.arc(W - 22 - i * 26, 24, 10, 0, 7); ctx.fill(); if (i < cookies) { ctx.fillStyle = "#8a5a33"; ctx.beginPath(); ctx.arc(W - 25 - i * 26, 21, 2, 0, 7); ctx.arc(W - 19 - i * 26, 27, 2, 0, 7); ctx.fill(); } }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => { alive = false; cancelAnimationFrame(raf); cv.removeEventListener("pointerdown", pd); };
   }
 
   /* ---------- Spiel 2: Pinguin-Rutsche ---------- */
@@ -152,7 +213,7 @@ const Games = (() => {
         else { ctx.fillStyle = "#fff"; ctx.strokeStyle = "#cfe0ea"; ctx.beginPath(); ctx.arc(o.x + o.w / 2, ground - o.h * 0.3, o.w * 0.55, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(o.x + o.w / 2, ground - o.h * 0.78, o.w * 0.38, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#f39c32"; ctx.beginPath(); ctx.moveTo(o.x + o.w / 2, ground - o.h * 0.78); ctx.lineTo(o.x + o.w / 2 - 10, ground - o.h * 0.75); ctx.lineTo(o.x + o.w / 2, ground - o.h * 0.72); ctx.fill(); }
       });
       fishes.forEach((f) => { ctx.fillStyle = "#7d93b2"; ctx.beginPath(); ctx.ellipse(f.x, f.y, 14, 7, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(f.x + 12, f.y); ctx.lineTo(f.x + 22, f.y - 7); ctx.lineTo(f.x + 22, f.y + 7); ctx.fill(); });
-      if (peng.complete) { ctx.save(); ctx.translate(px + pw / 2, y + ph / 2); ctx.rotate(onGround ? 0 : -0.2); ctx.drawImage(peng, -pw / 2, -ph / 2, pw, ph); ctx.restore(); }
+      if (ok(peng)) { ctx.save(); ctx.translate(px + pw / 2, y + ph / 2); ctx.rotate(onGround ? 0 : -0.2); ctx.drawImage(peng, -pw / 2, -ph / 2, pw, ph); ctx.restore(); }
       ctx.fillStyle = "#3b4f8a"; ctx.font = "700 20px Fredoka, Arial, sans-serif"; ctx.fillText(`${Math.floor(dist / 10) + fish * 25}`, 14, 30);
       if (alive) raf = requestAnimationFrame(loop);
     };
