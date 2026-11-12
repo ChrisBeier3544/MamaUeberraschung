@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Testzentrale Adventskalender</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f6f1fb; --card: #fff; --ink: #2b2140; --soft: #6b5f80; --accent: #6b4fc4; --red: #e85d75; --line: #e3dcef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Fredoka, Arial, sans-serif; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+    main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); }
+    p { margin: 0; color: var(--soft); line-height: 1.5; max-width: 70ch; }
+    .card { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: 0 2px 0 var(--line); display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    label { font-weight: 600; display: flex; gap: 8px; align-items: center; }
+    input, select { font: inherit; padding: 6px 10px; border-radius: 10px; border: 2px solid var(--line); }
+    .check { font-weight: 500; }
+    h2 { margin: 0; font-size: 20px; }
+    .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+    .days a { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--ink); background: #faf8fd; border: 2px solid var(--line); border-radius: 12px; padding: 8px; min-height: 74px; min-width: 0; }
+    .days a:hover, .days a:focus-visible { border-color: var(--accent); outline: none; }
+    .days b { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .days small { color: var(--soft); font-size: 12px; line-height: 1.25; }
+    .days a.hl { background: #fff3f6; border-color: #f4b6c3; }
+    .days a.bonus { background: #f1edff; }
+    @media (max-width: 640px) { .days { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 12px; font-weight: 600; border: none; font: inherit; cursor: pointer; }
+    .btn.red { background: var(--red); }
+    ul { margin: 0; padding-left: 20px; color: var(--soft); line-height: 1.6; }
+  </style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>Testzentrale</h1>
+    <p>Hier kannst du jeden Tag so ausprobieren, als wäre er wirklich da: Türchen, neue Tiere, Geschenke, Hunger, Tag und Nacht. Der Testmodus speichert getrennt – der echte Spielstand deiner Mama bleibt unberührt.</p>
+  </div>
+
+  <section class="card">
+    <h2>Einstellungen</h2>
+    <div class="row">
+      <label>Uhrzeit <input type="time" id="zeit" value="10:00"></label>
+      <label class="check"><input type="checkbox" id="leer"> mit leerem Spielstand starten</label>
+    </div>
+    <p>Tipp: 18:00 Uhr zeigt das Gehege bei Nacht. Mit „leerem Spielstand“ siehst du den Tag so, wie ihn deine Mama beim ersten Besuch erlebt.</p>
+  </section>
+
+  <section class="card">
+    <h2>Tag auswählen</h2>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section class="card">
+    <h2>Was du an besonderen Tagen sehen solltest</h2>
+    <ul>
+      <li><b>29. November:</b> erste Kerze am Adventskranz, Kalender noch zu.</li>
+      <li><b>6. Dezember:</b> Postbote Bello bringt das Nikolaus-Geschenk, Tiere mit Weihnachtsmütze ziehen ein.</li>
+      <li><b>13. Dezember:</b> Tiere mit Rentiergeweih ziehen ein.</li>
+      <li><b>18. Dezember:</b> nach dem Rätsel erscheinen die sieben Bonus-Päckchen.</li>
+      <li><b>20. Dezember:</b> Tiere mit Krone ziehen ein.</li>
+      <li><b>24. Dezember:</b> Weihnachtsmann fliegt vorbei, nach dem Rätsel Heiligabend-Show und Brief.</li>
+      <li><b>31. Dezember:</b> Feuerwerk im Shop, Jahresrückblick und Neujahrsbrief.</li>
+    </ul>
+    <p>In der Testleiste oben auf der Seite kannst du Tag für Tag weiterspringen, Taler hinzufügen und alle Rätsel bis gestern automatisch lösen lassen.</p>
+  </section>
+</main>
+<script>
+  const SPECIAL = { "2026-11-29": "1. Advent", "2026-12-06": "Nikolaus-Geschenk", "2026-12-13": "Geweih-Tiere", "2026-12-18": "Bonus-Paket", "2026-12-20": "Krone-Tiere", "2026-12-24": "Heiligabend", "2026-12-31": "Silvester" };
+  const box = document.getElementById("days");
+  const start = new Date(2026, 10, 28);
+  for (let i = 0; i < 37; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const a = document.createElement("a");
+    a.href = "#";
+    const dec = d.getMonth() === 11;
+    a.className = (SPECIAL[iso] ? "hl" : "") + (dec && d.getDate() > 24 ? " bonus" : "");
+    a.innerHTML = `<b>${d.getDate()}.${d.getMonth() + 1}.</b><small>${d.toLocaleDateString("de-DE", { weekday: "short" })}${dec && d.getDate() <= 31 ? ` · Kapitel ${d.getDate()}` : ""}</small><small>${SPECIAL[iso] || ""}</small>`;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const z = document.getElementById("zeit").value || "10:00";
+      location.href = `index.html#test-${iso}-${z.replace(":", "")}${document.getElementById("leer").checked ? "-leer" : ""}`;
+    });
+    box.append(a);
+  }
+</script>
+</body>
+</html>

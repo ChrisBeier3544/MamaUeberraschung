@@ -421,13 +421,16 @@ const Zoo = (() => {
       "Frohen Nikolaus!",
     from: "Deine Tiere aus dem Gehege – Kalle, Mimi, Bello, Rocky und alle anderen",
   };
-  const PARCEL = `<svg viewBox="0 0 120 120" class="parcel-svg" aria-hidden="true">
+  const PARCEL = `<svg viewBox="0 0 130 120" class="parcel-svg" aria-hidden="true">
     <ellipse cx="60" cy="112" rx="44" ry="6" fill="rgba(0,0,0,.15)"/>
     <g class="p-body"><rect x="16" y="46" width="88" height="62" rx="6" fill="#e85d75"/><rect x="54" y="46" width="12" height="62" fill="#ffd84d"/>
       <path d="M22 60 l6 -6 M30 100 l8 -8 M86 64 l8 -8 M80 102 l10 -10" stroke="#f08aa0" stroke-width="3" stroke-linecap="round"/></g>
     <g class="p-lid"><rect x="10" y="34" width="100" height="18" rx="5" fill="#d94a64"/><rect x="54" y="34" width="12" height="18" fill="#f6c531"/>
       <g class="p-bow"><path d="M60 34 C44 10 26 18 32 30 C36 38 50 36 60 34Z" fill="#ffd84d"/><path d="M60 34 C76 10 94 18 88 30 C84 38 70 36 60 34Z" fill="#ffd84d"/><circle cx="60" cy="33" r="6" fill="#f6c531"/></g>
-      <rect x="70" y="40" width="30" height="9" rx="2" fill="#fff"/><text x="85" y="47" text-anchor="middle" font-size="6.5" font-weight="700" font-family="Arial, sans-serif" fill="#e85d75">FÜR MAMA</text></g>
+</g>
+    <g class="p-tag"><path d="M66 50 q6 4 8 12" stroke="#7a1f33" stroke-width="1.6" fill="none"/>
+      <g transform="rotate(-8 88 74)"><path d="M70 62 h46 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-46 l-8 -12z" fill="#fffaf0" stroke="#7a1f33" stroke-width="1.8"/>
+      <circle cx="70" cy="74" r="2" fill="#7a1f33"/><text x="95" y="78" text-anchor="middle" font-size="10" font-weight="700" font-family="Fredoka, Arial, sans-serif" fill="#7a1f33">Für Mama</text></g></g>
   </svg>`;
   const CART = `<svg viewBox="0 0 230 120" class="cart-svg" aria-hidden="true">
     <path d="M196 70 L232 58" stroke="#5a3b2e" stroke-width="5" stroke-linecap="round"/>
@@ -489,7 +492,7 @@ const Zoo = (() => {
     setTimeout(() => {
       parcel.remove();
       const ov = H.el("div", { class: "finale-overlay gift-letter" });
-      const animals = [{ sp: "capy", col: 0, acc: "orange" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75" }, { sp: "hund", col: 0, acc: "postmuetze" }, { sp: "waschbaer", col: 0, acc: "muetze" }, { sp: "hase", col: 0, acc: "blume", accColor: "#e85d75" }, { sp: "pinguin", col: 1, acc: "schal", accColor: "#e85d75" }];
+      const animals = [{ sp: "capy", col: 0, acc: "orange" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75" }, { sp: "hund", col: 0, acc: "postmuetze" }, { sp: "waschbaer", col: 0, acc: "muetze" }, { sp: "hase", col: 2, acc: "blume", accColor: "#e85d75" }, { sp: "pinguin", col: 1, acc: "schal", accColor: "#e85d75" }];
       const coin = H.el("div", { class: "r-coins", html: `${coinSvg}+100 Taler` });
       ov.append(H.el("div", { class: "finale-card gift-card" },
         H.el("div", { class: "finale-animals" }, ...animals.map((a) => H.el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.55 }) }))),

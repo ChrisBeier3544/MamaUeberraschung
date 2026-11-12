@@ -45,6 +45,8 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - `animals.js`: `RARITY` (Seltenheit), `WAVES` (Einzugstage der Tiere).
 
 ## Testen
+- **`test.html` – Testzentrale:** Jeden Tag (28.11.–3.1.) zu einer beliebigen Uhrzeit so testen, als wäre er wirklich da.
+  Eigener Testspielstand, Testleiste oben (Tag vor/zurück, +100 Taler, Rätsel bis gestern lösen). Direkt: `index.html#test-2026-12-08-1830`.
 - `index.html?vorschau` – alle Türchen sofort offen, mit Knopf zum Zurücksetzen
 - `index.html?reset` – Kalender-Fortschritt löschen. **Vor dem Verschenken einmal im Vorschau-Modus
   „Fortschritt löschen“ drücken**, damit Taler, Gehege und Tiere wieder bei null starten.

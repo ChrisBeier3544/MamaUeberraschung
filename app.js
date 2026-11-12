@@ -30,7 +30,7 @@ const CONFIG = {
 const App = (() => {
   const STORE_KEY = "mama-advent-" + CONFIG.year;
   const params = new URLSearchParams(location.search);
-  const PREVIEW = !!window.FORCE_PREVIEW || params.has("vorschau") || params.has("test");
+  const PREVIEW = !window.TEST && (!!window.FORCE_PREVIEW || params.has("vorschau") || params.has("test"));
   const LAST_DAY = 31;
 
   const puzzles = {};
@@ -444,6 +444,7 @@ const App = (() => {
     if (PREVIEW) {
       c.innerHTML = "🔓 <b>Vorschau-Modus</b>: alle Türchen offen · ";
       c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { Object.keys(localStorage).filter((k) => k.startsWith("mama-")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} location.reload(); } }));
+      c.append(" ", el("a", { href: "test.html", class: "btn btn-soft", text: "📅 Testzentrale", style: "padding:4px 10px;font-size:14px;text-decoration:none;display:inline-block" }));
     }
     else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen! 🐾`; }
     else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> – Kapitel ${t} wartet auf dich! 🎁`;
