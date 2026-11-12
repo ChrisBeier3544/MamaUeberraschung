@@ -18,11 +18,11 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - **Kleinigkeiten:** 15 günstige Deko-Teile (15–40 Taler) für zwischendurch. Nach jedem Kauf laufen drei Tiere
   hin und sagen, wie schön es ist (ohne eigene Tiere kommen Kalle, Mimi und Bello zu Besuch).
   Manche Tiere ziehen erst ab Nikolaus, dem 13. oder dem 20. Dezember ein.
-- **Füttern:** Jede Tierart frisst etwas anderes (16 Sorten, je 1 Taler im Shop unter „Futter“). Im Gehege ein Tier
+- **Füttern:** Jede Tierart frisst etwas anderes (16 Sorten im Shop unter „Futter“: 3 Stück für 1 Taler, 7 für 2, 20 für 5). Im Gehege ein Tier
   antippen und „Füttern“ wählen. Wer 24 Stunden nichts bekommt, wird traurig.
 - **Großes Gehege:** Über den Gehege-Knopf öffnet sich eine große Ansicht zum Zoomen (Mausrad, zwei Finger, +/−) und Verschieben.
-- **Spielecke:** „Heuballen-Turm“, „Waschbär-Alarm“ und „Pinguin-Rutsche“. Neue Rekorde und bestimmte Punktzahlen bringen heimlich Taler
-  (Regeln in `games.js` unter `RULES`).
+- **Spielecke:** „Heuballen-Turm“, „Waschbär-Alarm“ und „Pinguin-Rutsche“. Bestimmte Punktzahlen bringen einmalig heimlich Taler
+  (Stufen in `games.js` unter `RULES`).
 - Türchen öffnen sich erst am jeweiligen Tag. Der Fortschritt wird im Browser gespeichert
   (also immer auf demselben Gerät und im selben Browser spielen).
 
@@ -41,3 +41,10 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 ## Online stellen (GitHub Pages)
 Repository → *Settings* → *Pages* → Branch auswählen → Ordner `/ (root)` → *Save*.
 Nach ein paar Minuten ist der Kalender unter `https://<benutzername>.github.io/<repo>/` erreichbar.
+
+## Taler-Haushalt
+- Türchen: 100 Taler (Nikolaus, Heiligabend, Silvester: 150) – zusammen 3.250
+- Teile der Geschichte: 60–220 Taler, zusammen 3.570 – also mehr, als die Türchen allein bringen
+- Zusätzlich: gefundene Tiere (3 / 8 / 20 / 60 Taler je nach Seltenheit, bis ca. 800) und geheime
+  Spiel-Meilensteine (bis 315)
+- Extras (50–400) und Kleinigkeiten (15–60) muss man sich vom Rest zusammensparen.

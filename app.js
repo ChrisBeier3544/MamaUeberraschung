@@ -389,7 +389,7 @@ const App = (() => {
     const box = document.getElementById("snow");
     const flakes = ["❄", "❅", "❆", "✻"];
     setInterval(() => {
-      if (document.hidden || box.childElementCount > 40) return;
+      if (document.hidden || document.body.classList.contains("game-open") || box.childElementCount > 40) return;
       const size = 14 + Math.random() * 18;
       const f = el("div", { class: "flake", text: pick(flakes), style: `left:${Math.random() * 100}vw;font-size:${size}px;animation-duration:${9 + Math.random() * 9}s;--drift:${(Math.random() - 0.5) * 160}px;opacity:${0.6 + Math.random() * 0.4}` });
       f.addEventListener("animationend", () => f.remove());

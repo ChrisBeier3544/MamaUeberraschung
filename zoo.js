@@ -6,99 +6,99 @@ const Zoo = (() => {
   /* ---------- Die Geschichte: ein Kapitel pro Türchen ---------- */
   // item = was an diesem Tag im Shop freigeschaltet wird, coins = Belohnung fürs Rätsel
   const STORY = {
-    1: { item: "rasen", coins: 150, story: "Liebe Mama, ich bin Kalle, das Kapibara. Wir Tiere wohnen in einem kleinen Gehege am Stadtrand – und ehrlich gesagt ist es furchtbar: matschiger Boden, ein kaputter Zaun, kein einziger Baum. Unser alter Pfleger ist in Rente gegangen, und jetzt hoffen wir alle auf dich. Wirst du unsere neue Gehege-Direktorin? Fangen wir klein an: Unsere Pfoten versinken im Matsch. Frischer Rasen wäre ein Traum.", outro: "Deine ersten Taler! Im Shop wartet frischer Rasen auf dich." },
-    2: { item: "zaun", coins: 150, story: "Heute Nacht hat der Wind den alten Zaun endgültig umgeweht. Rocky, der Waschbär, war schon zweimal draußen und hat die Mülltonnen der Nachbarn „inspiziert“. Es wird Zeit für einen neuen Zaun!", outro: "Mit diesen Talern reicht es für einen stabilen Holzzaun. Rocky ist enttäuscht." },
-    3: { item: "baeume", coins: 150, story: "Die Katzen beschweren sich: kein Baum zum Klettern, kein Ast zum Draufliegen. Mimi hat versucht, stattdessen auf Kalle zu klettern. Kalle fand das nur mäßig entspannend. Zwei Bäume müssen her.", outro: "Zwei Bäume liegen jetzt im Shop bereit. Die Katzen sitzen schon in den Startlöchern." },
-    4: { item: "teich", coins: 150, story: "Kapibaras ohne Wasser sind wie Weihnachten ohne Plätzchen. Kalle sitzt seit Tagen in einer Pfütze und tut so, als wäre es ein See. Kaufen wir ihm einen richtigen Teich?", outro: "Ein echter Teich! Kalle hat schon sein Handtuch geholt." },
-    5: { item: "futter", coins: 150, story: "Beim Frühstück gab es Streit: Alle fressen aus einer einzigen alten Schüssel, und heute hat sich der Pinguin hineingesetzt. Eine ordentliche Futterstation würde den Frieden retten.", outro: "Futter für alle, und jeder bekommt seinen eigenen Napf." },
+    1: { item: "rasen", coins: 100, story: "Liebe Mama, ich bin Kalle, das Kapibara. Wir Tiere wohnen in einem kleinen Gehege am Stadtrand – und ehrlich gesagt ist es furchtbar: matschiger Boden, ein kaputter Zaun, kein einziger Baum. Unser alter Pfleger ist in Rente gegangen, und jetzt hoffen wir alle auf dich. Wirst du unsere neue Gehege-Direktorin? Fangen wir klein an: Unsere Pfoten versinken im Matsch. Frischer Rasen wäre ein Traum.", outro: "Deine ersten Taler! Im Shop wartet frischer Rasen auf dich." },
+    2: { item: "zaun", coins: 100, story: "Heute Nacht hat der Wind den alten Zaun endgültig umgeweht. Rocky, der Waschbär, war schon zweimal draußen und hat die Mülltonnen der Nachbarn „inspiziert“. Es wird Zeit für einen neuen Zaun!", outro: "Mit diesen Talern reicht es für einen stabilen Holzzaun. Rocky ist enttäuscht." },
+    3: { item: "baeume", coins: 100, story: "Die Katzen beschweren sich: kein Baum zum Klettern, kein Ast zum Draufliegen. Mimi hat versucht, stattdessen auf Kalle zu klettern. Kalle fand das nur mäßig entspannend. Zwei Bäume müssen her.", outro: "Zwei Bäume liegen jetzt im Shop bereit. Die Katzen sitzen schon in den Startlöchern." },
+    4: { item: "teich", coins: 100, story: "Kapibaras ohne Wasser sind wie Weihnachten ohne Plätzchen. Kalle sitzt seit Tagen in einer Pfütze und tut so, als wäre es ein See. Kaufen wir ihm einen richtigen Teich?", outro: "Ein echter Teich! Kalle hat schon sein Handtuch geholt." },
+    5: { item: "futter", coins: 100, story: "Beim Frühstück gab es Streit: Alle fressen aus einer einzigen alten Schüssel, und heute hat sich der Pinguin hineingesetzt. Eine ordentliche Futterstation würde den Frieden retten.", outro: "Futter für alle, und jeder bekommt seinen eigenen Napf." },
     6: { item: "laternen", coins: 150, story: "Nikolaus! Heute Abend wollen die Tiere ihre Stiefel rausstellen. Aber es wird so früh dunkel, dass der Nikolaus das Gehege glatt übersehen würde. Ein paar Laternen würden helfen.", outro: "Mit Laternen findet der Nikolaus garantiert den Weg." },
-    7: { item: "buehne", coins: 150, story: "Die Tiere haben ein Orchester gegründet. Leider proben sie zwischen Futternapf und Pfütze, und die Akustik ist … ausbaufähig. Eine kleine Bühne wäre wunderbar.", outro: "Die Bühne ist im Shop. Das Orchester stimmt schon mal die Instrumente." },
-    8: { item: "huette", coins: 150, story: "Skandal: Rocky hat die Keksvorräte geplündert. Schon wieder. Wir brauchen eine Vorratshütte mit einem Code-Schloss, das selbst ein Waschbär nicht knackt.", outro: "Eine Vorratshütte mit Schloss. Rocky hat sich schon Notizen gemacht." },
-    9: { item: "blumen", coins: 150, story: "Ein grauer Dezember braucht Farbe! Die Hasen wünschen sich Blumenbeete – Christrosen und Winterlinge blühen sogar im Schnee.", outro: "Blumenbeete für die Hasen. Sie versprechen, nur ein bisschen davon zu essen." },
-    10: { item: "hoehle", coins: 150, story: "Die Nächte werden kalt. Die Kleinen frieren und kuscheln sich nachts an den Elefanten, der dadurch kaum schlafen kann. Eine warme Kuschelhöhle muss her.", outro: "Eine Kuschelhöhle! Der Elefant bedankt sich mit einem langen, zufriedenen Seufzer." },
-    11: { item: "schild", coins: 150, story: "Spaziergänger fragen ständig, was das hier eigentlich für ein Gehege ist. Zeit für ein ordentliches Schild am Eingang – mit deinem Namen darauf!", outro: "Ab sofort steht es schwarz auf weiß: Das ist Mamas Tiergehege." },
-    12: { item: "bank", coins: 150, story: "Die Nachbarinnen vom Lindenweg kommen jetzt regelmäßig zu Besuch. Damit sie nicht im Stehen plaudern müssen, braucht es eine gemütliche Parkbank.", outro: "Eine Bank für Besuch. Die Katzen haben sie natürlich schon reserviert." },
-    13: { item: "weg", coins: 150, story: "Nach dem Regen ist der Eingang eine einzige Matschbahn. Der Igel hat sich gestern verlaufen und ist erst nach Stunden wieder aufgetaucht. Ein Kiesweg würde allen helfen.", outro: "Ein richtiger Weg – nie wieder verlorene Igel." },
-    14: { item: "onsen", coins: 150, story: "Kalle hat einen Wunsch und trägt ihn sehr höflich vor: eine heiße Badewanne. In Japan haben Kapibaras so etwas. Er sagt, er sei nicht neidisch. Er ist es aber ein bisschen.", outro: "Kalles Badewanne ist im Shop. Er hat schon eine Mandarine bereitgelegt." },
-    15: { item: "kletter", coins: 150, story: "Die jungen Tiere langweilen sich und haben vor Übermut die Bank angeknabbert. Ein Kletterbaum würde ihre Energie in die richtigen Bahnen lenken.", outro: "Ein Kletterbaum für die Wilden. Die Bank atmet auf." },
-    16: { item: "vogelhaus", coins: 150, story: "Eine Fledermaus hat eine verschlüsselte Nachricht geschickt: Sie und ihre Freunde, die Wintervögel, suchen ein Zuhause. Ein Vogelhäuschen wäre die perfekte Einladung.", outro: "Das Vogelhäuschen ist bereit für die neuen Mitbewohner." },
-    17: { item: "spielplatz", coins: 150, story: "Im Gehege gibt es Nachwuchs! Ein Lämmchen, zwei Ferkel und ein kleiner Fuchs toben herum. Für die Kleinen braucht es einen Sandkasten mit Rutsche.", outro: "Ein Spielplatz für die Kleinen – die Großen wollen natürlich auch rutschen." },
-    18: { item: "lichter", coins: 150, story: "Heute Morgen stand ein riesiges Paket vor dem Tor. Auf dem Deckel klebt ein Silbenrätsel und ein Zettel: „Nur für die Gehege-Direktorin.“ Kalle meint, das Paket öffnet sich erst, wenn jemand Kluges das Rätsel löst.", outro: "Im Paket steckt eine Lichterkette – und sieben kleine Päckchen mit den Zahlen 25 bis 31! Der Adventskalender geht nach Weihnachten weiter." },
-    19: { item: "schneemann", coins: 150, story: "Der erste richtige Schnee! Leider verschlafen ihn die Siebenschläfer. Weck sie auf – dann bauen alle zusammen einen Schneemann.", outro: "Alle sind wach, und im Shop wartet ein Schneemann." },
-    20: { item: "fotowand", coins: 150, story: "Die Tiere wollen ein Weihnachtsfoto für ihre Verwandten in anderen Zoos machen. Dafür brauchen sie eine schöne Fotowand.", outro: "Die Fotowand steht bereit. Bitte recht freundlich!" },
-    21: { item: "stand", coins: 150, story: "Nach dem Zimtstern-Vorfall hat Kalle beschlossen: Plätzchen gibt es ab jetzt ganz offiziell, an einem eigenen Plätzchenstand. Vorher muss aber der Dieb gefunden werden.", outro: "Fall gelöst! Der Plätzchenstand bekommt ein großes Schild: „Bitte nicht waschen.“" },
-    22: { item: "rodel", coins: 150, story: "Der Schnee bleibt liegen! Die Pinguine wollen rodeln, die Otter auch, und Kalle will zuschauen. Ein Rodelhügel muss her.", outro: "Der Rodelhügel ist im Shop. Die Pinguine haben schon ihre Bäuche aufgewärmt." },
-    23: { item: "bruecke", coins: 150, story: "Morgen kommt die ganze Tierfamilie zum Weihnachtsfoto, aber die Hälfte will am Teich keine nassen Füße bekommen. Eine kleine Brücke wäre die Lösung.", outro: "Eine Brücke über den Teich. Morgen ist Heiligabend!" },
-    24: { item: "tanne", coins: 200, story: "Heiligabend. Das Gehege ist kaum wiederzuerkennen. Jetzt fehlt nur noch eins: ein echter Weihnachtsbaum, unter dem sich alle versammeln können.", outro: "Frohe Weihnachten! Der Weihnachtsbaum ist im Shop – und unter dem Baum liegt ein Brief für dich." },
-    25: { item: "eisbahn", coins: 150, story: "Erster Weihnachtstag! Der Teich ist über Nacht zugefroren, und die Pinguine haben ihn sofort zur Eisbahn erklärt. Mit Bande und Fähnchen wäre sie perfekt.", outro: "Die Eisbahn ist eröffnet. Bitte nicht drängeln, Pinguine." },
-    26: { item: "iglu", coins: 150, story: "Zweiter Weihnachtstag. Den Eisbären ist die Kuschelhöhle zu warm. Sie wünschen sich ein Iglu – ganz klassisch.", outro: "Ein Iglu für die Eisbären. Die Pinguine wollen Untermieter werden." },
-    27: { item: "kakao", coins: 150, story: "Nach dem Eislaufen frieren alle. Ein Kakao-Stand mit Sahne und Marshmallows würde die Stimmung retten.", outro: "Kakao für alle. Der Mops möchte bitte die doppelte Portion Sahne." },
-    28: { item: "feuer", coins: 150, story: "Die Abende zwischen den Jahren sind lang. Die Tiere möchten am Lagerfeuer sitzen und sich Geschichten erzählen – am liebsten die von der neuen Direktorin.", outro: "Ein Lagerfeuer. Heute Abend erzählt Kalle, wie alles anfing." },
-    29: { item: "teleskop", coins: 150, story: "Rocky behauptet, er hätte einen Stern mit Waschbär-Maske gesehen. Niemand glaubt ihm. Mit einem Teleskop ließe sich das klären.", outro: "Ein Teleskop! Rocky sucht schon den Himmel ab." },
-    30: { item: "karussell", coins: 150, story: "Der Elefant hat einen Traum: einmal Karussell fahren. Er verspricht, sich ganz leicht zu machen.", outro: "Ein Karussell! Der Elefant hat Tränen in den Augen." },
-    31: { item: "feuerwerk", coins: 250, story: "Silvester! Das letzte Türchen. Alle Tiere sitzen auf der Bank, im Iglu und auf dem Rodelhügel und warten auf Mitternacht. Es fehlt nur noch das Feuerwerk – ein leises natürlich, wegen der Tiere.", outro: "Kauf das Feuerwerk im Shop – und dann: Frohes neues Jahr!" },
+    7: { item: "buehne", coins: 100, story: "Die Tiere haben ein Orchester gegründet. Leider proben sie zwischen Futternapf und Pfütze, und die Akustik ist … ausbaufähig. Eine kleine Bühne wäre wunderbar.", outro: "Die Bühne ist im Shop. Das Orchester stimmt schon mal die Instrumente." },
+    8: { item: "huette", coins: 100, story: "Skandal: Rocky hat die Keksvorräte geplündert. Schon wieder. Wir brauchen eine Vorratshütte mit einem Code-Schloss, das selbst ein Waschbär nicht knackt.", outro: "Eine Vorratshütte mit Schloss. Rocky hat sich schon Notizen gemacht." },
+    9: { item: "blumen", coins: 100, story: "Ein grauer Dezember braucht Farbe! Die Hasen wünschen sich Blumenbeete – Christrosen und Winterlinge blühen sogar im Schnee.", outro: "Blumenbeete für die Hasen. Sie versprechen, nur ein bisschen davon zu essen." },
+    10: { item: "hoehle", coins: 100, story: "Die Nächte werden kalt. Die Kleinen frieren und kuscheln sich nachts an den Elefanten, der dadurch kaum schlafen kann. Eine warme Kuschelhöhle muss her.", outro: "Eine Kuschelhöhle! Der Elefant bedankt sich mit einem langen, zufriedenen Seufzer." },
+    11: { item: "schild", coins: 100, story: "Spaziergänger fragen ständig, was das hier eigentlich für ein Gehege ist. Zeit für ein ordentliches Schild am Eingang – mit deinem Namen darauf!", outro: "Ab sofort steht es schwarz auf weiß: Das ist Mamas Tiergehege." },
+    12: { item: "bank", coins: 100, story: "Die Nachbarinnen vom Lindenweg kommen jetzt regelmäßig zu Besuch. Damit sie nicht im Stehen plaudern müssen, braucht es eine gemütliche Parkbank.", outro: "Eine Bank für Besuch. Die Katzen haben sie natürlich schon reserviert." },
+    13: { item: "weg", coins: 100, story: "Nach dem Regen ist der Eingang eine einzige Matschbahn. Der Igel hat sich gestern verlaufen und ist erst nach Stunden wieder aufgetaucht. Ein Kiesweg würde allen helfen.", outro: "Ein richtiger Weg – nie wieder verlorene Igel." },
+    14: { item: "onsen", coins: 100, story: "Kalle hat einen Wunsch und trägt ihn sehr höflich vor: eine heiße Badewanne. In Japan haben Kapibaras so etwas. Er sagt, er sei nicht neidisch. Er ist es aber ein bisschen.", outro: "Kalles Badewanne ist im Shop. Er hat schon eine Mandarine bereitgelegt." },
+    15: { item: "kletter", coins: 100, story: "Die jungen Tiere langweilen sich und haben vor Übermut die Bank angeknabbert. Ein Kletterbaum würde ihre Energie in die richtigen Bahnen lenken.", outro: "Ein Kletterbaum für die Wilden. Die Bank atmet auf." },
+    16: { item: "vogelhaus", coins: 100, story: "Eine Fledermaus hat eine verschlüsselte Nachricht geschickt: Sie und ihre Freunde, die Wintervögel, suchen ein Zuhause. Ein Vogelhäuschen wäre die perfekte Einladung.", outro: "Das Vogelhäuschen ist bereit für die neuen Mitbewohner." },
+    17: { item: "spielplatz", coins: 100, story: "Im Gehege gibt es Nachwuchs! Ein Lämmchen, zwei Ferkel und ein kleiner Fuchs toben herum. Für die Kleinen braucht es einen Sandkasten mit Rutsche.", outro: "Ein Spielplatz für die Kleinen – die Großen wollen natürlich auch rutschen." },
+    18: { item: "lichter", coins: 100, story: "Heute Morgen stand ein riesiges Paket vor dem Tor. Auf dem Deckel klebt ein Silbenrätsel und ein Zettel: „Nur für die Gehege-Direktorin.“ Kalle meint, das Paket öffnet sich erst, wenn jemand Kluges das Rätsel löst.", outro: "Im Paket steckt eine Lichterkette – und sieben kleine Päckchen mit den Zahlen 25 bis 31! Der Adventskalender geht nach Weihnachten weiter." },
+    19: { item: "schneemann", coins: 100, story: "Der erste richtige Schnee! Leider verschlafen ihn die Siebenschläfer. Weck sie auf – dann bauen alle zusammen einen Schneemann.", outro: "Alle sind wach, und im Shop wartet ein Schneemann." },
+    20: { item: "fotowand", coins: 100, story: "Die Tiere wollen ein Weihnachtsfoto für ihre Verwandten in anderen Zoos machen. Dafür brauchen sie eine schöne Fotowand.", outro: "Die Fotowand steht bereit. Bitte recht freundlich!" },
+    21: { item: "stand", coins: 100, story: "Nach dem Zimtstern-Vorfall hat Kalle beschlossen: Plätzchen gibt es ab jetzt ganz offiziell, an einem eigenen Plätzchenstand. Vorher muss aber der Dieb gefunden werden.", outro: "Fall gelöst! Der Plätzchenstand bekommt ein großes Schild: „Bitte nicht waschen.“" },
+    22: { item: "rodel", coins: 100, story: "Der Schnee bleibt liegen! Die Pinguine wollen rodeln, die Otter auch, und Kalle will zuschauen. Ein Rodelhügel muss her.", outro: "Der Rodelhügel ist im Shop. Die Pinguine haben schon ihre Bäuche aufgewärmt." },
+    23: { item: "bruecke", coins: 100, story: "Morgen kommt die ganze Tierfamilie zum Weihnachtsfoto, aber die Hälfte will am Teich keine nassen Füße bekommen. Eine kleine Brücke wäre die Lösung.", outro: "Eine Brücke über den Teich. Morgen ist Heiligabend!" },
+    24: { item: "tanne", coins: 150, story: "Heiligabend. Das Gehege ist kaum wiederzuerkennen. Jetzt fehlt nur noch eins: ein echter Weihnachtsbaum, unter dem sich alle versammeln können.", outro: "Frohe Weihnachten! Der Weihnachtsbaum ist im Shop – und unter dem Baum liegt ein Brief für dich." },
+    25: { item: "eisbahn", coins: 100, story: "Erster Weihnachtstag! Der Teich ist über Nacht zugefroren, und die Pinguine haben ihn sofort zur Eisbahn erklärt. Mit Bande und Fähnchen wäre sie perfekt.", outro: "Die Eisbahn ist eröffnet. Bitte nicht drängeln, Pinguine." },
+    26: { item: "iglu", coins: 100, story: "Zweiter Weihnachtstag. Den Eisbären ist die Kuschelhöhle zu warm. Sie wünschen sich ein Iglu – ganz klassisch.", outro: "Ein Iglu für die Eisbären. Die Pinguine wollen Untermieter werden." },
+    27: { item: "kakao", coins: 100, story: "Nach dem Eislaufen frieren alle. Ein Kakao-Stand mit Sahne und Marshmallows würde die Stimmung retten.", outro: "Kakao für alle. Der Mops möchte bitte die doppelte Portion Sahne." },
+    28: { item: "feuer", coins: 100, story: "Die Abende zwischen den Jahren sind lang. Die Tiere möchten am Lagerfeuer sitzen und sich Geschichten erzählen – am liebsten die von der neuen Direktorin.", outro: "Ein Lagerfeuer. Heute Abend erzählt Kalle, wie alles anfing." },
+    29: { item: "teleskop", coins: 100, story: "Rocky behauptet, er hätte einen Stern mit Waschbär-Maske gesehen. Niemand glaubt ihm. Mit einem Teleskop ließe sich das klären.", outro: "Ein Teleskop! Rocky sucht schon den Himmel ab." },
+    30: { item: "karussell", coins: 100, story: "Der Elefant hat einen Traum: einmal Karussell fahren. Er verspricht, sich ganz leicht zu machen.", outro: "Ein Karussell! Der Elefant hat Tränen in den Augen." },
+    31: { item: "feuerwerk", coins: 150, story: "Silvester! Das letzte Türchen. Alle Tiere sitzen auf der Bank, im Iglu und auf dem Rodelhügel und warten auf Mitternacht. Es fehlt nur noch das Feuerwerk – ein leises natürlich, wegen der Tiere.", outro: "Kauf das Feuerwerk im Shop – und dann: Frohes neues Jahr!" },
   };
 
   /* ---------- Shop-Artikel ---------- */
   // [key, Name, Preis, Beschreibung, Vorschau-Ausschnitt x y w h]
   const ITEMS = [
-    ["rasen", "Frischer Rasen", 100, "Saftig grünes Gras statt Matsch.", [380, 300, 240, 140]],
-    ["zaun", "Neuer Holzzaun", 120, "Stabil, schön und waschbärsicher.", [0, 170, 330, 120]],
-    ["baeume", "Zwei Bäume", 120, "Schatten, Äste und Kletterspaß.", [190, 120, 150, 180]],
-    ["teich", "Teich", 130, "Endlich richtig planschen.", [630, 380, 340, 140]],
-    ["futter", "Futterstation", 110, "Ein Napf für jeden.", [310, 330, 110, 90]],
-    ["laternen", "Laternen", 110, "Warmes Licht für dunkle Abende.", [600, 360, 90, 130]],
-    ["buehne", "Bühne", 130, "Für das Tier-Orchester.", [605, 180, 150, 120]],
-    ["huette", "Vorratshütte", 120, "Mit waschbärsicherem Schloss.", [825, 190, 120, 110]],
-    ["blumen", "Blumenbeete", 100, "Christrosen und Winterlinge.", [240, 530, 260, 80]],
+    ["rasen", "Frischer Rasen", 60, "Saftig grünes Gras statt Matsch.", [380, 300, 240, 140]],
+    ["zaun", "Neuer Holzzaun", 90, "Stabil, schön und waschbärsicher.", [0, 170, 330, 120]],
+    ["baeume", "Zwei Bäume", 110, "Schatten, Äste und Kletterspaß.", [190, 120, 150, 180]],
+    ["teich", "Teich", 170, "Endlich richtig planschen.", [630, 380, 340, 140]],
+    ["futter", "Futterstation", 70, "Ein Napf für jeden.", [310, 330, 110, 90]],
+    ["laternen", "Laternen", 120, "Warmes Licht für dunkle Abende.", [600, 360, 90, 130]],
+    ["buehne", "Bühne", 140, "Für das Tier-Orchester.", [605, 180, 150, 120]],
+    ["huette", "Vorratshütte", 90, "Mit waschbärsicherem Schloss.", [825, 190, 120, 110]],
+    ["blumen", "Blumenbeete", 70, "Christrosen und Winterlinge.", [240, 530, 260, 80]],
     ["hoehle", "Kuschelhöhle", 130, "Warm, weich und gemütlich.", [20, 320, 150, 100]],
-    ["schild", "Eingangsschild", 100, "„Mamas Tiergehege“", [10, 510, 150, 100]],
-    ["bank", "Parkbank", 100, "Für Besuch und Katzen.", [545, 245, 90, 50]],
+    ["schild", "Eingangsschild", 60, "„Mamas Tiergehege“", [10, 510, 150, 100]],
+    ["bank", "Parkbank", 80, "Für Besuch und Katzen.", [545, 245, 90, 50]],
     ["weg", "Kiesweg", 110, "Nie wieder verlaufene Igel.", [400, 280, 220, 320]],
-    ["onsen", "Kalles Badewanne", 140, "Heißes Bad mit Mandarinen.", [550, 330, 130, 90]],
-    ["kletter", "Kletterbaum", 120, "Für die wilden Kleinen.", [370, 160, 90, 130]],
-    ["vogelhaus", "Vogelhäuschen", 90, "Ein Zuhause für Wintervögel.", [300, 170, 70, 120]],
-    ["spielplatz", "Spielplatz", 130, "Sandkasten mit Rutsche.", [420, 360, 130, 90]],
-    ["lichter", "Lichterkette", 110, "Funkelt am ganzen Zaun.", [0, 170, 330, 80]],
-    ["schneemann", "Schneemann", 100, "Mit Karottennase und Schal.", [930, 480, 70, 120]],
-    ["fotowand", "Fotowand", 110, "Bitte recht freundlich!", [140, 480, 110, 120]],
-    ["stand", "Plätzchenstand", 130, "Offizielle Plätzchen-Ausgabe.", [735, 190, 95, 105]],
-    ["rodel", "Rodelhügel", 140, "Bauchrutschen erlaubt.", [0, 130, 240, 160]],
-    ["bruecke", "Brücke", 120, "Trockene Pfoten am Teich.", [710, 400, 180, 90]],
-    ["tanne", "Weihnachtsbaum", 180, "Geschmückt, mit Stern.", [430, 70, 140, 230]],
+    ["onsen", "Kalles Badewanne", 170, "Heißes Bad mit Mandarinen.", [550, 330, 130, 90]],
+    ["kletter", "Kletterbaum", 100, "Für die wilden Kleinen.", [370, 160, 90, 130]],
+    ["vogelhaus", "Vogelhäuschen", 70, "Ein Zuhause für Wintervögel.", [300, 170, 70, 120]],
+    ["spielplatz", "Spielplatz", 150, "Sandkasten mit Rutsche.", [420, 360, 130, 90]],
+    ["lichter", "Lichterkette", 90, "Funkelt am ganzen Zaun.", [0, 170, 330, 80]],
+    ["schneemann", "Schneemann", 70, "Mit Karottennase und Schal.", [930, 480, 70, 120]],
+    ["fotowand", "Fotowand", 90, "Bitte recht freundlich!", [140, 480, 110, 120]],
+    ["stand", "Plätzchenstand", 120, "Offizielle Plätzchen-Ausgabe.", [735, 190, 95, 105]],
+    ["rodel", "Rodelhügel", 160, "Bauchrutschen erlaubt.", [0, 130, 240, 160]],
+    ["bruecke", "Brücke", 110, "Trockene Pfoten am Teich.", [710, 400, 180, 90]],
+    ["tanne", "Weihnachtsbaum", 220, "Geschmückt, mit Stern.", [430, 70, 140, 230]],
     ["eisbahn", "Eisbahn", 140, "Der Teich als Schlittschuhbahn.", [630, 380, 340, 140]],
-    ["iglu", "Iglu", 130, "Für Eisbären mit Stil.", [810, 500, 130, 100]],
-    ["kakao", "Kakao-Stand", 120, "Mit Sahne und Marshmallows.", [640, 480, 110, 100]],
-    ["feuer", "Lagerfeuer", 120, "Geschichten am Feuer.", [520, 460, 90, 80]],
-    ["teleskop", "Teleskop", 120, "Für Sterne mit Maske.", [900, 260, 90, 90]],
-    ["karussell", "Karussell", 160, "Auch für Elefanten.", [170, 300, 130, 110]],
-    ["feuerwerk", "Feuerwerk", 200, "Leise, bunt und wunderschön.", [0, 0, 1000, 260]],
+    ["iglu", "Iglu", 120, "Für Eisbären mit Stil.", [810, 500, 130, 100]],
+    ["kakao", "Kakao-Stand", 90, "Mit Sahne und Marshmallows.", [640, 480, 110, 100]],
+    ["feuer", "Lagerfeuer", 80, "Geschichten am Feuer.", [520, 460, 90, 80]],
+    ["teleskop", "Teleskop", 110, "Für Sterne mit Maske.", [900, 260, 90, 90]],
+    ["karussell", "Karussell", 200, "Auch für Elefanten.", [170, 300, 130, 110]],
+    ["feuerwerk", "Feuerwerk", 180, "Leise, bunt und wunderschön.", [0, 0, 1000, 260]],
   ];
   const EXTRAS = [
-    ["pilze", "Fliegenpilze", 40, "Rot mit weißen Punkten.", [110, 440, 90, 60]],
-    ["zwerg", "Gartenzwerg", 60, "Bewacht das Gehege.", [400, 450, 60, 80]],
-    ["vogelbad", "Vogeltränke", 70, "Für die gefiederten Gäste.", [700, 420, 70, 80]],
-    ["wimpel", "Wimpelkette", 80, "Bunte Fähnchen im Wind.", [250, 110, 750, 60]],
-    ["schaukel", "Reifenschaukel", 90, "Am großen Baum.", [930, 160, 90, 150]],
-    ["statue", "Kalle-Statue", 250, "Golden. Gelassen. Ewig.", [215, 420, 90, 100]],
+    ["pilze", "Fliegenpilze", 50, "Rot mit weißen Punkten.", [110, 440, 90, 60]],
+    ["zwerg", "Gartenzwerg", 80, "Bewacht das Gehege.", [400, 450, 60, 80]],
+    ["vogelbad", "Vogeltränke", 90, "Für die gefiederten Gäste.", [700, 420, 70, 80]],
+    ["wimpel", "Wimpelkette", 120, "Bunte Fähnchen im Wind.", [250, 110, 750, 60]],
+    ["schaukel", "Reifenschaukel", 150, "Am großen Baum.", [930, 160, 90, 150]],
+    ["statue", "Kalle-Statue", 400, "Golden. Gelassen. Ewig.", [215, 420, 90, 100]],
   ];
   // Kleinigkeiten für zwischendurch – günstig und jederzeit kaufbar
   const SMALL = [
-    ["ball", "Bunter Ball", 15, "Zum Kicken und Hinterherjagen.", [566, 420, 48, 46]],
+    ["ball", "Bunter Ball", 20, "Zum Kicken und Hinterherjagen.", [566, 420, 48, 46]],
     ["wasserschale", "Wassernapf", 15, "Frisches Wasser für alle.", [710, 362, 60, 32]],
-    ["giesskanne", "Gießkanne", 15, "Damit die Blumen blühen.", [746, 552, 68, 42]],
-    ["meisen", "Meisenknödel", 15, "Für die gefiederten Nachbarn.", [450, 250, 55, 92]],
-    ["kissen", "Kuschelkissen", 20, "Weich, rosa, heiß begehrt.", [18, 442, 80, 44]],
-    ["kranz", "Kranz am Zaun", 20, "Tannengrün mit roter Schleife.", [402, 192, 56, 62]],
-    ["vogel", "Rotkehlchen", 20, "Sitzt am liebsten auf dem Zaun.", [678, 172, 48, 34]],
-    ["briefkasten", "Wunschzettel-Briefkasten", 25, "Für Post an den Weihnachtsmann.", [32, 238, 60, 82]],
-    ["strohballen", "Strohballen", 25, "Zum Draufsitzen und Reinkuscheln.", [304, 464, 92, 46]],
-    ["eiszapfen", "Eiszapfen", 25, "Glitzern am Zaun in der Sonne.", [598, 230, 206, 40]],
-    ["kerzen", "Lichtertüten", 25, "Kleine Lichter am Wegrand.", [428, 428, 166, 112]],
-    ["windrad", "Windrad", 30, "Dreht sich bei jedem Lüftchen.", [836, 276, 68, 104]],
-    ["holz", "Holzstapel", 30, "Für kalte Tage.", [548, 552, 86, 46]],
-    ["teddy", "Teddybär", 35, "Wohnt auf der Kuschelhöhle.", [68, 284, 56, 50]],
-    ["sternschnuppe", "Sternschnuppe", 40, "Wer sie sieht, darf sich etwas wünschen.", [56, 50, 138, 76]],
+    ["giesskanne", "Gießkanne", 20, "Damit die Blumen blühen.", [746, 552, 68, 42]],
+    ["meisen", "Meisenknödel", 20, "Für die gefiederten Nachbarn.", [450, 250, 55, 92]],
+    ["kissen", "Kuschelkissen", 25, "Weich, rosa, heiß begehrt.", [18, 442, 80, 44]],
+    ["kranz", "Kranz am Zaun", 30, "Tannengrün mit roter Schleife.", [402, 192, 56, 62]],
+    ["vogel", "Rotkehlchen", 25, "Sitzt am liebsten auf dem Zaun.", [678, 172, 48, 34]],
+    ["briefkasten", "Wunschzettel-Briefkasten", 35, "Für Post an den Weihnachtsmann.", [32, 238, 60, 82]],
+    ["strohballen", "Strohballen", 30, "Zum Draufsitzen und Reinkuscheln.", [304, 464, 92, 46]],
+    ["eiszapfen", "Eiszapfen", 35, "Glitzern am Zaun in der Sonne.", [598, 230, 206, 40]],
+    ["kerzen", "Lichtertüten", 40, "Kleine Lichter am Wegrand.", [428, 428, 166, 112]],
+    ["windrad", "Windrad", 40, "Dreht sich bei jedem Lüftchen.", [836, 276, 68, 104]],
+    ["holz", "Holzstapel", 35, "Für kalte Tage.", [548, 552, 86, 46]],
+    ["teddy", "Teddybär", 45, "Wohnt auf der Kuschelhöhle.", [68, 284, 56, 50]],
+    ["sternschnuppe", "Sternschnuppe", 60, "Wer sie sieht, darf sich etwas wünschen.", [56, 50, 138, 76]],
   ];
   /* ---------- Futter: jede Tierart frisst etwas anderes ---------- */
   const FOOD = {
@@ -125,9 +125,11 @@ const Zoo = (() => {
     if (!foodCount(sp)) return false;
     st.food[sp]--; st.fed[id] = Date.now(); save(); return true;
   }
-  function buyFood(sp, n) {
-    if (st.coins < n) return false;
-    st.coins -= n; st.food[sp] = foodCount(sp) + n; save(); refresh(); return true;
+  // Futterpackungen: [Preis, Stück]
+  const FOOD_PACKS = [[1, 3], [2, 7], [5, 20]];
+  function buyFood(sp, price, qty) {
+    if (st.coins < price) return false;
+    st.coins -= price; st.food[sp] = foodCount(sp) + qty; save(); refresh(); return true;
   }
 
   const ALL = [...ITEMS, ...EXTRAS, ...SMALL];
@@ -339,17 +341,17 @@ const Zoo = (() => {
       const plural = typeof Animals !== "undefined" ? Animals.SPECIES[sp].plural : sp;
       const mine = typeof Animals !== "undefined" ? Animals.ownedOf(sp) : 0;
       const stock = H.el("b", { class: "food-stock", text: `Vorrat: ${foodCount(sp)}` });
-      const mk = (n) => {
-        const b = H.el("button", { class: "btn" + (st.coins >= n ? "" : " btn-soft"), text: `${n} kaufen · ${n} T` });
+      const mk = ([n, qty]) => {
+        const b = H.el("button", { class: "btn" + (st.coins >= n ? "" : " btn-soft"), text: `${qty} Stück · ${n} T` });
         b.disabled = st.coins < n;
-        b.onclick = () => { if (buyFood(sp, n)) { H.sfx.pop(); stock.textContent = `Vorrat: ${foodCount(sp)}`; coinsEl.querySelector("b").textContent = st.coins; area.querySelectorAll(".food-card .btn").forEach((x) => { const need = +x.dataset.n; x.disabled = st.coins < need; x.classList.toggle("btn-soft", st.coins < need); }); } };
+        b.onclick = () => { if (buyFood(sp, n, qty)) { H.sfx.pop(); stock.textContent = `Vorrat: ${foodCount(sp)}`; coinsEl.querySelector("b").textContent = st.coins; area.querySelectorAll(".food-card .btn").forEach((x) => { const need = +x.dataset.n; x.disabled = st.coins < need; x.classList.toggle("btn-soft", st.coins < need); }); } };
         b.dataset.n = n;
         return b;
       };
       return H.el("div", { class: "shop-card food-card" + (mine ? "" : " nobody") },
         H.el("div", { class: "shop-pic food-pic", html: foodIcon(sp) }),
         H.el("div", { class: "shop-info" }, H.el("b", { text: name }), H.el("small", { text: `für ${plural}` + (mine ? ` · ${mine} im Gehege` : " · noch keine im Gehege") }), stock),
-        H.el("div", { class: "shop-buy food-buy" }, mk(1), mk(5)));
+        H.el("div", { class: "shop-buy food-buy" }, ...FOOD_PACKS.map(mk)));
     };
     const tabBar = H.el("div", { class: "shop-tabs", role: "tablist" });
     const show = (id) => {
@@ -359,7 +361,7 @@ const Zoo = (() => {
       area.innerHTML = "";
       if (id === "futter") {
         const order = list.slice().sort((a, b) => (Animals.ownedOf(b) > 0) - (Animals.ownedOf(a) > 0));
-        area.append(H.el("p", { class: "shop-note", text: "Jede Tierart frisst etwas anderes. Tiere, die einen Tag lang nichts bekommen, werden traurig." }), H.el("div", { class: "shop-grid" }, ...order.map(foodCard)));
+        area.append(H.el("p", { class: "shop-note", text: "Jede Tierart frisst etwas anderes. Tiere, die einen Tag lang nichts bekommen, werden traurig. Größere Packungen sind günstiger." }), H.el("div", { class: "shop-grid" }, ...order.map(foodCard)));
       } else area.append(list.length ? H.el("div", { class: "shop-grid" + (id === "gehege" ? " mini" : "") }, ...list.map(card)) : H.el("p", { class: "shop-empty", text: emptyText }));
       if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
     };
@@ -398,15 +400,11 @@ const Zoo = (() => {
   // Spiele: Rekorde & geheime Meilensteine
   function gameResult(game, score, rule) {
     const old = st.high[game] || 0;
+    if (score > old) st.high[game] = score;
     let coins = 0;
-    const notes = [];
-    if (score > old) {
-      st.high[game] = score;
-      if (score >= rule.min) { const c = Math.min(40, 10 + Math.floor((score - old) / rule.per)); coins += c; notes.push(`neuer Rekord: ${c} Taler`); }
-    }
-    rule.ms.forEach((m) => { const k = game + m; if (score >= m && !st.ms[k]) { st.ms[k] = true; coins += 25; notes.push(`${m} Punkte geknackt: 25 Taler`); } });
+    rule.ms.forEach(([m, c]) => { const k = game + m; if (score >= m && !st.ms[k]) { st.ms[k] = true; coins += c; } });
     save();
-    return { old, high: st.high[game] || 0, coins, notes };
+    return { old, high: st.high[game] || 0, coins };
   }
 
   return { STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };

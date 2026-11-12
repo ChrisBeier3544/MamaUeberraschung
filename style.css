@@ -888,3 +888,18 @@ h1 { position: relative; z-index: 2; }
 .game-score { font-size: 34px; font-weight: 700; color: var(--red); }
 .game-secret { background: #fff7d6; border: 2px solid #f2d27a; border-radius: 16px; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; animation: popIn .6s cubic-bezier(.3, 1.8, .5, 1); }
 .game-secret b { font-size: 18px; color: #a3720f; }
+
+/* ================= Spiele im Vollbild + Seite pausiert ================= */
+.games-overlay .g-area { display: flex; flex-direction: column; padding-bottom: 0; }
+.games-overlay.playing .g-sub { display: none; }
+.games-overlay.playing .g-head { padding-top: 8px; padding-bottom: 6px; }
+.games-overlay.playing .g-head h2 { font-size: 22px; }
+.game-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.game-bar b { font-size: 18px; }
+.game-bar .btn { padding: 7px 14px; font-size: 14px; }
+.game-rec { margin-left: auto; color: var(--green-dark); font-weight: 600; font-variant-numeric: tabular-nums; }
+.game-wrap { position: relative; width: 100%; margin: 0; }
+.game-canvas { border-radius: 16px; }
+body.game-open main, body.game-open header, body.game-open #parade, body.game-open #snow, body.game-open #capy-wrap,
+body.game-open #lights, body.game-open #gehege-btn, body.game-open #sound-toggle, body.game-open > .hider { visibility: hidden; }
+body.game-open #snow, body.game-open #parade { display: none; }

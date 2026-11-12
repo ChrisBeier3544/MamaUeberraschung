@@ -445,7 +445,7 @@ const Animals = (() => {
     }, 550);
     const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
     if (isNew && typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 650);
-    if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 5, selten: 10, sehrselten: 25, legendaer: 75 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
+    if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 3, selten: 8, sehrselten: 20, legendaer: 60 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
     if (isNew) setTimeout(refreshPens, 1300);
     else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
     if (isNew && v.rarity === "sehrselten") { H.burst(r.left + r.width / 2, r.top, ["💜", "✨", "⭐"], 18, 140); [784, 988, 1175].forEach((f, i) => s.tone(f, 0.2, "triangle", 0.15, null, 0.5 + i * 0.1)); }
