@@ -75,6 +75,7 @@ const Games = (() => {
       function over(score) {
         stop(); stop = () => {};
         const res = Zoo.gameResult(id, score, RULES[id]);
+        if (typeof Extras !== "undefined") Extras.track("games");
         bar.querySelector(".game-rec").textContent = `Rekord: ${res.high}`;
         panel.innerHTML = ""; panel.classList.remove("hidden");
         panel.append(H.el("b", { text: score > res.old ? "Neuer Rekord!" : "Vorbei!" }), H.el("span", { class: "game-score", text: `${score} ${score === 1 ? "Punkt" : "Punkte"}` }), H.el("span", { text: `Rekord: ${res.high}` }));

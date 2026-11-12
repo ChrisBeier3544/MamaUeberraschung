@@ -350,6 +350,14 @@ const Animals = (() => {
 
   const rarityChip = (v) => `<span class="rar r-${v.rarity}">${RARITY[v.rarity].label}</span>`;
 
+  // eigene Namen, die Mama vergeben hat
+  try { const nm = JSON.parse(localStorage.getItem("mama-namen-" + (typeof CONFIG !== "undefined" ? CONFIG.year : "x")) || "{}"); VARIANTS.forEach((v) => { if (nm[v.id]) v.name = nm[v.id]; }); } catch (e) {}
+  function rename(v, name) {
+    name = String(name || "").trim().slice(0, 18); if (!name) return;
+    v.name = name;
+    try { const k = "mama-namen-" + CONFIG.year; const nm = JSON.parse(localStorage.getItem(k) || "{}"); nm[v.id] = name; localStorage.setItem(k, JSON.stringify(nm)); } catch (e) {}
+    if (typeof Extras !== "undefined") Extras.track("renamed");
+  }
   const desc = (v) => {
     const sp = SPECIES[v.sp];
     return sp.name + (sp.colors.length > 1 ? ", " + sp.colors[v.col].n : "") + (v.acc ? " " + ACC_NAME[v.acc] : "");
@@ -448,6 +456,7 @@ const Animals = (() => {
     }, 550);
     const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
     if (isNew && typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 650);
+    if (isNew) (typeof Extras !== "undefined" && Extras.track("found"));
     if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 3, selten: 8, sehrselten: 20, legendaer: 60 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
     if (isNew) setTimeout(refreshPens, 1300);
     else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
@@ -547,18 +556,21 @@ const Animals = (() => {
     document.addEventListener("keydown", esc);
     const tabPen = H.el("button", { class: "g-tab active", text: "Gehege" });
     const tabAlbum = H.el("button", { class: "g-tab", text: "Sammelalbum" });
+    const tabBadges = H.el("button", { class: "g-tab", text: "Abzeichen" });
     const area = H.el("div", { class: "g-area" });
     ov.append(H.el("div", { class: "g-head" },
       H.el("div", {}, H.el("h2", { text: "Mamas Tiergehege" }), H.el("div", { class: "g-sub", text: `${found.size} von 100 Tieren gefunden` })),
-      H.el("div", { class: "g-tabs" }, tabPen, tabAlbum),
+      H.el("div", { class: "g-tabs" }, tabPen, tabAlbum, typeof Extras !== "undefined" ? tabBadges : null),
       H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), area);
     const show = (which) => {
       timers.forEach(clearTimeout); timers.clear();
-      tabPen.classList.toggle("active", which === "pen"); tabAlbum.classList.toggle("active", which === "album");
+      tabPen.classList.toggle("active", which === "pen"); tabAlbum.classList.toggle("active", which === "album"); tabBadges.classList.toggle("active", which === "badges");
       area.innerHTML = "";
-      which === "pen" ? pen(area, later) : album(area);
+      if (which === "pen") pen(area, later);
+      else if (which === "album") { album(area); (typeof Extras !== "undefined" && Extras.track("album")); }
+      else area.append(Extras.badgeGrid());
     };
-    tabPen.onclick = () => show("pen"); tabAlbum.onclick = () => show("album");
+    tabPen.onclick = () => show("pen"); tabAlbum.onclick = () => show("album"); tabBadges.onclick = () => show("badges");
     document.body.append(ov); document.body.style.overflow = "hidden";
     show("pen");
     hideIn("album", ov.querySelector(".g-head"));
@@ -595,6 +607,29 @@ const Animals = (() => {
     btn("+", "Hineinzoomen", () => zoomAt(z * 1.35, ...mid()));
     btn("−", "Herauszoomen", () => zoomAt(z / 1.35, ...mid()));
     btn("Alles zeigen", "Ganzes Gehege zeigen", fit);
+    // Umräumen: gekaufte Sachen verschieben
+    let editing = false, drag = null;
+    btn("Umräumen", "Gehege umräumen", () => {
+      editing = !editing; world.classList.toggle("editing", editing);
+      ctrl.lastChild.textContent = editing ? "Fertig" : "Umräumen";
+      if (editing) H.toast("Zieh die leuchtenden Sachen an einen neuen Platz. Danach auf „Fertig“ tippen.", 4500);
+      else { refreshPens(); H.toast("Gespeichert – das Gehege sieht toll aus!"); }
+    });
+    world.addEventListener("pointerdown", (e) => {
+      if (!editing) return;
+      const g = e.target.closest("g.movable"); if (!g) return;
+      e.stopPropagation(); e.preventDefault();
+      const [dx, dy] = Zoo.posOf(g.dataset.k);
+      drag = { k: g.dataset.k, g, sx: e.clientX, sy: e.clientY, dx, dy, nx: null, ny: null };
+    }, true);
+    world.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const sc = 1000 / world.getBoundingClientRect().width;
+      drag.nx = drag.dx + (e.clientX - drag.sx) * sc; drag.ny = drag.dy + (e.clientY - drag.sy) * sc;
+      drag.g.setAttribute("transform", `translate(${drag.nx} ${drag.ny})`);
+    });
+    const dropIt = () => { if (!drag) return; if (drag.nx != null) { Zoo.setPos(drag.k, drag.nx, drag.ny); if (typeof Extras !== "undefined") Extras.track("moved"); H.sfx.pop(); } drag = null; };
+    world.addEventListener("pointerup", dropIt); world.addEventListener("pointercancel", dropIt);
     vp.addEventListener("wheel", (e) => { e.preventDefault(); const r = vp.getBoundingClientRect(); zoomAt(z * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
     const pts = new Map();
     let last = null, dist0 = 0, z0 = 1, moved = 0;
@@ -621,11 +656,13 @@ const Animals = (() => {
     const mine = VARIANTS.filter((v) => found.has(v.id));
     if (!mine.length) {
       if (field.id === "zoo-pen") mountProps(field);
+      (typeof Extras !== "undefined" && Extras.decoratePen(field));
       field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere. Klick sie an, dann ziehen sie hier ein!" })));
       return;
     }
     mine.forEach((v) => ctrls.push(penAnimal(field, v, later)));
     if (field.id === "zoo-pen") mountProps(field);
+    (typeof Extras !== "undefined" && Extras.decoratePen(field));
   }
 
   function penAnimal(field, v, later, o = {}) {
@@ -680,11 +717,23 @@ const Animals = (() => {
         feedBtn = H.el("button", { class: "feed-btn" + (n ? "" : " empty") }, H.el("span", { class: "feed-ic", html: Zoo.foodIcon(v.sp) }), n ? `Füttern (${fname} ×${n})` : `Kein Futter – ${fname} im Shop`);
         feedBtn.addEventListener("click", (ev) => { ev.stopPropagation(); tag.remove(); if (n) feed(c, field); else { document.querySelector(".gehege-overlay .modal-close")?.click(); Zoo.openShop("@futter"); } });
       }
-      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }), o.guest || !hungry(v) ? null : H.el("span", { class: "hungry-note", text: "hat Hunger!" }), feedBtn);
+      const renameBtn = o.guest ? null : H.el("button", { class: "rename-btn", text: "✎ Name ändern" });
+      if (renameBtn) renameBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const inp = H.el("input", { class: "rename-in", value: v.name, maxlength: "18", "aria-label": "Neuer Name" });
+        const ok = H.el("button", { class: "feed-btn", text: "Speichern" });
+        const done = () => { rename(v, inp.value); tag.remove(); H.sfx.good(); c.say(`Ich heiße jetzt ${v.name}!`, 2600); };
+        ok.addEventListener("click", (e2) => { e2.stopPropagation(); done(); });
+        inp.addEventListener("keydown", (e2) => { e2.stopPropagation(); if (e2.key === "Enter") done(); });
+        inp.addEventListener("click", (e2) => e2.stopPropagation());
+        tag.innerHTML = ""; tag.append(H.el("b", { text: "Neuer Name:" }), inp, ok); inp.focus(); inp.select();
+        clearTimeout(tag._t); tag._t = setTimeout(() => tag.remove(), 20000);
+      });
+      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }), o.guest || !hungry(v) ? null : H.el("span", { class: "hungry-note", text: "hat Hunger!" }), feedBtn, renameBtn);
       a.append(tag);
       wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
       H.sfx.boop(300 + Math.random() * 400);
-      setTimeout(() => tag.remove(), feedBtn ? 5000 : 2600);
+      tag._t = setTimeout(() => tag.remove(), feedBtn ? 6000 : 2600);
     });
     field.append(a);
     return c;
@@ -695,6 +744,7 @@ const Animals = (() => {
   function feed(c, field) {
     const v = c.v;
     if (!Zoo.useFood(v.sp, v.id)) return;
+    (typeof Extras !== "undefined" && Extras.track("fed"));
     const [fname] = Zoo.FOOD[v.sp];
     const food = H.el("div", { class: "food-pop", html: Zoo.foodIcon(v.sp) });
     c.a.append(food); setTimeout(() => food.remove(), 1400);
@@ -901,5 +951,6 @@ const Animals = (() => {
     setInterval(spawn, 2600);
   }
 
-  return { SPECIES, VARIANTS, RARITY, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
+  return { SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();

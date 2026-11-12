@@ -310,7 +310,9 @@ const App = (() => {
   }
 
   function solved(day) {
+    const first = !state.solved[day];
     state.solved[day] = true; save();
+    if (first && typeof Extras !== "undefined") Extras.track("door");
     sfx.win(); confetti();
     setTimeout(() => showReward(day, false), 700);
   }
@@ -331,7 +333,8 @@ const App = (() => {
     shopBtn.disabled = has;
     const later = el("button", { class: "btn btn-soft", text: "Zurück zum Kalender", onclick: () => closeModal() });
     const replay = el("button", { class: "btn btn-soft", text: "Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
-    const letterBtn = day === 24 ? el("button", { class: "btn", text: "Den Brief unter dem Baum öffnen", onclick: () => { closeModal(); Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); } }) : null;
+    const letterBtn = day === 24 ? el("button", { class: "btn", text: "Zur Bescherung unter dem Baum", onclick: () => { closeModal(); const letter = () => Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); typeof Extras !== "undefined" ? Extras.christmasShow(letter) : letter(); } })
+      : day === 31 && typeof Extras !== "undefined" ? el("button", { class: "btn", text: "Jahresrückblick ansehen", onclick: () => { closeModal(); Extras.review(); } }) : null;
     body.append(el("div", { class: "reward" },
       el("h3", { text: again ? "Dieses Kapitel ist geschafft" : Texts.say("lob") }),
       again ? null : coinBox,
@@ -412,6 +415,7 @@ const App = (() => {
     let clicks = 0;
     wrap.addEventListener("click", (e) => {
       e.stopPropagation(); clicks++;
+      if (typeof Extras !== "undefined") Extras.track("kalle");
       capy.classList.remove("boing"); void capy.offsetWidth; capy.classList.add("boing");
       sfx.tone(220, 0.2, "sine", 0.25, 330);
       burstAt(capy, ["🤎", "💖", "🍊", "✨"], 7, 70);
@@ -455,6 +459,7 @@ const App = (() => {
     updateCountdown(); setupCapy(); setupPaws(); startSnow();
     if (typeof Animals !== "undefined") Animals.init();
     if (typeof Games !== "undefined") Games.init();
+    if (typeof Extras !== "undefined") Extras.init();
     const st = document.getElementById("sound-toggle");
     st.textContent = soundOn ? "🔔" : "🔕";
     st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; st.textContent = soundOn ? "🔔" : "🔕"; try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });

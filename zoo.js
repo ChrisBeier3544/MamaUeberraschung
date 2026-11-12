@@ -133,13 +133,13 @@ const Zoo = (() => {
   }
 
   const ALL = [...ITEMS, ...EXTRAS, ...SMALL];
-  const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; return [x + w / 2, Math.max(300, Math.min(585, y + h + 6))]; };
+  const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; const [dx, dy] = (st.pos && st.pos[key]) || [0, 0]; return [x + w / 2 + dx, Math.max(300, Math.min(585, y + h + 6 + dy))]; };
   const info = (key) => ALL.find((i) => i[0] === key);
   const dayOfItem = (key) => +Object.keys(STORY).find((d) => STORY[d].item === key) || 0;
 
   /* ---------- Spielstand ---------- */
   const KEY = "mama-zoo-" + CONFIG.year;
-  let st = { coins: 0, owned: [], paid: {}, food: {}, fed: {}, high: {}, ms: {} };
+  let st = { coins: 0, owned: [], paid: {}, food: {}, fed: {}, high: {}, ms: {}, pos: {} };
   const load = () => { try { const r = localStorage.getItem(KEY); if (r) st = Object.assign(st, JSON.parse(r)); } catch (e) {} };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   const owns = (k) => st.owned.includes(k);
@@ -224,10 +224,19 @@ const Zoo = (() => {
     return o + `<rect x="300" y="262" width="80" height="7" fill="#9c9183" transform="rotate(8 340 265)"/>`;
   }
 
-  function scene(newKey) {
-    const o = new Set(st.owned);
-    const progress = st.owned.filter((k) => ITEMS.some((i) => i[0] === k)).length / ITEMS.length;
-    const night = o.has("feuerwerk");
+  // Teile, die sich nicht sinnvoll verschieben lassen
+  const NOMOVE = ["zaun", "lichter", "eiszapfen", "wimpel", "weg", "feuerwerk", "rodel", "sternschnuppe", "kranz", "vogel"];
+  // Lichtschein bei Nacht
+  const GLOW = {
+    laternen: [[645, 360, 34], [160, 360, 34], [990, 310, 34]], feuer: [[565, 495, 60]], kerzen: [[448, 462, 18], [574, 442, 18], [440, 524, 18], [584, 508, 18]],
+    lichter: Array.from({ length: 40 }, (_, i) => [12 + i * 25, 207, 7]), tanne: [[500, 82, 26], [486, 150, 9], [530, 196, 9], [450, 250, 9], [552, 246, 9]], stand: [[782, 250, 30]],
+  };
+  function scene(newKey, ownedOverride, plain) {
+    const own = ownedOverride || st.owned;
+    const o = new Set(own);
+    const progress = own.filter((k) => ITEMS.some((i) => i[0] === k)).length / ITEMS.length;
+    const dark = !plain && typeof Extras !== "undefined" && Extras.isNight();
+    const night = o.has("feuerwerk") || dark;
     const sky = night ? "#1d2b52" : mix("#b4b7bd", "#bfe3f7", Math.min(1, progress * 1.6));
     const hill = night ? "#2c3d6b" : o.has("rasen") ? mix("#9fbf8f", "#8fcf86", progress) : "#a49b89";
     const ground = night ? "#4d6b5a" : o.has("rasen") ? "#a8d78f" : "#b5a58a";
@@ -246,13 +255,21 @@ const Zoo = (() => {
     if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".85"/>`).join("");
     if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="800" cy="455" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="800" cy="453" rx="36" ry="7" fill="#a6b2b6"/>`;
     if (!o.has("baeume")) s += `<rect x="248" y="258" width="28" height="22" fill="#6b5a4a"/><ellipse cx="262" cy="258" rx="14" ry="4" fill="#8a7a66"/>`;
-    const g = (k) => (o.has(k) && !LIVE.includes(k) ? `<g class="zi${k === newKey ? " zi-new" : ""}">${DRAW[k]()}</g>` : "");
+    const g = (k) => {
+      if (!o.has(k) || LIVE.includes(k)) return "";
+      const [dx, dy] = (!ownedOverride && st.pos[k]) || [0, 0];
+      return `<g class="zi${k === newKey ? " zi-new" : ""}${NOMOVE.includes(k) ? "" : " movable"}" data-k="${k}"${dx || dy ? ` transform="translate(${dx} ${dy})"` : ""}>${DRAW[k]()}</g>`;
+    };
     BACK.forEach((k) => { s += k === "zaun" && !o.has("zaun") ? brokenFence() : g(k); });
     if (o.has("weg")) s += g("weg");
     MID.forEach((k) => (s += k === "teich" && o.has("eisbahn") ? "" : g(k)));
     if (!o.has("rasen")) s += `<circle cx="700" cy="560" r="20" fill="none" stroke="#3a3a40" stroke-width="9"/><rect x="180" y="500" width="44" height="30" fill="#8f7a5f" transform="rotate(-12 202 515)"/><path d="M184 506 l36 18" stroke="#6b5a4a" stroke-width="3"/>`;
     FRONT.forEach((k) => (s += g(k)));
     if (o.has("schneemann") && !night) s += Array.from({ length: 30 }, () => `<circle cx="${(r() * 1000) | 0}" cy="${(r() * 560) | 0}" r="${(1.5 + r() * 2).toFixed(1)}" fill="#fff" opacity=".9"/>`).join("");
+    if (night) {
+      s += `<rect width="1000" height="600" fill="#0a1636" opacity="${o.has("feuerwerk") && !dark ? 0.12 : 0.36}" pointer-events="none"/>`;
+      Object.entries(GLOW).forEach(([k, pts]) => { if (!o.has(k)) return; const [dx, dy] = (!ownedOverride && st.pos[k]) || [0, 0]; pts.forEach(([x, y, r]) => (s += `<circle cx="${x + dx}" cy="${y + dy}" r="${r}" fill="#ffd97a" opacity=".55" pointer-events="none"/><circle cx="${x + dx}" cy="${y + dy}" r="${r * 0.4}" fill="#fff6d0" opacity=".9" pointer-events="none"/>`)); });
+    }
     if (o.has("feuerwerk")) s += `<g class="zi${newKey === "feuerwerk" ? " zi-new" : ""}">${DRAW.feuerwerk()}</g>`;
     return `<svg class="zoo-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}</svg>`;
   }
@@ -298,6 +315,7 @@ const Zoo = (() => {
     const it = info(key);
     if (owns(key) || st.coins < it[2] || !available(key)) return false;
     st.coins -= it[2]; st.owned.push(key); save();
+    if (typeof Extras !== "undefined") Extras.track("bought", 1, it[1]);
     H.sfx.win();
     refresh(key);
     if (typeof Animals !== "undefined") { Animals.refreshPens(); const [ax, ay] = anchorOf(key); setTimeout(() => Animals.celebrate(ax, ay, it[1]), 1300); }
@@ -501,5 +519,8 @@ const Zoo = (() => {
     return { old, high: st.high[game] || 0, coins };
   }
 
-  return { STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  function setPos(key, dx, dy) { st.pos[key] = [Math.round(Math.max(-450, Math.min(450, dx))), Math.round(Math.max(-300, Math.min(250, dy)))]; save(); refresh(); }
+  const posOf = (key) => st.pos[key] || [0, 0];
+  const ownedList = () => st.owned.slice();
+  return { SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

@@ -28,6 +28,15 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
 - Türchen öffnen sich erst am jeweiligen Tag. Der Fortschritt wird im Browser gespeichert
   (also immer auf demselben Gerät und im selben Browser spielen).
 
+## Jeden Tag im Dezember
+- **Tag und Nacht** nach der echten Uhrzeit (ab 17 Uhr dunkel, Laternen und Lichter leuchten), **Wetter** wechselt täglich.
+- **Spieluhr** (♪-Knopf unten rechts) mit „Jingle Bells“ und „Stille Nacht“, **Adventskranz** mit Kerzen für jeden Adventssonntag.
+- **Heute im Gehege:** Tier des Tages mit echtem Tier-Fakt, Kalles Tagebuch, Aufgabe des Tages (mit Taler-Belohnung).
+- **Zufallsereignisse:** Glücks-Schmetterling, Sternschnuppe, Kalle findet Taler, Rocky klaut Futter, Schneesturm.
+- **Gehege:** Tiere umbenennen (Tier antippen → „Name ändern“), im großen Gehege „Umräumen“, Besucher und Spendenbox, 20 Abzeichen.
+- **Finale:** Am 24. Weihnachtsmann-Besuch (Leckerlis für alle Tiere) und Heiligabend-Show vor dem Weihnachtsbrief;
+  am 31. Jahresrückblick mit Fotowand, Vorher/Nachher und Abschiedsbrief der Tiere (`extras.js`).
+
 ## Anpassen
 - `app.js` → `CONFIG`: Jahr, Weihnachtsbrief (`christmasMessage`), Neujahrsbrief (`newYearMessage`), Unterschrift.
 - `zoo.js` → `STORY`: die Texte der Kapitel und wie viele Taler es gibt; `ITEMS`/`EXTRAS`: Shop-Artikel und Preise.
