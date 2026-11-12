@@ -29,7 +29,7 @@ const CONFIG = {
 const App = (() => {
   const STORE_KEY = "mama-advent-" + CONFIG.year;
   const params = new URLSearchParams(location.search);
-  const PREVIEW = params.has("vorschau") || params.has("test");
+  const PREVIEW = !!window.FORCE_PREVIEW || params.has("vorschau") || params.has("test");
   const WORDS = CONFIG.solution.trim().toUpperCase().split(/\s+/);
   const LETTERS = WORDS.join("").split("");
   if (LETTERS.length !== 23) console.warn("⚠️ Die Lösung hat " + LETTERS.length + " statt 23 Buchstaben!");
@@ -483,7 +483,10 @@ const App = (() => {
     const c = document.getElementById("countdown");
     const n = now();
     const t = todayDay();
-    if (PREVIEW) c.innerHTML = "🔓 <b>Vorschau-Modus</b>: alle Türchen offen · <a href='?' style='color:inherit'>beenden</a>";
+    if (PREVIEW) {
+      c.innerHTML = "🔓 <b>Vorschau-Modus</b>: alle Türchen offen · ";
+      c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { localStorage.removeItem(STORE_KEY); } catch (e) {} location.reload(); } }));
+    }
     else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen! 🐾`; }
     else if (t) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> – Türchen ${t} wartet auf dich! 🎁`;
     else c.innerHTML = "Frohe Weihnachten! 🎄💖";
