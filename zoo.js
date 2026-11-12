@@ -133,13 +133,13 @@ const Zoo = (() => {
   }
 
   const ALL = [...ITEMS, ...EXTRAS, ...SMALL];
-  const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; const [dx, dy] = (st.pos && st.pos[key]) || [0, 0]; return [x + w / 2 + dx, Math.max(300, Math.min(585, y + h + 6 + dy))]; };
+  const anchorOf = (key) => { const [x, y, w, h] = info(key)[4]; const [dx, dy] = off(key); return [x + w / 2 + dx, Math.max(300, Math.min(585, y + h + 6 + dy))]; };
   const info = (key) => ALL.find((i) => i[0] === key);
   const dayOfItem = (key) => +Object.keys(STORY).find((d) => STORY[d].item === key) || 0;
 
   /* ---------- Spielstand ---------- */
   const KEY = "mama-zoo-" + CONFIG.year;
-  let st = { coins: 0, owned: [], paid: {}, food: {}, fed: {}, high: {}, ms: {}, pos: {}, tog: {} };
+  let st = { coins: 0, owned: [], paid: {}, food: {}, fed: {}, high: {}, ms: {}, pos: {}, tog: {}, slot: {}, raus: {} };
   // Schaltzustände (Laternen an/aus, Lichterkette-Farbe …)
   const on = (k) => !st.tog || st.tog[k] !== false;
   const LIGHT_MODES = [["#ff5a7a", "#ffcf3f", "#4fd18b", "#58b6ff", "#c77dff"], ["#fff3cf", "#ffe7a3", "#fff8e0"], ["#f6c25b", "#ffd27a", "#e8b04a"]];
@@ -155,11 +155,11 @@ const Zoo = (() => {
 
   const DRAW = {
     rasen: () => `<ellipse cx="500" cy="372" rx="118" ry="58" fill="#a8d78f"/>` + Array.from({ length: 14 }, (_, i) => `<path d="M${410 + (i % 7) * 28} ${352 + Math.floor(i / 7) * 34} q2 -10 4 0 q2 -10 4 0" stroke="#6fae5c" stroke-width="2.5" fill="none"/>`).join(""),
-    zaun: () => { let o = ""; for (let x = 5; x < 1000; x += 48) o += `<rect x="${x}" y="196" width="11" height="58" rx="3" fill="#a0703f"/>`; return `<rect y="206" width="1000" height="9" fill="#b9824f"/><rect y="230" width="1000" height="9" fill="#b9824f"/>` + o; },
-    baeume: () => tree(262, 262, 1) + tree(972, 262, 1.15, "#5aa86a"),
+    zaun: (span = 1000) => { let o = ""; for (let x = 5; x < span; x += 48) o += `<rect x="${x}" y="196" width="11" height="58" rx="3" fill="#a0703f"/>`; return `<rect y="206" width="${span}" height="9" fill="#b9824f"/><rect y="230" width="${span}" height="9" fill="#b9824f"/>` + o; },
+    baeume: (span) => span > 1000 ? tree(262, 262, 1) + tree(840, 262, 0.9, "#5aa86a") + tree(1250, 262, 1.05) + tree(1585, 262, 0.95, "#5aa86a") + tree(1900, 262, 1.15, "#5aa86a") : tree(262, 262, 1) + tree(972, 262, 1.15, "#5aa86a"),
     teich: () => `<ellipse cx="800" cy="452" rx="152" ry="56" fill="#7fbfe0"/><ellipse cx="800" cy="446" rx="130" ry="42" fill="#a6d8f0"/><ellipse cx="740" cy="440" rx="22" ry="6" fill="#5aa86a"/><path d="M820 455 q12 -5 24 0 M760 470 q12 -5 24 0" stroke="#fff" stroke-width="2.5" fill="none"/>`,
     futter: () => `<rect x="320" y="372" width="90" height="22" rx="8" fill="#8a5a3b"/><ellipse cx="365" cy="372" rx="45" ry="8" fill="#b9824f"/><circle cx="345" cy="368" r="5" fill="#f39c32"/><circle cx="360" cy="366" r="5" fill="#e85d75"/><circle cx="378" cy="368" r="5" fill="#ffd84d"/><rect x="330" y="340" width="6" height="34" fill="#7a5537"/><rect x="394" y="340" width="6" height="34" fill="#7a5537"/><path d="M322 344 L365 326 L408 344z" fill="#c94060"/>`,
-    laternen: () => [[645, 470], [160, 470], [990, 420]].map(([x, y]) => `${on("laternen") ? `<circle cx="${x}" cy="${y - 100}" r="26" fill="#ffe28a" opacity=".35"/>` : ""}<rect x="${x - 3}" y="${y - 96}" width="6" height="96" fill="#3f3f46"/><rect x="${x - 10}" y="${y - 112}" width="20" height="22" rx="4" fill="${on("laternen") ? "#ffe28a" : "#8f9399"}" stroke="#3f3f46" stroke-width="3"/><path d="M${x - 12} ${y - 112} L${x} ${y - 122} L${x + 12} ${y - 112}z" fill="#3f3f46"/>`).join(""),
+    laternen: (span) => (span > 1000 ? LANTERNS : [[645, 470], [160, 470], [990, 420]]).map(([x, y]) => `${on("laternen") ? `<circle cx="${x}" cy="${y - 100}" r="26" fill="#ffe28a" opacity=".35"/>` : ""}<rect x="${x - 3}" y="${y - 96}" width="6" height="96" fill="#3f3f46"/><rect x="${x - 10}" y="${y - 112}" width="20" height="22" rx="4" fill="${on("laternen") ? "#ffe28a" : "#8f9399"}" stroke="#3f3f46" stroke-width="3"/><path d="M${x - 12} ${y - 112} L${x} ${y - 122} L${x + 12} ${y - 112}z" fill="#3f3f46"/>`).join(""),
     buehne: () => `<rect x="615" y="258" width="130" height="28" fill="#9c6b45"/><rect x="615" y="258" width="130" height="6" fill="#b9824f"/><rect x="622" y="200" width="6" height="58" fill="#7a5537"/><rect x="732" y="200" width="6" height="58" fill="#7a5537"/><path d="M610 204 L680 178 L750 204z" fill="#e85d75"/><path d="M640 236 q4 -10 8 -2 v-14 M700 232 q4 -10 8 -2 v-14" stroke="#3a2a24" stroke-width="2.5" fill="none"/>`,
     huette: () => `<rect x="840" y="226" width="90" height="62" fill="#9c6b45"/><path d="M830 228 L885 192 L940 228z" fill="#5a3b2e"/><rect x="872" y="250" width="26" height="38" fill="#6b4a35"/><rect x="890" y="264" width="10" height="10" rx="2" fill="#ffd84d"/><path d="M850 240 h18 M850 252 h18" stroke="#7a5537" stroke-width="3"/>`,
     blumen: () => [[300, 572], [430, 586]].map(([x, y], k) => `<ellipse cx="${x}" cy="${y}" rx="62" ry="16" fill="#8a5a3b"/>` + [-44, -26, -8, 10, 28, 46].map((dx, i) => `<path d="M${x + dx} ${y} v-16" stroke="#4f9e5c" stroke-width="3"/><circle cx="${x + dx}" cy="${y - 18}" r="7" fill="${["#e85d75", "#fff", "#ffd84d", "#c77dff", "#ff8fa3", "#fff"][(i + k) % 6]}"/><circle cx="${x + dx}" cy="${y - 18}" r="2.5" fill="#f39c32"/>`).join("")).join(""),
@@ -171,7 +171,7 @@ const Zoo = (() => {
     kletter: () => `<rect x="404" y="190" width="14" height="96" fill="#7a5537"/><path d="M411 230 L380 206 M411 214 L446 190 M411 250 L444 236" stroke="#7a5537" stroke-width="8" stroke-linecap="round"/><rect x="384" y="198" width="34" height="8" rx="3" fill="#b9824f"/><path d="M444 236 v40" stroke="#d9c7b4" stroke-width="3"/><circle cx="444" cy="278" r="5" fill="#d9c7b4"/>`,
     vogelhaus: () => `<rect x="331" y="210" width="8" height="78" fill="#7a5537"/><rect x="312" y="186" width="46" height="34" fill="#e85d75"/><path d="M306 190 L335 168 L364 190z" fill="#5a3b2e"/><circle cx="335" cy="203" r="7" fill="#3a2a24"/><circle cx="352" cy="180" r="6" fill="#58b6ff"/><path d="M357 180 l6 1 l-6 2z" fill="#f39c32"/>`,
     spielplatz: () => `<rect x="420" y="410" width="80" height="26" rx="4" fill="#d9a05c"/><rect x="424" y="414" width="72" height="18" rx="3" fill="#f3dfb0"/><path d="M500 436 L540 380 L548 380 L548 436" stroke="#58b6ff" stroke-width="6" fill="none"/><rect x="540" y="376" width="14" height="6" fill="#e85d75"/><path d="M500 436 Q520 400 540 382" stroke="#ffd84d" stroke-width="7" fill="none"/>`,
-    lichter: () => { let o = `<path d="M0 200 Q83 214 166 200 T333 200 T500 200 T666 200 T833 200 T1000 200" stroke="#3f6b4f" stroke-width="2" fill="none"/>`; for (let i = 0; i < 40; i++) { const x = 12 + i * 25, y = 203 + Math.sin((x / 166) * Math.PI) * 3; const pal = LIGHT_MODES[(st.tog && st.tog.lichterMode) || 0]; o += `<circle cx="${x}" cy="${y + 4}" r="4.5" fill="${pal[i % pal.length]}"/>`; } return o; },
+    lichter: (span = 1000) => { let o = `<path d="M0 200 Q83 214 166 200 T333 200 T500 200 T666 200 T833 200 T1000 200${span > 1000 ? " T1166 200 T1333 200 T1500 200 T1666 200 T1833 200 T2000 200" : ""}" stroke="#3f6b4f" stroke-width="2" fill="none"/>`; for (let i = 0; i < Math.round(span / 25); i++) { const x = 12 + i * 25, y = 203 + Math.sin((x / 166) * Math.PI) * 3; const pal = LIGHT_MODES[(st.tog && st.tog.lichterMode) || 0]; o += `<circle cx="${x}" cy="${y + 4}" r="4.5" fill="${pal[i % pal.length]}"/>`; } return o; },
     schneemann: () => `<circle cx="965" cy="568" r="30" fill="#fff" stroke="#dbe9f3" stroke-width="2"/><circle cx="965" cy="522" r="21" fill="#fff" stroke="#dbe9f3" stroke-width="2"/><circle cx="958" cy="517" r="2.5" fill="#333"/><circle cx="972" cy="517" r="2.5" fill="#333"/><path d="M965 524 l14 4 l-14 2z" fill="#f39c32"/><rect x="944" y="536" width="42" height="8" rx="4" fill="#e85d75"/><rect x="950" y="490" width="30" height="8" fill="#333"/><rect x="955" y="474" width="20" height="18" fill="#333"/>`,
     fotowand: () => `<rect x="152" y="490" width="86" height="80" rx="6" fill="#fff" stroke="#e85d75" stroke-width="6"/><rect x="166" y="570" width="6" height="30" fill="#7a5537"/><rect x="218" y="570" width="6" height="30" fill="#7a5537"/><text x="195" y="536" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="15" font-weight="700" fill="#e85d75">CHEESE!</text><path d="M168 552 l4 8 l8 3 l-8 3 l-4 8 l-4 -8 l-8 -3 l8 -3z" fill="#ffd84d"/>`,
     stand: () => `<rect x="744" y="236" width="76" height="52" fill="#fff4e3"/><path d="M738 238 h88 l-6 -26 h-76z" fill="#e85d75"/><path d="M751 212 v26 M767 212 v26 M783 212 v26 M799 212 v26 M815 212 v26" stroke="#fff" stroke-width="6"/><rect x="740" y="262" width="84" height="10" fill="#b9824f"/><circle cx="760" cy="258" r="6" fill="#d9a05c"/><circle cx="782" cy="258" r="6" fill="#c98b4a"/><circle cx="804" cy="258" r="6" fill="#d9a05c"/>`,
@@ -187,11 +187,11 @@ const Zoo = (() => {
     feuer: () => `<ellipse cx="565" cy="528" rx="38" ry="9" fill="#8f8577"/><path d="M540 526 l50 -10 M540 516 l50 10" stroke="#7a5537" stroke-width="7" stroke-linecap="round"/>${on("feuer") ? `<g class="flames"><path d="M548 520 q6 -36 17 -48 q4 20 12 14 q10 16 -2 34z" fill="#f39c32"/><path d="M558 520 q2 -20 9 -26 q6 14 3 26z" fill="#ffd84d"/></g><circle cx="565" cy="490" r="34" fill="#ffb347" opacity=".18"/>` : `<path d="M562 512 q-6 -10 2 -18 q6 -8 0 -16" stroke="#b9b2a8" stroke-width="3" fill="none" opacity=".7"/>`}`,
     teleskop: () => `<path d="M935 338 l-14 0 M935 338 l14 0 M935 300 l-16 38 M935 300 l16 38 M935 300 v38" stroke="#3f3f46" stroke-width="4"/><rect x="908" y="282" width="60" height="16" rx="6" fill="#58b6ff" transform="rotate(-28 938 290)"/><rect x="958" y="270" width="12" height="20" rx="3" fill="#3f3f46" transform="rotate(-28 938 290)"/>`,
     karussell: () => `<ellipse cx="235" cy="392" rx="62" ry="12" fill="#c94060"/><rect x="232" y="318" width="6" height="74" fill="#ffd84d"/><path d="M168 330 Q235 290 302 330z" fill="#e85d75"/><path d="M168 330 q11 8 22 0 q11 8 22 0 q11 8 23 0 q11 8 22 0 q11 8 22 0 q11 8 23 0" fill="#fff"/><path d="M190 334 v40 M282 334 v40" stroke="#ffd84d" stroke-width="3"/><ellipse cx="190" cy="372" rx="12" ry="7" fill="#fff"/><ellipse cx="282" cy="372" rx="12" ry="7" fill="#58b6ff"/><circle cx="235" cy="296" r="6" fill="#ffd84d"/>`,
-    feuerwerk: () => [[170, 90, "#ff5a7a"], [480, 60, "#ffd84d"], [800, 100, "#58b6ff"], [640, 150, "#c77dff"], [320, 160, "#4fd18b"]].map(([x, y, c], k) => `<g class="fw" style="animation-delay:${k * 0.45}s">` + Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${x + Math.cos(a) * 12} ${y + Math.sin(a) * 12} L${x + Math.cos(a) * 46} ${y + Math.sin(a) * 46}" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`; }).join("") + `<circle cx="${x}" cy="${y}" r="6" fill="#fff"/></g>`).join(""),
+    feuerwerk: (span = 1000) => [[170, 90, "#ff5a7a"], [480, 60, "#ffd84d"], [800, 100, "#58b6ff"], [640, 150, "#c77dff"], [320, 160, "#4fd18b"]].concat(span > 1000 ? [[1150, 80, "#4fd18b"], [1420, 140, "#ff5a7a"], [1680, 70, "#c77dff"], [1880, 130, "#ffd84d"]] : []).map(([x, y, c], k) => `<g class="fw" style="animation-delay:${k * 0.45}s">` + Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${x + Math.cos(a) * 12} ${y + Math.sin(a) * 12} L${x + Math.cos(a) * 46} ${y + Math.sin(a) * 46}" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`; }).join("") + `<circle cx="${x}" cy="${y}" r="6" fill="#fff"/></g>`).join(""),
     pilze: () => [[130, 488, 1], [166, 482, 0.8], [148, 470, 0.6]].map(([x, y, s]) => `<rect x="${x - 5 * s}" y="${y - 20 * s}" width="${10 * s}" height="${20 * s}" rx="3" fill="#fff6e8"/><path d="M${x - 18 * s} ${y - 18 * s} Q${x} ${y - 46 * s} ${x + 18 * s} ${y - 18 * s}z" fill="#e5383b"/><circle cx="${x - 6 * s}" cy="${y - 28 * s}" r="${3 * s}" fill="#fff"/><circle cx="${x + 7 * s}" cy="${y - 25 * s}" r="${2.4 * s}" fill="#fff"/>`).join(""),
     zwerg: () => `<path d="M412 520 h36 l-4 -34 h-28z" fill="#4f7fe0"/><circle cx="430" cy="478" r="13" fill="#f5c9a8"/><path d="M416 486 q14 26 28 0 q-14 8 -28 0z" fill="#fff"/><path d="M414 474 L430 440 L446 474z" fill="#e5383b"/><circle cx="430" cy="482" r="3" fill="#e88a8a"/>`,
     vogelbad: () => `<rect x="728" y="458" width="14" height="40" fill="#b9b2a8"/><ellipse cx="735" cy="498" rx="22" ry="6" fill="#a59d93"/><ellipse cx="735" cy="456" rx="30" ry="9" fill="#b9b2a8"/><ellipse cx="735" cy="454" rx="24" ry="5" fill="#9fd8f0"/><circle cx="752" cy="440" r="7" fill="#e85d75"/><path d="M758 440 l6 1 l-6 2z" fill="#f39c32"/>`,
-    wimpel: () => `<path d="M260 120 Q630 170 990 120" stroke="#8a5a3b" stroke-width="2" fill="none"/>` + Array.from({ length: 22 }, (_, i) => { const x = 270 + i * 33, y = 120 + Math.sin(((x - 260) / 730) * Math.PI) * 24; return `<polygon points="${x},${y} ${x + 20},${y + 1} ${x + 10},${y + 22}" fill="${["#e85d75", "#ffd84d", "#58b6ff", "#4fd18b", "#c77dff"][i % 5]}"/>`; }).join(""),
+    wimpel: (span = 1000) => { const segs = span > 1000 ? [[40, 960], [1040, 1960]] : [[260, 990]]; return segs.map(([a, b]) => `<path d="M${a} 120 Q${(a + b) / 2} 170 ${b} 120" stroke="#8a5a3b" stroke-width="2" fill="none"/>` + Array.from({ length: Math.floor((b - a - 20) / 33) }, (_, i) => { const x = a + 10 + i * 33, y = 120 + Math.sin(((x - a) / (b - a)) * Math.PI) * 24; return `<polygon points="${x},${y} ${x + 20},${y + 1} ${x + 10},${y + 22}" fill="${["#e85d75", "#ffd84d", "#58b6ff", "#4fd18b", "#c77dff"][i % 5]}" opacity=".85"/>`; }).join("")).join(""); },
     schaukel: () => `<g class="swing" style="transform-box:view-box;transform-origin:969px 182px"><path d="M948 182 v86 M990 182 v86" stroke="#8a7a66" stroke-width="3"/><circle cx="969" cy="278" r="16" fill="none" stroke="#2f2f35" stroke-width="9"/></g>`,
     ball: () => `<circle cx="590" cy="446" r="16" fill="#fff"/><path d="M574 446 a16 16 0 0 1 32 0z" fill="#e85d75"/><path d="M590 430 a16 16 0 0 1 0 32" fill="none" stroke="#58b6ff" stroke-width="5"/><ellipse cx="590" cy="463" rx="14" ry="3" fill="#000" opacity=".12"/>`,
     wasserschale: () => `<ellipse cx="740" cy="384" rx="26" ry="9" fill="#9aa4b1"/><ellipse cx="740" cy="380" rx="22" ry="6" fill="#9fd8f0"/><path d="M730 379 q5 -2 10 0" stroke="#fff" stroke-width="2" fill="none"/>`,
@@ -210,6 +210,43 @@ const Zoo = (() => {
     sternschnuppe: () => `<path d="M70 110 Q120 96 160 80" stroke="#fff6c9" stroke-width="5" stroke-linecap="round" opacity=".7" fill="none"/><path d="M90 108 Q125 98 158 84" stroke="#ffe28a" stroke-width="2" fill="none"/><polygon points="170,62 175,74 188,75 178,83 181,96 170,89 159,96 162,83 152,75 165,74" fill="#ffd84d"/>`,
     statue: () => `<rect x="226" y="482" width="70" height="30" fill="#d9d2c6"/><rect x="220" y="476" width="82" height="8" fill="#ece6dc"/><g transform="translate(228 430) scale(.55)">${typeof Animals !== "undefined" ? Animals.inner({ sp: "capy", col: 2, acc: "krone" }).content : ""}</g>`,
   };
+  /* ---------- Breites Gehege (2000 × 600) mit fünf Bereichen und festen Bauplätzen ---------- */
+  const W = 2000;
+  const ZONES = [["Ruheecke", 0, 400], ["Marktplatz", 400, 800], ["Weihnachtsplatz", 800, 1200], ["Wasserwelt", 1200, 1600], ["Winterwald", 1600, 2000]];
+  const LANTERNS = [[395, 482], [790, 470], [1215, 548], [1605, 540], [1990, 560]];
+  // Bauplatz je Teil: [Mitte unten x, Unterkante y] in der breiten Szene
+  const SLOT = {
+    briefkasten: [70, 322], huette: [175, 300], bank: [310, 298], hoehle: [130, 425], kissen: [270, 448], pilze: [62, 505], blumen: [300, 600], schild: [85, 610], giesskanne: [402, 548],
+    buehne: [540, 300], stand: [705, 296], karussell: [520, 422], futter: [700, 402], fotowand: [520, 600], kakao: [690, 588],
+    tanne: [1000, 300], weg: [1000, 600], statue: [880, 412], feuer: [880, 522], holz: [868, 600], strohballen: [1132, 474], zwerg: [1118, 590], spielplatz: [1140, 395],
+    teich: [1400, 500], eisbahn: [1400, 500], bruecke: [1400, 470], onsen: [1280, 362], vogelbad: [1560, 382], wasserschale: [1450, 352], ball: [1255, 585],
+    rodel: [1720, 290], kletter: [1640, 420], vogelhaus: [1830, 300], meisen: [1962, 352], schaukel: [1903, 310], iglu: [1720, 600], schneemann: [1955, 600], teleskop: [1790, 425], windrad: [1872, 478],
+  };
+  // Teile, die an einem anderen hängen, wandern mit
+  const FOLLOW = { teddy: "hoehle", kerzen: "weg" };
+  const homeAnchor = (k) => { const [x, y, w, h] = info(k)[4]; return [x + w / 2, y + h]; };
+  const sizeClass = (k) => { const [, , w, h] = info(k)[4]; return w * h < 6000 ? "S" : "M"; };
+  const slotOf = (k) => (st.slot && st.slot[k]) || k;
+  function off(k) {
+    if (FOLLOW[k]) return off(FOLLOW[k]);
+    const sk = slotOf(k);
+    if (!SLOT[sk]) return [0, 0];
+    const [hx, hy] = homeAnchor(k), [tx, ty] = SLOT[sk];
+    return [tx - hx, ty - hy];
+  }
+  // Umräumen: Teil rastet am nächsten passenden Bauplatz ein; steht dort schon etwas, tauschen beide
+  function snap(key, sx, sy) {
+    const cls = sizeClass(key);
+    let best = null, bd = 1e9;
+    Object.keys(SLOT).forEach((sk) => { if (NOMOVE.includes(sk) || FOLLOW[sk] || sizeClass(sk) !== cls) return; const [x, y] = SLOT[sk]; const d = Math.hypot(x - sx, (y - sy) * 1.4); if (d < bd) { bd = d; best = sk; } });
+    if (!best || best === slotOf(key)) return false;
+    st.slot = st.slot || {};
+    const other = Object.keys(SLOT).concat(Object.keys(st.slot)).find((k) => k !== key && owns(k) && slotOf(k) === best);
+    const mine = slotOf(key);
+    st.slot[key] = best;
+    if (other) st.slot[other] = mine;
+    save(); refresh(); return true;
+  }
   const BACK = ["sternschnuppe", "rodel", "wimpel", "baeume", "zaun", "lichter", "eiszapfen", "kranz", "vogel", "schaukel", "vogelhaus", "kletter", "meisen", "tanne", "bank", "buehne", "stand", "huette", "teleskop"];
   const MID = ["briefkasten", "hoehle", "teddy", "kissen", "karussell", "futter", "spielplatz", "onsen", "wasserschale", "windrad", "teich", "eisbahn", "bruecke", "ball", "pilze", "statue", "strohballen", "zwerg", "vogelbad", "laternen"];
   const FRONT = ["feuer", "kerzen", "kakao", "iglu", "blumen", "holz", "giesskanne", "schild", "fotowand", "schneemann"];
@@ -219,21 +256,21 @@ const Zoo = (() => {
   function brokenFence() {
     const r = rnd(42);
     let o = "";
-    for (let x = 5; x < 1000; x += 48) {
+    for (let x = 5; x < W; x += 48) {
       if (r() < 0.25) continue;
       const tilt = (r() - 0.5) * 30, h = 34 + r() * 24;
       o += `<rect x="${x}" y="${254 - h}" width="10" height="${h}" fill="#8f8577" transform="rotate(${tilt.toFixed(1)} ${x + 5} 254)"/>`;
     }
-    for (let x = 0; x < 1000; x += 160) { const w = 60 + r() * 70; o += `<rect x="${x + r() * 40}" y="${214 + r() * 16}" width="${w}" height="7" fill="#9c9183" transform="rotate(${((r() - 0.5) * 14).toFixed(1)} ${x + w / 2} 220)"/>`; }
+    for (let x = 0; x < W; x += 160) { const w = 60 + r() * 70; o += `<rect x="${x + r() * 40}" y="${214 + r() * 16}" width="${w}" height="7" fill="#9c9183" transform="rotate(${((r() - 0.5) * 14).toFixed(1)} ${x + w / 2} 220)"/>`; }
     return o + `<rect x="300" y="262" width="80" height="7" fill="#9c9183" transform="rotate(8 340 265)"/>`;
   }
 
   // Teile, die sich nicht sinnvoll verschieben lassen
-  const NOMOVE = ["zaun", "lichter", "eiszapfen", "wimpel", "weg", "feuerwerk", "rodel", "sternschnuppe", "kranz", "vogel"];
+  const NOMOVE = ["zaun", "lichter", "eiszapfen", "wimpel", "weg", "feuerwerk", "rodel", "sternschnuppe", "kranz", "vogel", "laternen", "baeume", "teich", "eisbahn", "bruecke", "tanne", "kerzen", "teddy", "schaukel"];
   // Lichtschein bei Nacht
   const GLOW = {
-    laternen: [[645, 360, 34], [160, 360, 34], [990, 310, 34]], feuer: [[565, 495, 60]], kerzen: [[448, 462, 18], [574, 442, 18], [440, 524, 18], [584, 508, 18]],
-    lichter: Array.from({ length: 40 }, (_, i) => [12 + i * 25, 207, 7]), tanne: [[500, 82, 26], [486, 150, 9], [530, 196, 9], [450, 250, 9], [552, 246, 9]], stand: [[782, 250, 30]],
+    laternen: LANTERNS.map(([x, y]) => [x, y - 110, 28]), feuer: [[565, 495, 60]], kerzen: [[448, 462, 18], [574, 442, 18], [440, 524, 18], [584, 508, 18]],
+    lichter: [], tanne: [[500, 82, 26], [486, 150, 9], [530, 196, 9], [450, 250, 9], [552, 246, 9]], stand: [[782, 250, 30]],
   };
   function scene(newKey, ownedOverride, plain) {
     const own = ownedOverride || st.owned;
@@ -245,37 +282,37 @@ const Zoo = (() => {
     const hill = night ? "#2c3d6b" : o.has("rasen") ? mix("#9fbf8f", "#8fcf86", progress) : "#a49b89";
     const ground = night ? "#4d6b5a" : o.has("rasen") ? "#a8d78f" : "#b5a58a";
     const r = rnd(7);
-    let s = `<rect width="1000" height="600" fill="${sky}"/>`;
-    if (night) s += Array.from({ length: 40 }, () => `<circle cx="${(r() * 1000) | 0}" cy="${(r() * 190) | 0}" r="${(1 + r() * 1.8).toFixed(1)}" fill="#fff6c9"/>`).join("") + `<circle cx="900" cy="60" r="22" fill="#fff3c4"/>`;
+    let s = `<rect width="${W}" height="600" fill="${sky}"/>`;
+    if (night) s += Array.from({ length: 70 }, () => `<circle cx="${(r() * W) | 0}" cy="${(r() * 190) | 0}" r="${(1 + r() * 1.8).toFixed(1)}" fill="#fff6c9"/>`).join("") + `<circle cx="1500" cy="60" r="22" fill="#fff3c4"/>`;
     else {
-      if (progress > 0.15) s += `<circle cx="900" cy="70" r="34" fill="#ffe28a" opacity="${Math.min(1, progress * 1.5).toFixed(2)}"/>`;
+      if (progress > 0.15) s += `<circle cx="1500" cy="70" r="34" fill="#ffe28a" opacity="${Math.min(1, progress * 1.5).toFixed(2)}"/>`;
       const cl = (1 - Math.min(1, progress * 1.4)).toFixed(2);
-      s += `<g fill="#9aa0a8" opacity="${cl}"><ellipse cx="160" cy="60" rx="110" ry="32"/><ellipse cx="520" cy="45" rx="150" ry="36"/><ellipse cx="840" cy="70" rx="120" ry="30"/></g>`;
-      s += `<g fill="#fff" opacity="${(Math.min(1, progress * 1.5) * 0.9).toFixed(2)}"><ellipse cx="300" cy="80" rx="60" ry="18"/><ellipse cx="680" cy="60" rx="70" ry="20"/></g>`;
+      s += `<g fill="#9aa0a8" opacity="${cl}"><ellipse cx="160" cy="60" rx="110" ry="32"/><ellipse cx="520" cy="45" rx="150" ry="36"/><ellipse cx="840" cy="70" rx="120" ry="30"/><ellipse cx="1220" cy="55" rx="130" ry="32"/><ellipse cx="1600" cy="40" rx="150" ry="34"/><ellipse cx="1900" cy="75" rx="110" ry="28"/></g>`;
+      s += `<g fill="#fff" opacity="${(Math.min(1, progress * 1.5) * 0.9).toFixed(2)}"><ellipse cx="300" cy="80" rx="60" ry="18"/><ellipse cx="680" cy="60" rx="70" ry="20"/><ellipse cx="1180" cy="85" rx="65" ry="18"/><ellipse cx="1780" cy="62" rx="72" ry="20"/></g>`;
     }
-    s += `<path d="M0 205 Q180 150 380 195 T760 185 T1000 190 V280 H0Z" fill="${hill}"/><rect y="250" width="1000" height="350" fill="${ground}"/>`;
-    if (!o.has("rasen")) s += [[150, 330, 70], [520, 430, 90], [330, 540, 80], [880, 330, 60], [700, 560, 70]].map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 5}" fill="#9c8b70"/>`).join("");
-    else s += Array.from({ length: 46 }, () => { const x = (r() * 1000) | 0, y = 270 + ((r() * 320) | 0); return `<path d="M${x} ${y} q2 -9 4 0 q2 -9 4 0" stroke="${night ? "#3f5a4b" : "#7fbf6a"}" stroke-width="2" fill="none"/>`; }).join("");
-    if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".85"/>`).join("");
-    if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="800" cy="455" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="800" cy="453" rx="36" ry="7" fill="#a6b2b6"/>`;
+    s += `<path d="M0 205 Q180 150 380 195 T760 185 T1140 190 T1520 180 T2000 195 V280 H0Z" fill="${hill}"/><rect y="250" width="${W}" height="350" fill="${ground}"/>`;
+    if (!o.has("rasen")) s += [[150, 330, 70], [520, 430, 90], [330, 540, 80], [880, 330, 60], [700, 560, 70]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, 600 - y + 270, w * 0.9]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 5}" fill="#9c8b70"/>`).join("");
+    else s += Array.from({ length: 60 }, () => { const x = (r() * W) | 0, y = 270 + ((r() * 320) | 0); return `<path d="M${x} ${y} q2 -9 4 0 q2 -9 4 0" stroke="${night ? "#3f5a4b" : "#8cc477"}" stroke-width="1.6" fill="none"/>`; }).join("");
+    if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, y + 20, w]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".8"/>`).join("");
+    if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="1400" cy="435" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="1400" cy="433" rx="36" ry="7" fill="#a6b2b6"/>`;
     if (!o.has("baeume")) s += `<rect x="248" y="258" width="28" height="22" fill="#6b5a4a"/><ellipse cx="262" cy="258" rx="14" ry="4" fill="#8a7a66"/>`;
     const g = (k) => {
       if (!o.has(k) || LIVE.includes(k)) return "";
-      const [dx, dy] = (!ownedOverride && st.pos[k]) || [0, 0];
-      return `<g class="zi${k === newKey ? " zi-new" : ""}${NOMOVE.includes(k) ? "" : " movable"}" data-k="${k}"${dx || dy ? ` transform="translate(${dx} ${dy})"` : ""}><g class="zin">${DRAW[k]()}</g></g>`;
+      const [dx, dy] = off(k);
+      return `<g class="zi${k === newKey ? " zi-new" : ""}${NOMOVE.includes(k) ? "" : " movable"}" data-k="${k}"${dx || dy ? ` transform="translate(${dx} ${dy})"` : ""}><g class="zin">${DRAW[k](W)}</g></g>`;
     };
     BACK.forEach((k) => { s += k === "zaun" && !o.has("zaun") ? brokenFence() : g(k); });
     if (o.has("weg")) s += g("weg");
     MID.forEach((k) => (s += k === "teich" && o.has("eisbahn") ? "" : g(k)));
-    if (!o.has("rasen")) s += `<circle cx="700" cy="560" r="20" fill="none" stroke="#3a3a40" stroke-width="9"/><rect x="180" y="500" width="44" height="30" fill="#8f7a5f" transform="rotate(-12 202 515)"/><path d="M184 506 l36 18" stroke="#6b5a4a" stroke-width="3"/>`;
+    if (!o.has("rasen")) s += `<circle cx="700" cy="560" r="20" fill="none" stroke="#3a3a40" stroke-width="9"/><rect x="180" y="500" width="44" height="30" fill="#8f7a5f" transform="rotate(-12 202 515)"/><path d="M184 506 l36 18" stroke="#6b5a4a" stroke-width="3"/><circle cx="1560" cy="520" r="18" fill="none" stroke="#3a3a40" stroke-width="8"/><rect x="1180" y="540" width="40" height="28" fill="#8f7a5f" transform="rotate(10 1200 554)"/>`;
     FRONT.forEach((k) => (s += g(k)));
-    if (o.has("schneemann") && !night) s += Array.from({ length: 30 }, () => `<circle cx="${(r() * 1000) | 0}" cy="${(r() * 560) | 0}" r="${(1.5 + r() * 2).toFixed(1)}" fill="#fff" opacity=".9" pointer-events="none"/>`).join("");
+    if (o.has("schneemann") && !night) s += Array.from({ length: 40 }, () => `<circle cx="${(r() * W) | 0}" cy="${(r() * 560) | 0}" r="${(1.5 + r() * 1.6).toFixed(1)}" fill="#fff" opacity=".7" pointer-events="none"/>`).join("");
     if (night) {
-      s += `<rect width="1000" height="600" fill="#0a1636" opacity="${o.has("feuerwerk") && !dark ? 0.12 : 0.36}" pointer-events="none"/>`;
-      Object.entries(GLOW).forEach(([k, pts]) => { if (!o.has(k) || !on(k)) return; const [dx, dy] = (!ownedOverride && st.pos[k]) || [0, 0]; pts.forEach(([x, y, r]) => (s += `<circle cx="${x + dx}" cy="${y + dy}" r="${r}" fill="#ffd97a" opacity=".55" pointer-events="none"/><circle cx="${x + dx}" cy="${y + dy}" r="${r * 0.4}" fill="#fff6d0" opacity=".9" pointer-events="none"/>`)); });
+      s += `<rect width="${W}" height="600" fill="#0a1636" opacity="${o.has("feuerwerk") && !dark ? 0.12 : 0.36}" pointer-events="none"/>`;
+      Object.entries(GLOW).forEach(([k, pts]) => { if (!o.has(k) || !on(k)) return; const [dx, dy] = off(k); pts.forEach(([x, y, r]) => (s += `<circle cx="${x + dx}" cy="${y + dy}" r="${r}" fill="#ffd97a" opacity=".4" pointer-events="none"/><circle cx="${x + dx}" cy="${y + dy}" r="${r * 0.35}" fill="#fff6d0" opacity=".8" pointer-events="none"/>`)); });
     }
-    if (o.has("feuerwerk")) s += `<g class="zi${newKey === "feuerwerk" ? " zi-new" : ""}" data-k="feuerwerk"><g class="zin">${DRAW.feuerwerk()}</g></g>`;
-    return `<svg class="zoo-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}</svg>`;
+    if (o.has("feuerwerk")) s += `<g class="zi${newKey === "feuerwerk" ? " zi-new" : ""}" data-k="feuerwerk"><g class="zin">${DRAW.feuerwerk(W)}</g></g>`;
+    return `<svg class="zoo-svg" viewBox="0 0 ${W} 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}</svg>`;
   }
 
   function preview(key, bare) {
@@ -537,7 +574,7 @@ const Zoo = (() => {
     return key === "lichter" ? ["Bunt", "Warmweiß", "Gold"][st.tog.lichterMode] : on(key);
   }
   function setPos(key, dx, dy) { st.pos[key] = [Math.round(Math.max(-450, Math.min(450, dx))), Math.round(Math.max(-300, Math.min(250, dy)))]; save(); refresh(); }
-  const posOf = (key) => st.pos[key] || [0, 0];
+  const posOf = (key) => off(key);
   const ownedList = () => st.owned.slice();
-  return { toggle, isOn: on, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  return { W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

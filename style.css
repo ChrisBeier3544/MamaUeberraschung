@@ -1023,7 +1023,7 @@ body.game-open #snow, body.game-open #parade { display: none; }
 .review-overlay h3 { margin: 26px 0 10px; font-size: 22px; }
 .rv-before { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .rv-before figure { margin: 0; text-align: center; }
-.rv-scene { aspect-ratio: 5 / 3; border-radius: 16px; overflow: hidden; border: 5px solid #a0703f; }
+.rv-scene { aspect-ratio: 10 / 3; border-radius: 16px; overflow: hidden; border: 5px solid #a0703f; }
 .rv-scene svg { width: 100%; height: 100%; display: block; }
 .rv-fav { color: var(--ink-soft); }
 .rv-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
@@ -1351,7 +1351,7 @@ main { max-width: 1100px; padding: 8px max(16px, env(safe-area-inset-right, 0px)
 .tap-shoot { top: auto; left: auto; width: 180px; }
 .cam-flash { position: fixed; inset: 0; background: #fff; z-index: 300; pointer-events: none; animation: camFlash .5s ease-out forwards; }
 @keyframes camFlash { from { opacity: .95 } to { opacity: 0 } }
-.pen-photo { aspect-ratio: 5 / 3; overflow: hidden; }
+.pen-photo { aspect-ratio: 10 / 3; overflow: hidden; }
 .pen-photo svg { width: 100%; height: 100%; display: block; }
 .rocket { position: absolute; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px; background: linear-gradient(#fff6c9, #ff9f1c); box-shadow: 0 6px 10px #ffb347; }
 .sled-rider { position: absolute; transform: translate(-50%, -100%); z-index: 90; pointer-events: none; }
@@ -1367,3 +1367,23 @@ main { max-width: 1100px; padding: 8px max(16px, env(safe-area-inset-right, 0px)
 .wish-in { width: 100%; resize: vertical; }
 .wish-list { margin: 0; padding-left: 18px; text-align: left; max-height: 160px; overflow: auto; font-family: Caveat, cursive; font-size: 20px; }
 .tap-overlay { z-index: 290; }
+
+/* ---------- Breites Gehege: Bereiche, Wischen, Stall ---------- */
+.zone-bar { display: flex; gap: 6px; margin: 0 0 10px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.zone-bar::-webkit-scrollbar { display: none; }
+.zone-chip { flex: none; font: 600 13px/1 "DM Sans", sans-serif; color: var(--ink, #23302a); background: #fffdf6; border: 1px solid var(--line, #e3dccb); border-radius: 999px; padding: 8px 13px; cursor: pointer; transition: background .2s, color .2s; }
+.zone-chip.active { background: #1f3d33; color: #fff6e0; border-color: #1f3d33; }
+.zone-chip.stall-chip { margin-left: auto; background: #f6ecd6; border-color: #e2cfa6; }
+.zone-chip.stall-chip:hover { background: #efdfbb; }
+.pen-frame { position: relative; }
+.pen-scroller { position: relative; width: 100%; aspect-ratio: 5 / 3; max-height: 66vh; overflow-x: auto; overflow-y: hidden; border-radius: 22px; box-shadow: var(--shadow), 0 0 0 1px var(--line); overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: rgba(31, 61, 51, .35) transparent; -webkit-overflow-scrolling: touch; }
+.pen-scroller .pen.inline { position: absolute; left: 0; top: 0; height: 100%; width: auto; aspect-ratio: 10 / 3; max-height: none; border: none; border-radius: 0; box-shadow: none; }
+@media (max-width: 600px) { .pen-scroller { aspect-ratio: 4 / 3; } .zone-bar { flex-wrap: wrap; } .zone-chip { font-size: 12px; padding: 7px 10px; } .zone-chip.stall-chip { margin-left: 0; } }
+.pen-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 600; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(255, 253, 246, .92); color: #1f3d33; font: 700 26px/34px Fraunces, serif; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); cursor: pointer; transition: opacity .25s; }
+.pen-arrow.left { left: 10px; } .pen-arrow.right { right: 10px; }
+.pen-arrow.off { opacity: 0; pointer-events: none; }
+.stall-grid .stall-card { cursor: default; }
+.stall-btns { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 6px; }
+.stall-btns .feed-btn { width: 100%; justify-content: center; font-size: 12px; }
+.stall-btns .out-btn { background: #1f3d33; color: #fff6e0; }
+.stall-card .hungry-note { color: var(--red-dark, #9b2c3a); font-weight: 700; }

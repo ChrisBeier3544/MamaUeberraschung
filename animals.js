@@ -567,7 +567,7 @@ const Animals = (() => {
   }
 
   /* ---------- Das Gehege ---------- */
-  function openGehege() {
+  function openGehege(first = "pen") {
     let alive = true;
     const timers = new Set();
     const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (alive) fn(); }, ms); timers.add(t); };
@@ -578,22 +578,25 @@ const Animals = (() => {
     const tabPen = H.el("button", { class: "g-tab active", text: "Gehege" });
     const tabAlbum = H.el("button", { class: "g-tab", text: "Sammelalbum" });
     const tabBadges = H.el("button", { class: "g-tab badge-btn", text: "Abzeichen" });
+    const resting = () => found.size - lineup().length;
+    const tabStall = H.el("button", { class: "g-tab", text: "Stall" });
     const area = H.el("div", { class: "g-area" });
     ov.append(H.el("div", { class: "g-head" },
       H.el("div", {}, H.el("h2", { text: "Mamas Tiergehege" }), H.el("div", { class: "g-sub", text: `${found.size} von 100 Tieren gefunden` })),
-      H.el("div", { class: "g-tabs" }, tabPen, tabAlbum, typeof Extras !== "undefined" ? tabBadges : null),
+      H.el("div", { class: "g-tabs" }, tabPen, resting() > 0 ? tabStall : null, tabAlbum, typeof Extras !== "undefined" ? tabBadges : null),
       H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), area);
     const show = (which) => {
       timers.forEach(clearTimeout); timers.clear();
-      tabPen.classList.toggle("active", which === "pen"); tabAlbum.classList.toggle("active", which === "album"); tabBadges.classList.toggle("active", which === "badges");
+      tabPen.classList.toggle("active", which === "pen"); tabAlbum.classList.toggle("active", which === "album"); tabBadges.classList.toggle("active", which === "badges"); tabStall.classList.toggle("active", which === "stall");
       area.innerHTML = ""; area.classList.remove("pen-mode");
       if (which === "pen") pen(area, later);
+      else if (which === "stall") stall(area, () => show("pen"), close);
       else if (which === "album") { album(area); (typeof Extras !== "undefined" && Extras.track("album")); }
       else area.append(Extras.badgeGrid());
     };
-    tabPen.onclick = () => show("pen"); tabAlbum.onclick = () => show("album"); tabBadges.onclick = () => show("badges");
+    tabPen.onclick = () => show("pen"); tabStall.onclick = () => show("stall"); tabAlbum.onclick = () => show("album"); tabBadges.onclick = () => show("badges");
     document.body.append(ov); document.body.style.overflow = "hidden";
-    show("pen");
+    show(first === "stall" && resting() > 0 ? "stall" : "pen");
     hideIn("album", ov.querySelector(".g-head"));
     if (typeof Extras !== "undefined") Extras.markUnclaimed();
   }
@@ -611,9 +614,7 @@ const Animals = (() => {
     area.classList.add("pen-mode");
     area.append(vp);
     // Die Welt bekommt das Seitenverhältnis des Bildschirms – so füllt sie ihn ganz aus
-    const n = VARIANTS.filter((v) => found.has(v.id)).length;
-    const ratio = Math.max(0.45, Math.min(2.4, (vp.clientHeight || 600) / (vp.clientWidth || 1000)));
-    const baseW = Math.round(Math.max(1500, 1100 + n * 16) * (ratio > 1 ? 0.75 : 1)), baseH = Math.round(baseW * ratio);
+    const baseH = 900, baseW = Math.round((baseH * (typeof Zoo !== "undefined" ? Zoo.W : 1000)) / 600);
     const world = H.el("div", { class: "pen pen-world", style: `width:${baseW}px;height:${baseH}px` });
     const ctrl = H.el("div", { class: "zoom-ctrl" });
     vp.append(world, ctrl);
@@ -626,6 +627,7 @@ const Animals = (() => {
       ty = h <= Hh ? (Hh - h) / 2 : Math.min(0, Math.max(Hh - h, ty));
     };
     const fit = () => { zMin = Math.min(vp.clientWidth / baseW, vp.clientHeight / baseH); z = zMin; clampPan(); apply(); };
+    const start = () => { zMin = Math.min(vp.clientWidth / baseW, vp.clientHeight / baseH); z = Math.max(zMin, Math.min(2.6, vp.clientHeight / baseH, vp.clientWidth / (baseW * 0.3))); tx = (vp.clientWidth - baseW * z) / 2; ty = (vp.clientHeight - baseH * z) / 2; clampPan(); apply(); };
     const zoomAt = (nz, cx, cy) => { nz = Math.max(zMin, Math.min(2.6, nz)); tx = cx - ((cx - tx) * nz) / z; ty = cy - ((cy - ty) * nz) / z; z = nz; clampPan(); apply(); };
     const mid = () => [vp.clientWidth / 2, vp.clientHeight / 2];
     const btn = (t, lab, f) => { const b = H.el("button", { text: t, "aria-label": lab }); b.onclick = (e) => { e.stopPropagation(); f(); H.sfx.tick(); }; ctrl.append(b); };
@@ -637,23 +639,30 @@ const Animals = (() => {
     btn("Umräumen", "Gehege umräumen", () => {
       editing = !editing; world.classList.toggle("editing", editing);
       ctrl.lastChild.textContent = editing ? "Fertig" : "Umräumen";
-      if (editing) H.toast("Zieh die leuchtenden Sachen an einen neuen Platz. Danach auf „Fertig“ tippen.", 4500);
+      if (editing) H.toast("Zieh ein leuchtendes Teil an einen anderen Platz – es rastet dort ein. Steht da schon etwas Gleichgroßes, tauschen beide.", 5500);
       else { refreshPens(); H.toast("Gespeichert – das Gehege sieht toll aus!"); }
     });
     world.addEventListener("pointerdown", (e) => {
       if (!editing) return;
       const g = e.target.closest("g.movable"); if (!g) return;
       e.stopPropagation(); e.preventDefault();
-      const [dx, dy] = Zoo.posOf(g.dataset.k);
-      drag = { k: g.dataset.k, g, sx: e.clientX, sy: e.clientY, dx, dy, nx: null, ny: null };
+      const [dx, dy] = Zoo.off(g.dataset.k);
+      drag = { k: g.dataset.k, g, sx: e.clientX, sy: e.clientY, dx, dy, nx: null, ny: null, a: Zoo.anchorOf(g.dataset.k) };
     }, true);
     world.addEventListener("pointermove", (e) => {
       if (!drag) return;
-      const sc = 1000 / world.getBoundingClientRect().width;
+      const sc = Zoo.W / world.getBoundingClientRect().width;
       drag.nx = drag.dx + (e.clientX - drag.sx) * sc; drag.ny = drag.dy + (e.clientY - drag.sy) * sc;
       drag.g.setAttribute("transform", `translate(${drag.nx} ${drag.ny})`);
     });
-    const dropIt = () => { if (!drag) return; if (drag.nx != null) { Zoo.setPos(drag.k, drag.nx, drag.ny); if (typeof Extras !== "undefined") Extras.track("moved"); H.sfx.pop(); } drag = null; };
+    const dropIt = () => {
+      if (!drag) return;
+      if (drag.nx != null) {
+        if (Zoo.snap(drag.k, drag.a[0] + drag.nx - drag.dx, drag.a[1] + drag.ny - drag.dy)) { if (typeof Extras !== "undefined") Extras.track("moved"); H.sfx.pop(); }
+        else { Zoo.refresh(); H.toast("Dort ist kein passender Platz – das Teil steht wieder an seinem alten Ort."); }
+      }
+      drag = null;
+    };
     world.addEventListener("pointerup", dropIt); world.addEventListener("pointercancel", dropIt);
     vp.addEventListener("wheel", (e) => { e.preventDefault(); const r = vp.getBoundingClientRect(); zoomAt(z * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
     const pts = new Map();
@@ -669,8 +678,28 @@ const Animals = (() => {
     const up = (e) => { pts.delete(e.pointerId); if (!pts.size) setTimeout(() => vp.classList.remove("dragging"), 0); };
     vp.addEventListener("pointerup", up); vp.addEventListener("pointercancel", up);
     vp.addEventListener("click", (e) => { if (moved > 6) { e.stopPropagation(); e.preventDefault(); moved = 0; } }, true);
-    requestAnimationFrame(fit);
+    requestAnimationFrame(start);
   }
+
+  /* ---------- Tagesbesetzung: höchstens 25 Tiere draußen, stündlicher Wechsel ---------- */
+  const PEN_MAX = 25, PEN_NIGHT = 15;
+  const hourNow = () => Math.floor(Date.now() / 3600000);
+  const isNightNow = () => typeof Extras !== "undefined" && Extras.isNight();
+  function lineup() {
+    const mine = VARIANTS.filter((v) => found.has(v.id));
+    const max = isNightNow() ? PEN_NIGHT : PEN_MAX;
+    if (mine.length <= max) return mine;
+    const raus = typeof Zoo !== "undefined" ? Zoo.raus() : {};
+    const h = hourNow();
+    const key = (v) => { let x = (v.id * 2654435761 + h * 97) % 1000003; return x / 1000003; };
+    const rank = (v) => (raus[v.id] === h ? 0 : Date.now() - (since[v.id] || 0) < DAY ? 1 : hungry(v) ? 2 : v.rarity === "legendaer" ? 3 : 4) + key(v);
+    return mine.slice().sort((a, b) => rank(a) - rank(b)).slice(0, max);
+  }
+  const outside = () => new Set(lineup().map((v) => v.id));
+  function bringOut(v) { const r = Zoo.raus(); const h = hourNow(); Object.keys(r).forEach((id) => { if (r[id] !== h) delete r[id]; }); r[v.id] = h; Zoo.saveRaus(); refreshPens(); }
+  // Bereich, in dem sich jede Tierart am liebsten aufhält (Index in Zoo.ZONES)
+  const HOME_ZONE = { hase: 0, igel: 0, katze: 0, hund: 1, schaf: 1, schwein: 1, waschbaer: 1, giraffe: 2, elefant: 2, panda_rot: 2, capy: 3, otter: 3, ente: 3, pinguin: 4, baer: 4, fuchs: 4 };
+  const homeX = (v) => { if (typeof Zoo === "undefined") return null; const z = Zoo.ZONES[HOME_ZONE[v.sp] ?? 2]; return [(z[1] / Zoo.W) * 100, (z[2] / Zoo.W) * 100]; };
 
   let inlineCtrls = [];
   function mountPen(field, later) {
@@ -679,7 +708,7 @@ const Animals = (() => {
     field.append(H.el("div", { class: "zoo-scene", html: typeof Zoo !== "undefined" ? Zoo.scene() : DECOR }));
     const ctrls = [];
     if (field.id === "zoo-pen") inlineCtrls = ctrls;
-    const mine = VARIANTS.filter((v) => found.has(v.id));
+    const mine = lineup();
     if (!mine.length) {
       if (field.id === "zoo-pen") mountProps(field);
       (typeof Extras !== "undefined" && Extras.decoratePen(field));
@@ -694,14 +723,15 @@ const Animals = (() => {
   function penAnimal(field, v, later, o = {}) {
     const sp = SPECIES[v.sp];
     const small = innerWidth < 600;
-    const k = field.classList.contains("inline") ? (small ? 0.42 : 0.7) : small ? 0.62 : 1;
+    const k = ((field.clientHeight || 600) / 600) * (small ? 0.9 : 0.78);
     const w = sp.W * sp.scale * k;
+    const hz = o.guest ? null : homeX(v);
     const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : " r-" + v.rarity) });
     const wrap = H.el("div", { class: "pa-in" });
     wrap.innerHTML = svg(v, { width: w });
     a.append(wrap);
     if (!o.guest) legendFx(wrap, v);
-    const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? Math.random() * 88, y: o.y ?? 48 + Math.random() * 46 };
+    const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? (hz ? hz[0] + Math.random() * (hz[1] - hz[0] - 3) : Math.random() * 88), y: o.y ?? 48 + Math.random() * 46 };
     c.setSad = (on) => { a.classList.toggle("sad", on); if (on && !a.querySelector(".tear")) a.append(H.el("div", { class: "tear" })); if (!on) a.querySelector(".tear")?.remove(); };
     if (!o.guest) c.setSad(hungry(v));
     a.style.left = c.x + "%"; a.style.top = c.y + "%"; a.style.zIndex = Math.round(c.y);
@@ -719,7 +749,10 @@ const Animals = (() => {
     const move = () => {
       if (!a.isConnected) return;
       if (c.busy) { later(move, 1500); return; }
-      const nx = Math.max(0, Math.min(90, c.x + (Math.random() - 0.5) * 50)), ny = Math.max(46, Math.min(96, c.y + (Math.random() - 0.5) * 30));
+      // meist im eigenen Lieblingsbereich, ab und zu ein Ausflug in die Nachbarschaft
+      const span = hz && Math.random() < 0.8 ? hz : null;
+      const nx = span ? span[0] + Math.random() * (span[1] - span[0] - 3) : Math.max(0, Math.min(96, c.x + (Math.random() - 0.5) * 26));
+      const ny = Math.max(46, Math.min(96, c.y + (Math.random() - 0.5) * 30));
       c.walkTo(nx, ny, () => later(move, (a.classList.contains("sad") ? 3000 : 800) + Math.random() * 3500));
     };
     c.goTo = (nx, ny, done) => { c.busy = true; c.walkTo(nx, ny, done, true); };
@@ -796,8 +829,9 @@ const Animals = (() => {
   const GUESTS = [{ sp: "capy", col: 0, acc: "orange", name: "Kalle" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75", name: "Mimi" }, { sp: "hund", col: 0, acc: "schal", accColor: "#4f7fe0", name: "Bello" }];
   let celebrating = false;
   const sceneMap = (field) => {
-    const W = field.clientWidth, Hh = field.clientHeight, sc = Math.max(W / 1000, Hh / 600);
-    const ox = (W - 1000 * sc) / 2, oy = (Hh - 600 * sc) / 2;
+    const SW = typeof Zoo !== "undefined" ? Zoo.W : 1000;
+    const W = field.clientWidth, Hh = field.clientHeight, sc = Math.max(W / SW, Hh / 600);
+    const ox = (W - SW * sc) / 2, oy = (Hh - 600 * sc) / 2;
     return { W, Hh, sc, ox, oy, pct: (x, y) => [((ox + x * sc) / W) * 100, ((oy + y * sc) / Hh) * 100] };
   };
   const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -805,6 +839,7 @@ const Animals = (() => {
     const field = document.getElementById("zoo-pen");
     if (!field || !field.clientWidth) return;
     celebrating = true;
+    scrollPenTo(sx);
     const M = sceneMap(field);
     const empty = field.querySelector(".pen-empty");
     if (empty) empty.classList.add("hidden");
@@ -862,7 +897,7 @@ const Animals = (() => {
     const M = sceneMap(field);
     LIVE.forEach((k) => {
       if (!Zoo.owns(k)) return;
-      const [x, y, w, h] = Zoo.info(k)[4];
+      const [x0, y0, w, h] = Zoo.info(k)[4]; const [ox, oy] = Zoo.off(k); const x = x0 + ox, y = y0 + oy;
       const [lx, ty] = M.pct(x, y);
       const el = H.el("div", { class: "prop prop-" + k, style: `left:${lx}%;top:${ty}%;width:${((w * M.sc) / M.W) * 100}%;height:${((h * M.sc) / M.Hh) * 100}%;z-index:${Math.round(ty)}`, html: Zoo.preview(k, true) });
       el.addEventListener("click", (e) => { e.stopPropagation(); if (k === "ball") kickBall(null, true); else { H.sfx.tone(1800, 0.08, "sine", 0.1, 2400); H.sfx.tone(2100, 0.08, "sine", 0.1, 2600, 0.12); if (Zoo.owns("meisen")) birdVisit(); else H.burstAt(el, ["♪", "✨"], 4, 30); } });
@@ -872,7 +907,7 @@ const Animals = (() => {
   }
   function kickBall(c, hard) {
     const b = props.ball; if (!b) return;
-    const r = hard ? 70 : 40;
+    const r = hard ? 30 : 16;
     const nx = clampN(b.x + (Math.random() - 0.5) * r, 2, 92), ny = clampN(b.y + (Math.random() - 0.5) * r * 0.5, 50, 92);
     b.el.style.transition = `left ${hard ? 1.4 : 1.1}s cubic-bezier(.2,.8,.3,1), top ${hard ? 1.4 : 1.1}s cubic-bezier(.2,.8,.3,1)`;
     b.el.animate([{ transform: "rotate(0) translateY(0)" }, { transform: `rotate(${nx > b.x ? 360 : -360}deg) translateY(${hard ? -40 : -10}px)`, offset: 0.4 }, { transform: `rotate(${nx > b.x ? 720 : -720}deg) translateY(0)` }], { duration: hard ? 1400 : 1100, easing: "cubic-bezier(.2,.8,.3,1)" });
@@ -885,7 +920,7 @@ const Animals = (() => {
   function birdVisit() {
     const b = props.vogel; if (!b || !Zoo.owns("meisen") || b.busy) return;
     const field = b.el.parentElement; const M = sceneMap(field);
-    const [mx, my] = M.pct(472, 268);
+    const [mox, moy] = Zoo.off("meisen"); const [mx, my] = M.pct(472 + mox, 268 + moy);
     b.busy = true;
     const fly = (x, y, dur, done) => { b.el.classList.add("flying"); b.el.style.transition = `left ${dur}s ease-in-out, top ${dur}s ease-in-out`; b.el.style.left = x + "%"; b.el.style.top = y + "%"; setTimeout(() => { b.el.classList.remove("flying"); done(); }, dur * 1000); };
     b.el.classList.toggle("flipx", mx < b.x);
@@ -1065,6 +1100,80 @@ const Animals = (() => {
     if (TAP[k]) TAP[k](g); else { H.burstAt(g, ["✨", "⭐"], 6, 40); H.sfx.tone(1200, 0.12, "sine", 0.08); if (k === "baeume") { const [x, , r] = rectMid(g); H.burst(x, r.top + 20, ["❄", "❅"], 10, 50); } }
   }
 
+  /* ---------- Stall: hier ruhen die Tiere, die gerade nicht draußen sind ---------- */
+  function stall(area, toPen, closeAll) {
+    const out = outside();
+    const rest = VARIANTS.filter((v) => found.has(v.id) && !out.has(v.id));
+    const wrap = H.el("div", { class: "album stall" });
+    wrap.append(H.el("p", { class: "rar-hint", text: `Draußen im Gehege sind gerade ${out.size} Tiere unterwegs, ${rest.length} ruhen sich im Stall aus. Jede volle Stunde wechselt die Besetzung – neue und hungrige Tiere sind immer draußen.${isNightNow() ? " Nachts schlafen mehr Tiere im Stall." : ""}` }));
+    const grid = H.el("div", { class: "album-grid stall-grid" });
+    rest.forEach((v) => {
+      const card = H.el("div", { class: "album-card stall-card r-" + v.rarity });
+      const pic = H.el("div", { class: "album-pic" }); pic.innerHTML = svg(v, { fit: true });
+      const info = H.el("small", { text: hungry(v) ? "hat Hunger!" : "döst im Stroh" });
+      if (hungry(v)) info.classList.add("hungry-note");
+      const btns = H.el("div", { class: "stall-btns" });
+      if (typeof Zoo !== "undefined") {
+        const [fname] = Zoo.FOOD[v.sp];
+        const fb = H.el("button", { class: "feed-btn", text: Zoo.foodCount(v.sp) ? `Füttern (${fname})` : `${fname} kaufen` });
+        fb.onclick = () => {
+          if (!Zoo.foodCount(v.sp)) { closeAll(); Zoo.openShop("@futter"); return; }
+          Zoo.useFood(v.sp, v.id); (typeof Extras !== "undefined" && Extras.track("fed"));
+          H.sfx.good(); H.burstAt(pic, ["💖", "✨"], 8, 50); info.textContent = "satt und zufrieden"; info.classList.remove("hungry-note");
+          fb.textContent = Zoo.foodCount(v.sp) ? `Füttern (${fname})` : `${fname} kaufen`; updateHunger();
+        };
+        btns.append(fb);
+      }
+      btns.append(H.el("button", { class: "feed-btn out-btn", text: "Ins Gehege holen", onclick: () => { bringOut(v); H.toast(`${v.name} ist jetzt draußen im Gehege.`); toPen(); } }));
+      card.append(pic, H.el("b", { text: v.name }), info, btns);
+      grid.append(card);
+    });
+    if (!rest.length) wrap.append(H.el("p", { text: "Der Stall ist leer – alle Tiere sind draußen." }));
+    wrap.append(grid);
+    area.append(wrap);
+  }
+
+  /* ---------- Breites Gehege auf der Startseite: Bereiche, Wischen, Stall-Knopf ---------- */
+  let stallChip = null;
+  function scrollPenTo(sx, instant) {
+    const sc = document.querySelector("#zoo .pen-scroller"), pen = document.getElementById("zoo-pen");
+    if (!sc || !pen || typeof Zoo === "undefined") return;
+    const [px] = sceneMap(pen).pct(sx, 0);
+    sc.scrollTo({ left: (px / 100) * pen.clientWidth - sc.clientWidth / 2, behavior: instant ? "auto" : "smooth" });
+  }
+  function setupInline() {
+    const pen = document.getElementById("zoo-pen");
+    if (!pen || typeof Zoo === "undefined" || pen.closest(".pen-scroller")) return;
+    const zoo = pen.parentElement;
+    const frame = H.el("div", { class: "pen-frame" });
+    const sc = H.el("div", { class: "pen-scroller" });
+    zoo.insertBefore(frame, pen); sc.append(pen); frame.append(sc);
+    const step = (d) => sc.scrollBy({ left: d * sc.clientWidth * 0.8, behavior: "smooth" });
+    const la = H.el("button", { class: "pen-arrow left", "aria-label": "Nach links", html: "‹", onclick: () => step(-1) });
+    const ra = H.el("button", { class: "pen-arrow right", "aria-label": "Nach rechts", html: "›", onclick: () => step(1) });
+    frame.append(la, ra);
+    const bar = H.el("div", { class: "zone-bar" });
+    const chips = Zoo.ZONES.map(([name, a, b]) => { const c = H.el("button", { class: "zone-chip", text: name, onclick: () => scrollPenTo((a + b) / 2) }); bar.append(c); return c; });
+    stallChip = H.el("button", { class: "zone-chip stall-chip hidden", onclick: () => openGehege("stall") });
+    bar.append(stallChip);
+    zoo.insertBefore(bar, frame);
+    const upd = () => {
+      const mid = sc.scrollLeft + sc.clientWidth / 2, M = sceneMap(pen);
+      const sx = (mid - M.ox) / M.sc;
+      chips.forEach((c, i) => c.classList.toggle("active", sx >= Zoo.ZONES[i][1] && sx < Zoo.ZONES[i][2]));
+      la.classList.toggle("off", sc.scrollLeft < 8); ra.classList.toggle("off", sc.scrollLeft > sc.scrollWidth - sc.clientWidth - 8);
+    };
+    sc.addEventListener("scroll", upd, { passive: true });
+    addEventListener("resize", upd);
+    requestAnimationFrame(() => { scrollPenTo(1000, true); upd(); });
+  }
+  function updateStallChip() {
+    if (!stallChip) return;
+    const n = found.size - lineup().length;
+    stallChip.classList.toggle("hidden", n <= 0);
+    stallChip.textContent = `Stall · ${n} ${n === 1 ? "Tier ruht" : "Tiere ruhen"}`;
+  }
+
   function album(area) {
     const wrap = H.el("div", { class: "album" });
     const sum = H.el("div", { class: "rar-sum" });
@@ -1112,6 +1221,7 @@ const Animals = (() => {
     if (!f) return;
     inlineTimers.forEach(clearTimeout); inlineTimers.clear();
     mountPen(f, inlineLater);
+    updateStallChip();
   }
 
   function init() {
@@ -1125,7 +1235,10 @@ const Animals = (() => {
     document.body.append(btn);
     updateBtn();
     announceWaves();
+    setupInline();
     refreshPens();
+    let lastHour = hourNow();
+    setInterval(() => { if (hourNow() !== lastHour && !celebrating && !document.querySelector(".gehege-overlay")) { lastHour = hourNow(); refreshPens(); } }, 60000);
     updateHunger(); setInterval(() => { updateHunger(); inlineCtrls.forEach((c) => !c.guest && c.setSad(hungry(c.v))); }, 60000);
     setTimeout(spawn, 600); setTimeout(spawn, 2500);
     setInterval(spawn, 2600);
