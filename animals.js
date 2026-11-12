@@ -674,6 +674,7 @@ const Animals = (() => {
 
   let inlineCtrls = [];
   function mountPen(field, later) {
+    if (!field._tap) { field.addEventListener("click", onSceneTap); field._tap = true; }
     field.innerHTML = "";
     field.append(H.el("div", { class: "zoo-scene", html: typeof Zoo !== "undefined" ? Zoo.scene() : DECOR }));
     const ctrls = [];
@@ -838,19 +839,20 @@ const Animals = (() => {
   }
 
   /* ---------- Tiere benutzen gekaufte Sachen ---------- */
-  const ACT = {
-    wasserschale: "*schlürf*", teich: "*platsch*", vogelbad: "*schlürf*", futter: "*mampf mampf*", stand: "Ein Plätzchen, bitte!", kakao: "Mit extra Sahne!",
-    kissen: "Zzz …", strohballen: "Zzz …", hoehle: "So kuschelig hier …", bank: "Kurz ausruhen.", onsen: "Ahhh … herrlich.", feuer: "Schön warm!",
-    teleskop: "Ein Stern mit Maske?!", buehne: "♪ La-la-la ♪", fotowand: "Cheese!", spielplatz: "Juhu!", rodel: "Huiii!", eisbahn: "Pirouette!",
-    karussell: "Noch eine Runde!", kletter: "Ich bin ganz oben!", schaukel: "Höher!", blumen: "Die duften so gut!", tanne: "Wie schön geschmückt!",
-    schneemann: "Hallo, Herr Schneemann!", iglu: "Schön kühl hier drin.", teddy: "Mein Kuschelfreund!", briefkasten: "Wunschzettel ist eingeworfen!",
-    giesskanne: "Blumen gießen!", holz: "Holz für kalte Abende.", windrad: "Es dreht sich!", zwerg: "Guten Tag, Herr Zwerg!", statue: "Kalle in Gold!",
-  };
-  // jede Sache gehört zu einer Spruch-Gruppe mit 20 Varianten (texts.js)
-  const ACT_GROUP = {
-    wasserschale: "trinken", teich: "trinken", vogelbad: "trinken", futter: "essen", stand: "essen", kakao: "essen",
-    kissen: "schlafen", strohballen: "schlafen", hoehle: "schlafen", bank: "schlafen", iglu: "schlafen", teddy: "schlafen",
-    onsen: "waermen", feuer: "waermen", spielplatz: "spielen", rodel: "spielen", eisbahn: "spielen", karussell: "spielen", kletter: "spielen", schaukel: "spielen",
+  // [eigener Spruch, Spruch-Gruppe (texts.js), Verhalten]
+  const USE = {
+    teich: ["*platsch*", "trinken", "swim"], futter: ["*mampf mampf*", "essen"], laternen: ["Schön hell hier.", "waermen"],
+    buehne: ["♪ La-la-la ♪", null, "sing"], huette: ["Mist, abgeschlossen!", null, "coon"], blumen: ["Die duften so gut!", "staunen"],
+    hoehle: ["So kuschelig hier …", "schlafen", "inside"], bank: ["Kurz ausruhen.", "schlafen"], onsen: ["Ahhh … herrlich.", "waermen", "capy"],
+    kletter: ["Ich bin ganz oben!", "spielen", "climb"], vogelhaus: ["Piep piep!", "staunen"], spielplatz: ["Juhu!", "spielen", "hop"],
+    schneemann: ["Ein Schal für dich, Herr Schneemann!", "staunen"], fotowand: ["Cheese!", null, "hop"], stand: ["Ein Plätzchen, bitte!", "essen"],
+    rodel: ["Huiii!", "spielen", "slide"], bruecke: ["Trockene Pfoten!", "staunen", "cross"], tanne: ["Wie schön geschmückt!", "staunen"],
+    eisbahn: ["Pirouette!", "spielen", "spin"], iglu: ["Schön kühl hier drin.", "schlafen", "inside"], kakao: ["Mit extra Sahne!", "essen"],
+    feuer: ["Schön warm!", "waermen"], teleskop: ["Ein Stern mit Maske?!", "staunen"], karussell: ["Noch eine Runde!", "spielen", "spin"],
+    feuerwerk: ["Hurra!", "staunen", "hop"], wasserschale: ["*schlürf*", "trinken"], kissen: ["Zzz …", "schlafen"],
+    briefkasten: ["Wunschzettel ist eingeworfen!", null], strohballen: ["Hopp – hier oben!", "spielen", "hop"], holz: ["Holz fürs Feuer!", null, "wood"],
+    teddy: ["Mein Kuschelfreund!", null, "hug"], vogelbad: ["*schlürf*", "trinken"], schaukel: ["Höher!", "spielen", "hop"],
+    zwerg: ["Herr Zwerg, haben Sie gerade gezwinkert?", null], statue: ["Verehrter Kalle …", null, "bow"],
   };
   const LIVE = ["ball", "vogel"];
   let props = {};
@@ -863,18 +865,22 @@ const Animals = (() => {
       const [x, y, w, h] = Zoo.info(k)[4];
       const [lx, ty] = M.pct(x, y);
       const el = H.el("div", { class: "prop prop-" + k, style: `left:${lx}%;top:${ty}%;width:${((w * M.sc) / M.W) * 100}%;height:${((h * M.sc) / M.Hh) * 100}%;z-index:${Math.round(ty)}`, html: Zoo.preview(k, true) });
+      el.addEventListener("click", (e) => { e.stopPropagation(); if (k === "ball") kickBall(null, true); else { H.sfx.tone(1800, 0.08, "sine", 0.1, 2400); H.sfx.tone(2100, 0.08, "sine", 0.1, 2600, 0.12); if (Zoo.owns("meisen")) birdVisit(); else H.burstAt(el, ["♪", "✨"], 4, 30); } });
       field.append(el);
       props[k] = { el, x: lx, y: ty, home: [lx, ty] };
     });
   }
-  function kickBall(c) {
+  function kickBall(c, hard) {
     const b = props.ball; if (!b) return;
-    const nx = clampN(b.x + (Math.random() - 0.5) * 40, 2, 92), ny = clampN(b.y + (Math.random() - 0.5) * 20, 50, 92);
-    b.el.style.transition = "left 1.1s cubic-bezier(.2,.8,.3,1), top 1.1s cubic-bezier(.2,.8,.3,1)";
-    b.el.animate([{ transform: "rotate(0)" }, { transform: `rotate(${nx > b.x ? 540 : -540}deg)` }], { duration: 1100, easing: "cubic-bezier(.2,.8,.3,1)" });
+    const r = hard ? 70 : 40;
+    const nx = clampN(b.x + (Math.random() - 0.5) * r, 2, 92), ny = clampN(b.y + (Math.random() - 0.5) * r * 0.5, 50, 92);
+    b.el.style.transition = `left ${hard ? 1.4 : 1.1}s cubic-bezier(.2,.8,.3,1), top ${hard ? 1.4 : 1.1}s cubic-bezier(.2,.8,.3,1)`;
+    b.el.animate([{ transform: "rotate(0) translateY(0)" }, { transform: `rotate(${nx > b.x ? 360 : -360}deg) translateY(${hard ? -40 : -10}px)`, offset: 0.4 }, { transform: `rotate(${nx > b.x ? 720 : -720}deg) translateY(0)` }], { duration: hard ? 1400 : 1100, easing: "cubic-bezier(.2,.8,.3,1)" });
     b.el.style.left = nx + "%"; b.el.style.top = ny + "%"; b.el.style.zIndex = Math.round(ny);
     b.x = nx; b.y = ny;
     H.sfx.tone(300, 0.08, "sine", 0.12, 600);
+    // nach einem kräftigen Schuss rennt ein Tier hinterher
+    if (hard) setTimeout(() => { const f = inlineCtrls.filter((x) => x.a.isConnected && !x.busy && !x.guest); if (!f.length) return; const cc = H.pick(f); const field = b.el.parentElement; const aw = (cc.a.offsetWidth / field.clientWidth) * 100; cc.goTo(clampN(b.x - aw / 2 + 4, 0, 94), clampN(b.y + 4, 46, 98), () => { kickBall(cc); cc.say(Texts.say("ball"), 1800); setTimeout(() => (cc.busy = false), 1800); }); }, 600);
   }
   function birdVisit() {
     const b = props.vogel; if (!b || !Zoo.owns("meisen") || b.busy) return;
@@ -888,6 +894,32 @@ const Animals = (() => {
       setTimeout(() => { b.el.classList.remove("pecking"); b.el.classList.toggle("flipx", false); fly(b.home[0], b.home[1], 1.6, () => (b.busy = false)); }, 3500);
     });
   }
+
+  // ---- Bewegungen beim Benutzen ----
+  const anim = (c, frames, ms) => c.a.querySelector(".pa-in").animate(frames, { duration: ms, easing: "ease-in-out" });
+  function behave(c, key, field, M, done) {
+    const kind = USE[key][2];
+    const [ax, ay] = Zoo.anchorOf(key);
+    const aw = (c.a.offsetWidth / M.W) * 100;
+    const to = (sx, sy, cb) => { const [px, py] = M.pct(sx, sy); c.goTo(clampN(px - aw / 2, 0, 94), clampN(py, 46, 98), cb); };
+    const talk = () => c.say(Math.random() < 0.4 || !USE[key][1] ? USE[key][0] : Texts.say(USE[key][1]), 2800);
+    if (kind === "swim") { to(ax - 70, ay - 30, () => { c.a.classList.add("swimming"); talk(); to(ax + 70, ay - 20, () => { c.a.classList.remove("swimming"); done(); }); }); return; }
+    if (kind === "cross") { to(ax - 90, ay - 30, () => to(ax + 90, ay - 30, () => { talk(); done(); })); return; }
+    if (kind === "wood" && Zoo.owns("feuer")) { to(ax, ay, () => { c.say("Holz holen …", 1800); setTimeout(() => { const [fx, fy] = Zoo.anchorOf("feuer"); to(fx + 30, fy, () => { c.say("Fürs Feuer!", 2400); done(); }); }, 1200); }); return; }
+    to(ax + (Math.random() - 0.5) * 60, ay + Math.random() * 18, () => {
+      talk();
+      if (kind === "inside") { c.a.style.transition += ", opacity .6s"; c.a.style.opacity = "0"; setTimeout(() => { c.a.style.opacity = ""; done(); }, 4500); return; }
+      if (kind === "climb") anim(c, [{ transform: "translateY(0)" }, { transform: "translateY(-38px) rotate(-8deg)" }, { transform: "translateY(-38px) rotate(8deg)" }, { transform: "translateY(0)" }], 2600);
+      if (kind === "hop") anim(c, [{ transform: "translateY(0)" }, { transform: "translateY(-22px)" }, { transform: "translateY(0)" }, { transform: "translateY(-14px)" }, { transform: "translateY(0)" }], 1100);
+      if (kind === "slide") anim(c, [{ transform: "translate(0,0) rotate(0)" }, { transform: "translate(40px,26px) rotate(18deg)" }, { transform: "translate(0,0) rotate(0)" }], 1600);
+      if (kind === "spin") anim(c, [{ transform: "scaleX(1)" }, { transform: "scaleX(-1)" }, { transform: "scaleX(1)" }, { transform: "scaleX(-1)" }, { transform: "scaleX(1)" }], 1600);
+      if (kind === "hug") { anim(c, [{ transform: "rotate(0)" }, { transform: "rotate(-8deg)" }, { transform: "rotate(8deg)" }, { transform: "rotate(0)" }], 900); H.burstAt(c.a, ["💕"], 4, 30); }
+      if (kind === "bow") anim(c, [{ transform: "rotate(0)" }, { transform: "rotate(18deg) translateY(6px)" }, { transform: "rotate(18deg) translateY(6px)" }, { transform: "rotate(0)" }], 1800);
+      if (kind === "sing") { let n = 0; const iv = setInterval(() => { H.burstAt(c.a, ["♪", "♫"], 2, 30); if (++n > 4) clearInterval(iv); }, 500); }
+      if (kind === "coon") anim(c, [{ transform: "translateX(0)" }, { transform: "translateX(-4px)" }, { transform: "translateX(4px)" }, { transform: "translateX(0)" }], 500);
+      setTimeout(done, 3000);
+    });
+  }
   function activityLoop() {
     if (document.hidden || celebrating || typeof Zoo === "undefined") return;
     const field = document.getElementById("zoo-pen");
@@ -895,20 +927,142 @@ const Animals = (() => {
     if (props.vogel && Math.random() < 0.35) birdVisit();
     const sadOnes = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && c.a.classList.contains("sad"));
     if (sadOnes.length && Math.random() < 0.5) { H.pick(sadOnes).say(Texts.say("traurig"), 3200); return; }
-    const keys = Object.keys(ACT).filter((k) => Zoo.owns(k)).concat(props.ball ? ["ball", "ball"] : []);
-    const free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest && !c.a.classList.contains("sad"));
+    const keys = Object.keys(USE).filter((k) => Zoo.owns(k)).concat(props.ball ? ["ball", "ball"] : []);
+    let free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest && !c.a.classList.contains("sad"));
     if (!keys.length || !free.length) return;
-    const key = H.pick(keys), c = H.pick(free);
+    const key = H.pick(keys);
+    // passende Tiere bevorzugen
+    const prefer = { huette: "waschbaer", onsen: "capy", eisbahn: "pinguin", statue: "capy", teich: ["otter", "ente", "capy"] }[key];
+    if (prefer) { const p = free.filter((c) => [].concat(prefer).includes(c.v.sp)); if (p.length) free = p; else if (key === "huette") return; }
+    const c = H.pick(free);
     const M = sceneMap(field);
-    let tx, ty;
-    if (key === "ball") { tx = props.ball.x + (Math.random() < 0.5 ? -6 : 6); ty = props.ball.y + 4; }
-    else { const [ax, ay] = Zoo.anchorOf(key); [tx, ty] = M.pct(ax + (Math.random() - 0.5) * 60, ay + Math.random() * 20); }
-    const aw = (c.a.offsetWidth / M.W) * 100;
-    c.goTo(clampN(tx - aw / 2, 0, 94), clampN(ty, 46, 98), () => {
-      if (key === "ball") { kickBall(c); c.say(Texts.say("ball"), 1800); }
-      else c.say(Math.random() < 0.35 ? ACT[key] : Texts.say(ACT_GROUP[key] || "staunen"), 2800);
-      setTimeout(() => (c.busy = false), 3200);
-    }, true);
+    if (key === "ball") {
+      const aw = (c.a.offsetWidth / M.W) * 100;
+      c.goTo(clampN(props.ball.x - aw / 2 + (Math.random() < 0.5 ? -4 : 4), 0, 94), clampN(props.ball.y + 4, 46, 98), () => { kickBall(c); c.say(Texts.say("ball"), 1800); setTimeout(() => (c.busy = false), 3200); });
+      return;
+    }
+    behave(c, key, field, M, () => (c.busy = false));
+  }
+
+  /* ---------- Antippen: jedes Teil im Gehege macht etwas ---------- */
+  const rectMid = (el) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r]; };
+  function bubbleAt(el, text, ms = 2800) {
+    const [x, , r] = rectMid(el);
+    const b = H.el("div", { class: "tap-bubble", text, style: `left:${x}px;top:${r.top}px` });
+    document.getElementById("fx").append(b); setTimeout(() => b.remove(), ms);
+  }
+  function ringAt(el, col = "rgba(255,255,255,.9)") {
+    const [x, y] = rectMid(el);
+    for (let k = 0; k < 3; k++) { const d = H.el("div", { class: "tap-ring", style: `left:${x}px;top:${y}px;border-color:${col};animation-delay:${k * 0.25}s` }); document.getElementById("fx").append(d); setTimeout(() => d.remove(), 1600); }
+  }
+  const fxClass = (g, cls, ms) => { const z = g.querySelector(".zin") || g; z.classList.remove(cls); void z.getBoundingClientRect(); z.classList.add(cls); setTimeout(() => z.classList.remove(cls), ms); };
+  const tune = (notes, step = 0.14) => notes.forEach((f, i) => H.sfx.tone(f, 0.22, "triangle", 0.13, null, i * step));
+  const ZWERG = ["Pssst – ich bewache das Gehege.", "Ich bin nicht aus Gips. Glaube ich.", "Heute schon gelacht?", "Mützen sind meine Leidenschaft.", "Der Waschbär war's!", "Ich zwinkere nur bei Vollmond.", "Frohe Weihnachten, Direktorin!", "Ich hab alles im Blick."];
+  const STERNBILDER = [["Der Große Kapibara", [[30, 60], [60, 40], [95, 45], [120, 70], [95, 90], [55, 88], [30, 60]]], ["Das Herz der Direktorin", [[80, 105], [40, 70], [45, 40], [80, 55], [115, 40], [120, 70], [80, 105]]], ["Der Waschbär mit Maske", [[30, 70], [55, 45], [80, 55], [105, 45], [130, 70], [80, 95], [30, 70]]], ["Die Kleine Pfote", [[80, 95], [60, 75], [100, 75], [80, 95], [50, 50], [70, 40], [90, 40], [110, 50]]]];
+  function overlayCard(content, btnText = "Schließen") {
+    const wrap = H.el("div", { class: "pola-wrap tap-overlay" });
+    wrap.append(content, H.el("button", { class: "btn btn-green", text: btnText, onclick: () => wrap.remove() }));
+    wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
+    document.body.append(wrap); return wrap;
+  }
+  function telescope() {
+    const [name, pts] = H.pick(STERNBILDER);
+    const r = Math.random;
+    const stars = Array.from({ length: 50 }, () => `<circle cx="${(r() * 160) | 0}" cy="${(r() * 140) | 0}" r="${(0.4 + r() * 1).toFixed(1)}" fill="#fff6d0" opacity="${(0.4 + r() * 0.6).toFixed(2)}"/>`).join("");
+    const line = pts.map(([x, y], k) => `${k ? "L" : "M"}${x} ${y}`).join(" ");
+    overlayCard(H.el("div", { class: "scope-card" },
+      H.el("div", { class: "scope", html: `<svg viewBox="0 0 160 140"><rect width="160" height="140" fill="#0d1530"/>${stars}<path d="${line}" stroke="#ffd84d" stroke-width="1.2" fill="none" stroke-dasharray="3 3" class="scope-line"/>${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#fff"/>`).join("")}</svg>` }),
+      H.el("b", { text: `Sternbild: ${name}` }), H.el("span", { text: "Entdeckt durch das Gehege-Teleskop." })));
+    H.sfx.tone(880, 0.6, "sine", 0.08, 1320);
+  }
+  function wishes() {
+    const KEY = "mama-wuensche-" + (typeof CONFIG !== "undefined" ? CONFIG.year : "x");
+    let list = []; try { list = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
+    const ta = H.el("textarea", { class: "notes wish-in", id: "wunsch-text", rows: "3", maxlength: "200", placeholder: "Lieber Weihnachtsmann, ich wünsche mir …" });
+    const ul = H.el("ul", { class: "wish-list" }, ...list.slice().reverse().map((w) => H.el("li", { text: w })));
+    const send = H.el("button", { class: "btn", text: "Einwerfen", onclick: () => {
+      const t = ta.value.trim(); if (!t) return;
+      list.push(t); try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+      ul.prepend(H.el("li", { text: t })); ta.value = ""; H.sfx.good(); H.toast("Dein Wunsch ist im Briefkasten gelandet.");
+    } });
+    overlayCard(H.el("div", { class: "wish-card" }, H.el("b", { text: "Wunschzettel-Briefkasten" }), ta, send, list.length ? H.el("small", { text: "Bisher eingeworfen:" }) : null, ul));
+  }
+  function penPhoto() {
+    const date = new Date().toLocaleDateString("de-DE", { day: "numeric", month: "long" });
+    const fl = H.el("div", { class: "cam-flash" }); document.body.append(fl); fl.addEventListener("animationend", () => fl.remove());
+    H.sfx.tone(2200, 0.03, "square", 0.08); H.sfx.tone(700, 0.06, "square", 0.07, null, 0.04);
+    overlayCard(H.el("div", { class: "polaroid", style: "--rot:-2deg" }, H.el("div", { class: "pola-photo done pen-photo", html: Zoo.scene(null, null, true) }), H.el("div", { class: "pola-cap", text: "Unser Gehege – schöner denn je." }), H.el("div", { class: "pola-meta" }, H.el("span", { text: "Fotowand" }), H.el("span", { text: date }))));
+  }
+  function rocket(field) {
+    const r = field.getBoundingClientRect();
+    const sx = r.left + r.width * (0.2 + Math.random() * 0.6), sy = r.bottom - 20, ty = r.top + r.height * (0.08 + Math.random() * 0.2), tx = sx + (Math.random() - 0.5) * 80;
+    const d = H.el("div", { class: "rocket", style: `left:${sx}px;top:${sy}px` }); document.getElementById("fx").append(d);
+    H.sfx.tone(300, 0.6, "sawtooth", 0.04, 1200);
+    d.animate([{ transform: "translate(0,0)" }, { transform: `translate(${tx - sx}px, ${ty - sy}px)` }], { duration: 700, easing: "ease-out" }).onfinish = () => { d.remove(); H.burst(tx, ty, ["✦", "✧", "★", "✨", "💥"].concat(["🎆"]), 22, 110); H.sfx.tone(120, 0.4, "triangle", 0.2, 60); };
+  }
+  function shootingStar(field) {
+    const r = field.getBoundingClientRect();
+    const d = H.el("div", { class: "xs-shoot tap-shoot", style: `left:${r.left + r.width * 0.1}px;top:${r.top + r.height * 0.08}px` }); document.getElementById("fx").append(d); setTimeout(() => d.remove(), 1500);
+    tune([1568, 1760, 2093], 0.12); H.toast("Eine Sternschnuppe – schnell etwas wünschen!");
+  }
+  function sledRide(field, g) {
+    const M = sceneMap(field), [dx, dy] = Zoo.posOf("rodel");
+    const cs = inlineCtrls.filter((c) => c.a.isConnected);
+    const v = cs.length ? H.pick(cs).v : { sp: "pinguin", col: 0, acc: "muetze" };
+    const [x1, y1] = M.pct(118 + dx, 142 + dy), [x2, y2] = M.pct(225 + dx, 262 + dy);
+    const w = 52 * M.sc * 1.4;
+    const a = H.el("div", { class: "sled-rider", html: svg(v, { width: w }), style: `left:${x1}%;top:${y1}%` });
+    field.append(a);
+    a.animate([{ left: x1 + "%", top: y1 + "%", transform: "translate(-50%,-100%) rotate(0)" }, { left: x2 + "%", top: y2 + "%", transform: "translate(-50%,-100%) rotate(32deg)" }], { duration: 1500, easing: "cubic-bezier(.5,0,.8,1)", fill: "forwards" }).onfinish = () => { H.burstAt(a, ["❄", "✨"], 8, 50); setTimeout(() => a.remove(), 300); };
+    H.sfx.tone(700, 1.2, "sine", 0.06, 200);
+  }
+  const TAP = {
+    teich: (g) => { ringAt(g, "rgba(255,255,255,.95)"); H.sfx.tone(520, 0.25, "sine", 0.15, 180); },
+    futter: (g) => { H.burstAt(g, ["🌾", "🥕", "🍎", "🌰"], 10, 40); H.sfx.pop(); },
+    laternen: () => H.toast(Zoo.toggle("laternen") ? "Laternen an" : "Laternen aus"),
+    buehne: (g) => { tune([523, 659, 784, 659, 523, 784, 1047]); let n = 0; const iv = setInterval(() => { H.burstAt(g, ["♪", "♫"], 3, 70); if (++n > 4) clearInterval(iv); }, 300); const f = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest).slice(0, 3); f.forEach((c) => { c.busy = true; behave(c, "buehne", g.closest(".pen"), sceneMap(g.closest(".pen")), () => (c.busy = false)); }); },
+    huette: (g) => { fxClass(g, "fx-shake", 600); const tot = Object.values(Zoo.foodStock()).reduce((a, b) => a + b, 0); H.burstAt(g, ["📦", "🍪", "🥕"], 6, 40); bubbleAt(g, `In der Hütte: ${tot} Portionen Futter`); },
+    blumen: (g) => { fxClass(g, "fx-wobble", 900); const b = H.el("div", { class: "tap-fly", html: `<svg viewBox="0 0 40 30"><ellipse cx="13" cy="11" rx="11" ry="9" fill="#ff8fa3"/><ellipse cx="27" cy="11" rx="11" ry="9" fill="#ffb347"/><ellipse cx="14" cy="22" rx="7" ry="6" fill="#c77dff"/><ellipse cx="26" cy="22" rx="7" ry="6" fill="#58b6ff"/><rect x="18.5" y="6" width="3" height="20" rx="1.5" fill="#3a2a24"/></svg>` }); const [x, y] = rectMid(g); b.style.left = x + "px"; b.style.top = y + "px"; document.getElementById("fx").append(b); b.animate([{ transform: "translate(0,0)" }, { transform: "translate(40px,-60px)" }, { transform: "translate(-20px,-120px)" }, { transform: "translate(60px,-180px)", opacity: 0 }], { duration: 2200 }).onfinish = () => b.remove(); },
+    hoehle: (g) => bubbleAt(g, "Zzz … psst!"),
+    onsen: (g) => { H.burstAt(g, ["💨", "○", "◦"], 10, 50); H.sfx.tone(240, 0.3, "sine", 0.1, 160); },
+    kletter: (g) => { fxClass(g, "fx-wobble", 900); H.sfx.tone(200, 0.2, "triangle", 0.1); },
+    vogelhaus: (g) => { H.burstAt(g, ["🐦"], 1, 50); tune([1800, 2200, 1900], 0.1); },
+    spielplatz: (g) => { H.sfx.tone(900, 0.6, "sine", 0.08, 300); H.burstAt(g, ["✨"], 6, 40); },
+    lichter: () => H.toast(`Lichterkette: ${Zoo.toggle("lichter")}`),
+    schneemann: (g) => { const [x, , r] = rectMid(g); const h = H.el("div", { class: "particle", text: "🎩", style: `left:${x}px;top:${r.top + 10}px;font-size:26px` }); document.getElementById("fx").append(h); h.animate([{ transform: "translate(-50%,-50%) rotate(0)" }, { transform: "translate(-50%,-140px) rotate(200deg)", offset: 0.5 }, { transform: "translate(-50%,-50%) rotate(360deg)" }], { duration: 1300, easing: "ease-in-out" }).onfinish = () => h.remove(); H.sfx.boop(500); },
+    fotowand: () => penPhoto(),
+    stand: (g) => { H.burstAt(g, ["🍪"], 5, 60); H.sfx.pop(); },
+    rodel: (g) => sledRide(g.closest(".pen"), g),
+    tanne: () => { H.toast(Zoo.toggle("tanne") ? "Lichter am Baum an" : "Lichter am Baum aus"); H.sfx.tone(1568, 0.3, "sine", 0.1); },
+    eisbahn: (g) => { H.sfx.tone(2400, 0.4, "sawtooth", 0.02, 1200); H.burstAt(g, ["❄", "✨"], 8, 60); },
+    iglu: (g) => { const [x, , r] = rectMid(g); H.burst(x, r.top + 6, ["💨"], 4, 30); },
+    kakao: (g) => { H.burstAt(g, ["☕", "💨"], 4, 40); H.sfx.pop(); },
+    feuer: (g) => { const on = Zoo.toggle("feuer"); H.toast(on ? "Das Lagerfeuer brennt" : "Das Lagerfeuer ist aus"); if (on) { const [x, y] = rectMid(g); H.burst(x, y, ["✨", "🔥"], 10, 60); } },
+    teleskop: () => telescope(),
+    karussell: (g) => { fxClass(g, "fx-spin", 2400); tune([784, 659, 784, 880, 784, 659, 523], 0.17); },
+    feuerwerk: (g) => rocket(g.closest(".pen")),
+    wasserschale: (g) => { H.burstAt(g, ["💧"], 6, 30); H.sfx.tone(700, 0.12, "sine", 0.1, 400); },
+    giesskanne: (g) => { H.burstAt(g, ["💧"], 8, 40); const bl = g.closest(".pen").querySelector('g.zi[data-k="blumen"]'); if (bl) { setTimeout(() => { fxClass(bl, "fx-bloom", 1200); H.burstAt(bl, ["🌸", "✨"], 8, 50); }, 500); } },
+    kissen: (g) => fxClass(g, "fx-squish", 700),
+    briefkasten: () => wishes(),
+    strohballen: (g) => H.burstAt(g, ["🌾"], 8, 50),
+    kerzen: () => H.toast(Zoo.toggle("kerzen") ? "Lichtertüten an" : "Lichtertüten aus"),
+    windrad: (g) => { fxClass(g, "fx-fast", 2200); H.sfx.tone(400, 0.6, "sine", 0.05, 900); },
+    teddy: (g) => { fxClass(g, "fx-wobble", 700); H.sfx.squeak(); },
+    sternschnuppe: (g) => shootingStar(g.closest(".pen")),
+    vogelbad: (g) => { H.burstAt(g, ["💧", "🐦"], 6, 40); tune([1900, 2300], 0.1); },
+    schaukel: (g) => fxClass(g, "fx-swing", 2600),
+    zwerg: (g) => { bubbleAt(g, H.pick(ZWERG), 3200); H.sfx.boop(260); },
+    statue: (g) => { fxClass(g, "fx-shine", 1600); H.burstAt(g, ["✨", "⭐"], 12, 60); tune([1047, 1319, 1568], 0.1); },
+  };
+  function onSceneTap(e) {
+    const field = e.currentTarget;
+    if (field.classList.contains("editing")) return;
+    const g = e.target.closest("g.zi[data-k]");
+    if (!g) { if (e.target.closest(".zoo-svg") && Zoo.owns("rasen")) { H.burst(e.clientX, e.clientY, ["✨", "🌱"], 4, 26); } return; }
+    e.stopPropagation();
+    const k = g.dataset.k;
+    if (TAP[k]) TAP[k](g); else { H.burstAt(g, ["✨", "⭐"], 6, 40); H.sfx.tone(1200, 0.12, "sine", 0.08); if (k === "baeume") { const [x, , r] = rectMid(g); H.burst(x, r.top + 20, ["❄", "❅"], 10, 50); } }
   }
 
   function album(area) {
