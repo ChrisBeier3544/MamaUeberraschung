@@ -635,3 +635,38 @@ main { position: relative; z-index: 2; max-width: 980px; margin: 0 auto; padding
 .rar-hint { color: var(--ink-soft); margin: 10px 0 0; font-size: 15px; }
 .album-card.locked .album-pic { filter: brightness(0) opacity(.07); }
 .album-card.locked small { color: #b08a6e; font-weight: 600; }
+
+/* ================= Polaroid ================= */
+.cam-flash { position: fixed; inset: 0; background: #fff; z-index: 300; pointer-events: none; animation: camFlash .55s ease-out forwards; }
+@keyframes camFlash { 0% { opacity: 0; } 12% { opacity: .95; } 100% { opacity: 0; } }
+.pola-wrap {
+  position: fixed; inset: 0; z-index: 250; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(60, 40, 30, .35); animation: fadeIn .3s;
+}
+.pola-wrap.closing { background: transparent; transition: background .4s; }
+.polaroid {
+  position: relative; width: min(340px, 84vw); background: #fffdf8; padding: 14px 14px 12px; border-radius: 4px;
+  box-shadow: 0 2px 2px rgba(0,0,0,.08), 0 18px 40px rgba(40, 20, 10, .35); transform: rotate(var(--rot));
+  animation: polaIn .9s cubic-bezier(.2, 1.3, .4, 1) both; cursor: default;
+}
+@keyframes polaIn { 0% { transform: translateY(110vh) rotate(18deg); } 100% { transform: rotate(var(--rot)); } }
+.pola-photo { aspect-ratio: 1 / 0.92; background: #1e1a17; overflow: hidden; }
+.pola-photo svg { animation: develop 3.2s ease-out .6s both; }
+.pola-photo.done svg { animation: none; }
+@keyframes develop { 0% { filter: brightness(.15) sepia(1) contrast(.6); } 35% { filter: brightness(1.5) sepia(.6) saturate(.3) blur(1px); } 100% { filter: none; } }
+.pola-cap { font-family: "Caveat", "Segoe Print", "Bradley Hand", cursive; font-size: 25px; line-height: 1.1; color: #3a2a24; margin-top: 12px; min-height: 2.2em; text-wrap: balance; }
+.pola-cap b { font-weight: 700; color: var(--red-dark); }
+.pola-meta { display: flex; justify-content: space-between; gap: 10px; font-family: "Caveat", cursive; font-size: 17px; color: #8b6b5c; margin-top: 4px; }
+.pola-sticker {
+  position: absolute; top: -12px; right: -14px; transform: rotate(12deg); font-weight: 700; font-size: 13px; letter-spacing: .05em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 999px; box-shadow: 0 4px 10px rgba(0,0,0,.2);
+}
+.pola-sticker.r-selten { background: #dcebff; color: #2f62b8; }
+.pola-sticker.r-sehrselten { background: #efe0ff; color: #7b3fc4; }
+.pola-sticker.r-legendaer { background: linear-gradient(90deg, #ffe58a, #ffc94a); color: #7a5300; font-size: 15px; }
+.polaroid.r-legendaer { box-shadow: 0 0 0 3px #ffd75a, 0 0 30px 6px rgba(255, 200, 60, .7), 0 18px 40px rgba(40, 20, 10, .35); }
+.pola-wrap .btn { animation: fadeIn .4s .9s both; }
+.album-card.has-photo { cursor: pointer; transition: transform .15s; }
+.album-card.has-photo:hover { transform: translateY(-3px) rotate(-1deg); }
+@media (prefers-reduced-motion: reduce) { .polaroid, .pola-photo svg { animation: none; } }

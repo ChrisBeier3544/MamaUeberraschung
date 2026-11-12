@@ -421,7 +421,8 @@ const Animals = (() => {
       };
     }, 550);
     const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
-    if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, v.rarity === "haeufig" ? 3200 : 5000);
+    if (isNew && typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 650);
+    else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
     if (isNew && v.rarity === "sehrselten") { H.burst(r.left + r.width / 2, r.top, ["💜", "✨", "⭐"], 18, 140); [784, 988, 1175].forEach((f, i) => s.tone(f, 0.2, "triangle", 0.15, null, 0.5 + i * 0.1)); }
     if (isNew && v.rarity === "legendaer") { setTimeout(() => { H.confetti(["👑", "✨", "⭐", "💛", "🎉"], 80); s.jingle(); }, 700); }
     if (!isNew) H.toast(`${v.name} wohnt schon im Gehege – zurückgebeamt 👋`);
@@ -521,7 +522,7 @@ const Animals = (() => {
       sum.append(H.el("div", { class: "rar-box", html: `<span class="rar r-${k}">${r.label}</span><b>${all.filter((v) => found.has(v.id)).length} / ${all.length}</b>` }));
     });
     const waiting = VARIANTS.filter((v) => !available(v)).length;
-    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
+    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
       const vs = VARIANTS.filter((v) => v.sp === key);
@@ -532,6 +533,7 @@ const Animals = (() => {
         const locked = !has && !available(v);
         const card = H.el("div", { class: "album-card r-" + v.rarity + (has ? "" : " missing") + (locked ? " locked" : "") });
         const pic = H.el("div", { class: "album-pic" }); pic.innerHTML = svg(v, { fit: true });
+        if (has && typeof Photos !== "undefined") { card.classList.add("has-photo"); card.title = "Foto ansehen"; card.onclick = () => Photos.show(v, { replay: true }); }
         card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : locked ? `zieht am ${v.from}. Dezember ein` : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
         grid.append(card);
       });
