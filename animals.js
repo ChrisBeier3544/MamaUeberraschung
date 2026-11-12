@@ -701,10 +701,16 @@ const Animals = (() => {
   const HOME_ZONE = { hase: 0, igel: 0, katze: 0, hund: 1, schaf: 1, schwein: 1, waschbaer: 1, giraffe: 2, elefant: 2, panda_rot: 2, capy: 3, otter: 3, ente: 3, pinguin: 4, baer: 4, fuchs: 4 };
   const homeX = (v) => { if (typeof Zoo === "undefined") return null; const z = Zoo.ZONES[HOME_ZONE[v.sp] ?? 2]; return [(z[1] / Zoo.W) * 100, (z[2] / Zoo.W) * 100]; };
 
+  // Akku schonen: Tiere auf der Startseite ruhen, solange das Gehege nicht zu sehen ist
+  let penVisible = true;
+  const penAsleep = (field) => document.hidden || (field.id === "zoo-pen" && (!penVisible || !!document.querySelector(".gehege-overlay")));
+
   let inlineCtrls = [];
   function mountPen(field, later) {
     if (!field._tap) { field.addEventListener("click", onSceneTap); field._tap = true; }
     field.innerHTML = "";
+    const host = field.closest(".pen-frame") || field;
+    host.querySelector(":scope > .pen-empty")?.remove();
     field.append(H.el("div", { class: "zoo-scene", html: typeof Zoo !== "undefined" ? Zoo.scene() : DECOR }));
     const ctrls = [];
     if (field.id === "zoo-pen") inlineCtrls = ctrls;
@@ -712,7 +718,7 @@ const Animals = (() => {
     if (!mine.length) {
       if (field.id === "zoo-pen") mountProps(field);
       (typeof Extras !== "undefined" && Extras.decoratePen(field));
-      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere. Klick sie an, dann ziehen sie hier ein!" })));
+      host.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere. Klick sie an, dann ziehen sie hier ein!" })));
       return;
     }
     mine.forEach((v) => ctrls.push(penAnimal(field, v, later)));
@@ -749,6 +755,7 @@ const Animals = (() => {
     const move = () => {
       if (!a.isConnected) return;
       if (c.busy) { later(move, 1500); return; }
+      if (penAsleep(field)) { later(move, 3000 + Math.random() * 2000); return; }
       // meist im eigenen Lieblingsbereich, ab und zu ein Ausflug in die Nachbarschaft
       const span = hz && Math.random() < 0.8 ? hz : null;
       const nx = span ? span[0] + Math.random() * (span[1] - span[0] - 3) : Math.max(0, Math.min(96, c.x + (Math.random() - 0.5) * 26));
@@ -841,7 +848,7 @@ const Animals = (() => {
     celebrating = true;
     scrollPenTo(sx);
     const M = sceneMap(field);
-    const empty = field.querySelector(".pen-empty");
+    const empty = (field.closest(".pen-frame") || field).querySelector(".pen-empty");
     if (empty) empty.classList.add("hidden");
     const actors = H.shuffle(inlineCtrls.filter((c) => c.a.isConnected && !c.busy)).slice(0, 3);
     while (actors.length < 3) {
@@ -958,7 +965,7 @@ const Animals = (() => {
   function activityLoop() {
     if (document.hidden || celebrating || typeof Zoo === "undefined") return;
     const field = document.getElementById("zoo-pen");
-    if (!field || !field.clientWidth) return;
+    if (!field || !field.clientWidth || penAsleep(field)) return;
     if (props.vogel && Math.random() < 0.35) birdVisit();
     const sadOnes = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && c.a.classList.contains("sad"));
     if (sadOnes.length && Math.random() < 0.5) { H.pick(sadOnes).say(Texts.say("traurig"), 3200); return; }
@@ -1164,6 +1171,7 @@ const Animals = (() => {
       la.classList.toggle("off", sc.scrollLeft < 8); ra.classList.toggle("off", sc.scrollLeft > sc.scrollWidth - sc.clientWidth - 8);
     };
     sc.addEventListener("scroll", upd, { passive: true });
+    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { penVisible = e.isIntersecting; pen.classList.toggle("offscreen", !penVisible); }, { rootMargin: "120px" }).observe(frame);
     addEventListener("resize", upd);
     requestAnimationFrame(() => { scrollPenTo(1000, true); upd(); });
   }
@@ -1210,7 +1218,7 @@ const Animals = (() => {
     const fresh = WAVES.filter((w) => w.day && App.isUnlocked(w.day) && !seen.includes(w.day));
     if (!fresh.length) return;
     try { localStorage.setItem(KEY + "-wellen", JSON.stringify([...seen, ...fresh.map((w) => w.day)])); } catch (e) {}
-    setTimeout(() => { H.toast("🏡 " + fresh[fresh.length - 1].msg, 7000); H.sfx.jingle(); btn.classList.add("bump"); }, 2500);
+    setTimeout(() => { H.notify("🏡 " + fresh[fresh.length - 1].msg, 7000); H.sfx.jingle(); btn.classList.add("bump"); }, 2500);
   }
 
   /* ---------- Gehege auf der Startseite ---------- */
@@ -1245,5 +1253,5 @@ const Animals = (() => {
   }
 
   function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
-  return { debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();

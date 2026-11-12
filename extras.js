@@ -158,14 +158,32 @@ const Extras = (() => {
       H.el("div", { class: "mp-pic" }, H.el("img", { src: memImg(d), alt: MEMORIES[d], loading: "lazy", onerror: (e) => e.target.closest(".mem-pola")?.remove() })),
       H.el("small", { text: `${d}. Dezember` }));
   }
+  // Großansicht: Foto bildschirmfüllend, mit Wischen oder Pfeilen zum nächsten
   function showMemory(d) {
-    const wrap = H.el("div", { class: "pola-wrap", role: "dialog" });
-    const card = H.el("div", { class: "polaroid mem-big", style: `--rot:${((d * 37) % 7) - 3}deg` },
-      H.el("div", { class: "pola-photo done mem-photo" }, H.el("img", { src: memImg(d), alt: "" })),
-      H.el("div", { class: "pola-cap", text: MEMORIES[d] }), H.el("div", { class: "pola-meta" }, H.el("span", { text: "Erinnerung" }), H.el("span", { text: `${d}. Dezember` })));
-    wrap.append(card, H.el("button", { class: "btn btn-green", text: "Schließen", onclick: () => wrap.remove() }));
-    wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
-    document.body.append(wrap); H.sfx.pop();
+    const days = memDays(); let i = Math.max(0, days.indexOf(d));
+    const img = H.el("img", { alt: "" });
+    const cap = H.el("p", { class: "lb-cap" }), meta = H.el("small", { class: "lb-meta" });
+    const lb = H.el("div", { class: "lightbox", role: "dialog", "aria-label": "Erinnerung" });
+    const show = (k, dir = 0) => {
+      i = (k + days.length) % days.length; const day = days[i];
+      img.classList.remove("in"); void img.offsetWidth;
+      img.src = memImg(day); img.style.setProperty("--dx", dir * 40 + "px"); img.classList.add("in");
+      cap.textContent = MEMORIES[day]; meta.textContent = `${day}. Dezember · ${i + 1} von ${days.length}`;
+      [-1, 1].forEach((o) => { const n = days[(i + o + days.length) % days.length]; if (n) new Image().src = memImg(n); });
+    };
+    const close = () => { lb.remove(); document.removeEventListener("keydown", key); };
+    const key = (e) => { if (e.key === "Escape") close(); if (e.key === "ArrowRight") show(i + 1, 1); if (e.key === "ArrowLeft") show(i - 1, -1); };
+    const nav = (t, dir, lab) => H.el("button", { class: `lb-nav ${dir > 0 ? "next" : "prev"}`, "aria-label": lab, html: t, onclick: (e) => { e.stopPropagation(); show(i + dir, dir); H.sfx.tick(); } });
+    lb.append(
+      H.el("button", { class: "lb-close", "aria-label": "Schließen", text: "✕", onclick: close }),
+      H.el("figure", { class: "lb-fig" }, img, H.el("figcaption", {}, cap, meta)),
+      days.length > 1 ? nav("‹", -1, "Vorheriges Foto") : null, days.length > 1 ? nav("›", 1, "Nächstes Foto") : null);
+    lb.addEventListener("click", (e) => { if (e.target === lb || e.target.classList.contains("lb-fig")) close(); });
+    let x0 = null, y0 = 0;
+    lb.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    lb.addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(i + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); else if (dy > 90) close(); x0 = null; });
+    document.addEventListener("keydown", key);
+    document.body.append(lb); show(i); H.sfx.pop();
   }
   function openMemories() {
     const days = memDays();
@@ -242,14 +260,28 @@ const Extras = (() => {
     box.append(
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp, col: 0, acc: "" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Tier des Tages" }), H.el("b", { text: spec.name }))), H.el("p", { text: fact })),
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "capy", col: 0, acc: "brille" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Kalles Tagebuch" }), H.el("b", { text: entry.date }))), H.el("p", { class: "tc-diary", text: entry.text }), H.el("button", { class: "btn btn-soft", text: "Ganzes Tagebuch", onclick: (e) => { e.stopPropagation(); openDiary(); } })),
-      H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Aufgabe des Tages" }), H.el("b", { text: `${task.reward} Taler Belohnung` }))), H.el("p", { text: task.text }), H.el("div", { class: "zp-bar" }, H.el("div", { style: `width:${(have / task.goal) * 100}%` })), claim),
+      H.el("div", { class: "today-card task-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Aufgabe des Tages" }), H.el("b", { text: `${task.reward} Taler Belohnung` }))), H.el("p", { text: task.text }), H.el("div", { class: "zp-bar" }, H.el("div", { style: `width:${(have / task.goal) * 100}%` })), claim),
       (() => { const ds = memDays(); const d = ds.includes(dayNum()) ? dayNum() : ds[ds.length - 1]; if (!d) return null;
         return H.el("div", { class: "today-card mem-card-today" }, H.el("small", { text: "Erinnerung des Tages" }), memPola(d, (e) => { e.stopPropagation(); showMemory(d); }), H.el("button", { class: "btn btn-soft", text: "Alle Erinnerungen", onclick: (e) => { e.stopPropagation(); openMemories(); } })); })(),
     );
     // Wetter & Rückblick stehen klein in der Kopfzeile des Abschnitts
+    renderChecks();
+  }
+  // „Heute erledigt“: vier kleine Häkchen in der Kopfzeile
+  function renderChecks() {
     const meta = document.getElementById("today-meta");
-    if (meta) {
+    if (meta && H) {
+      const d = dayNum(), t = today();
+      const items = [];
+      if (d >= 1 && d <= 31 && App.isUnlocked(d)) items.push(["Rätsel", App.isSolved(d), () => document.querySelector(`.door[aria-label="Türchen ${d}"]`)?.click()]);
+      if (Animals.foundCount()) items.push(["Füttern", !Animals.hungryCount(), () => Animals.openGehege()]);
+      if (beauty() >= 3) items.push(["Spendenbox", !!st.donation[dkey()], () => { document.getElementById("block-zoo")?.scrollIntoView({ behavior: "smooth", block: "start" }); Animals.scrollPenTo(200); }]);
+      items.push(["Aufgabe", !!t.claimed, () => document.querySelector("#today .task-card")?.scrollIntoView({ behavior: "smooth", block: "center" })]);
       meta.innerHTML = "";
+      const row = H.el("div", { class: "checks", "aria-label": "Heute erledigt" });
+      items.forEach(([label, ok, go]) => row.append(H.el("button", { class: "check-chip" + (ok ? " ok" : ""), title: ok ? `${label}: erledigt` : `${label}: noch offen`, onclick: (e) => { e.stopPropagation(); if (!ok) go(); } }, H.el("i", { "aria-hidden": "true", text: ok ? "✓" : "" }), label)));
+      if (items.length && items.every((x) => x[1])) row.classList.add("all");
+      meta.append(row);
       meta.append(H.el("span", { class: "meta-chip", text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }));
       if (dayNum() >= 31 && App.isSolved(31)) meta.append(H.el("button", { class: "nav-btn primary", text: "Jahresrückblick", onclick: (e) => { e.stopPropagation(); review(); } }));
     }
@@ -302,13 +334,13 @@ const Extras = (() => {
       if (st.donation[dkey()]) { H.toast("Die Spendenbox ist für heute leer – morgen kommen neue Besucher."); return; }
       const n = donationToday(); st.donation[dkey()] = n; st.stats.spenden = (st.stats.spenden || 0) + 1; save();
       const r = b.getBoundingClientRect(); Zoo.addCoins(n, { x: r.left + r.width / 2, y: r.top });
-      H.toast(`Heute haben ${Math.max(2, Math.round(n * 0.7))} Besucher ${n} Taler in die Spendenbox geworfen!`); H.sfx.good(); b.classList.remove("ready"); b.querySelector(".don-badge")?.remove(); checkBadges();
+      H.toast(`Heute haben ${Math.max(2, Math.round(n * 0.7))} Besucher ${n} Taler in die Spendenbox geworfen!`); H.sfx.good(); b.classList.remove("ready"); b.querySelector(".don-badge")?.remove(); checkBadges(); renderChecks();
     };
     field.append(b);
   }
   function visitor() {
     const field = document.getElementById("zoo-pen");
-    if (!field || document.hidden || beauty() < 3 || isNight() || field.querySelectorAll(".visitor").length >= 2) return;
+    if (!field || document.hidden || field.classList.contains("offscreen") || document.body.classList.contains("covered") || beauty() < 3 || isNight() || field.querySelectorAll(".visitor").length >= 2) return;
     const r = rnd(Date.now() % 100000);
     const coat = H.pick(["#e85d75", "#4f7fe0", "#3f9e6e", "#f39c32", "#9b5fd0", "#5a3b2e"]), hair = H.pick(["#3a2a24", "#c98b4a", "#f2d27a", "#8a8a8a", "#7a3b1f"]), skin = H.pick(["#f5d0b5", "#e0b08c", "#a8775a", "#f3dccb"]);
     const v = H.el("div", { class: "visitor", html: `<svg viewBox="0 0 40 80" aria-hidden="true"><rect class="vl" x="12" y="56" width="6" height="22" rx="3" fill="#3a3a48"/><rect class="vr" x="22" y="56" width="6" height="22" rx="3" fill="#3a3a48"/><rect x="8" y="28" width="24" height="32" rx="10" fill="${coat}"/><rect x="9" y="28" width="22" height="7" rx="3" fill="#fff" opacity=".85"/><circle cx="20" cy="18" r="11" fill="${skin}"/><path d="M9 16 Q20 0 31 16 Q26 9 20 10 Q14 9 9 16z" fill="${hair}"/><circle cx="16" cy="19" r="1.4" fill="#2b1a10"/><circle cx="24" cy="19" r="1.4" fill="#2b1a10"/><path d="M17 23 q3 2 6 0" stroke="#2b1a10" stroke-width="1.2" fill="none"/></svg>` });
@@ -351,7 +383,7 @@ const Extras = (() => {
     BADGES.forEach(([id, name]) => {
       if (st.badges.includes(id)) return;
       let ok = false; try { ok = BADGES.find((b) => b[0] === id)[4](); } catch (e) {}
-      if (ok) { st.badges.push(id); save(); setTimeout(() => { H.toast(`Neues Abzeichen: „${name}“! Hol dir die Taler unter „Abzeichen“ ab.`, 4500); H.sfx.good(); markUnclaimed(); }, 600); }
+      if (ok) { st.badges.push(id); save(); setTimeout(() => { H.notify(`Neues Abzeichen: „${name}“! Hol dir die Taler unter „Abzeichen“ ab.`, 4500); H.sfx.good(); markUnclaimed(); }, 600); }
     });
     markUnclaimed();
   }
@@ -527,6 +559,7 @@ const Extras = (() => {
     if (st.music) { const once = () => { music(true); document.removeEventListener("pointerdown", once); }; document.addEventListener("pointerdown", once); }
     wreath();
     renderToday();
+    setInterval(renderChecks, 60000);
     checkBadges();
     setTimeout(randomEvent, 60000 + Math.random() * 60000); setInterval(randomEvent, 240000 + Math.random() * 120000);
     setTimeout(visitor, 8000); setInterval(visitor, 26000);
@@ -535,5 +568,5 @@ const Extras = (() => {
     let wasNight = isNight();
     setInterval(() => { if (isNight() !== wasNight) { wasNight = isNight(); Zoo.refresh(); Animals.refreshPens(); renderToday(); } }, 60000);
   }
-  return { unclaimed, markUnclaimed, init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
+  return { renderChecks, unclaimed, markUnclaimed, init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
 })();

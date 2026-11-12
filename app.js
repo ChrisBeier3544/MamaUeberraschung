@@ -156,6 +156,18 @@ const App = (() => {
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
   }
+  /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox";
+  const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
+  const notes = [];
+  function flushNotes() {
+    document.body.classList.toggle("is-busy", busy());
+    document.body.classList.toggle("covered", !!document.querySelector(".gehege-overlay, .lightbox"));
+    if (!notes.length || busy() || document.getElementById("toast").classList.contains("show")) return;
+    const [m, ms] = notes.shift(); toast(m, ms);
+  }
+  function notify(msg, ms) { notes.push([msg, ms]); flushNotes(); }
+  setInterval(flushNotes, 600);
   function shakeEl(n) { n.classList.remove("shake"); void n.offsetWidth; n.classList.add("shake"); }
 
   /* ---------- Textantwort-Baustein ---------- */
@@ -237,6 +249,7 @@ const App = (() => {
     const solved = !!state.solved[day];
     d.door.classList.toggle("locked", !isUnlocked(day));
     d.door.classList.toggle("today", todayDay() === day && !solved);
+    d.door.classList.toggle("missed", isUnlocked(day) && !solved && todayDay() !== day);
     d.door.querySelector(".lock")?.remove();
     if (!isUnlocked(day)) d.door.append(el("span", { class: "lock", text: "🔒" }));
     d.door.classList.toggle("open", solved);
@@ -393,7 +406,7 @@ const App = (() => {
     const box = document.getElementById("snow");
     const flakes = ["❄", "❅", "❆", "✻"];
     setInterval(() => {
-      if (document.hidden || document.body.classList.contains("game-open") || box.childElementCount > 40) return;
+      if (document.hidden || document.body.classList.contains("game-open") || document.body.classList.contains("covered") || box.childElementCount > (innerWidth < 600 ? 18 : 30)) return;
       const size = 14 + Math.random() * 18;
       const f = el("div", { class: "flake", text: pick(flakes), style: `left:${Math.random() * 100}vw;font-size:${size}px;animation-duration:${9 + Math.random() * 9}s;--drift:${(Math.random() - 0.5) * 160}px;opacity:${0.6 + Math.random() * 0.4}` });
       f.addEventListener("animationend", () => f.remove());
@@ -412,7 +425,14 @@ const App = (() => {
   function setupCapy() {
     const wrap = document.getElementById("capy-wrap"), capy = document.getElementById("capy"), bubble = document.getElementById("capy-bubble"), orange = document.getElementById("capy-orange");
     let t;
-    const say = (msg) => { bubble.textContent = msg; bubble.classList.add("show"); clearTimeout(t); t = setTimeout(() => bubble.classList.remove("show"), 3000); };
+    // Wenn neben dem Inhalt kein Platz ist, schaut Kalle nur unten aus der Ecke und kommt zum Sprechen hoch
+    const peek = () => innerWidth < 1420;
+    const pastHero = () => (document.getElementById("topnav")?.getBoundingClientRect().top ?? 0) < 80;
+    const say = (msg, ambient) => {
+      if (ambient && (busy() || (peek() && !pastHero()))) return;
+      bubble.textContent = msg; bubble.classList.add("show"); wrap.classList.add("up");
+      clearTimeout(t); t = setTimeout(() => { bubble.classList.remove("show"); wrap.classList.remove("up"); }, 3000);
+    };
     let clicks = 0;
     wrap.addEventListener("click", (e) => {
       e.stopPropagation(); clicks++;
@@ -423,8 +443,12 @@ const App = (() => {
       if (clicks % 5 === 0) { orange.classList.toggle("gone"); say(orange.classList.contains("gone") ? "Huch! Meine Orange! 🍊💨" : "Ah, da ist sie wieder 🍊😌"); }
       else say(Texts.say("kalle"));
     });
-    setTimeout(() => say(CAPY[0]), 1200);
-    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle")); }, 22000);
+    setTimeout(() => {
+      if (!peek() || pastHero()) { say(CAPY[0], true); return; }
+      const onScroll = () => { if (!pastHero()) return; removeEventListener("scroll", onScroll); setTimeout(() => say(CAPY[0], true), 600); };
+      addEventListener("scroll", onScroll, { passive: true });
+    }, 1200);
+    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle"), true); }, 22000);
   }
 
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */
@@ -478,6 +502,8 @@ const App = (() => {
     m.querySelector(".modal-close").addEventListener("click", closeModal);
     m.addEventListener("click", (e) => { if (e.target === m) closeModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+    // Akku schonen: Animationen außerhalb des Bildschirms anhalten
+    if ("IntersectionObserver" in window) { const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "80px" }); ["hero", "calendar", "calendar-bonus", "today"].forEach((id) => { const n = document.getElementById(id); if (n) io.observe(n); }); }
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(buildLights, 300); });
     setInterval(() => { updateCountdown(); Object.keys(doors).forEach((d) => { if (!currentDay) refreshDoor(+d); }); }, 60000);
   }
@@ -488,6 +514,6 @@ const App = (() => {
     isSolved: (d) => !!state.solved[d],
     markSolved: (d) => { state.solved[d] = true; save(); },
     closeModal, refreshDoor, isUnlocked, preview: PREVIEW, bonusVisible,
-    h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, shakeEl, textAnswer },
+    h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, notify, busy, shakeEl, textAnswer },
   };
 })();
