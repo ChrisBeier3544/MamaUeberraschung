@@ -469,7 +469,7 @@ const App = (() => {
     register: (day, def) => (puzzles[day] = def),
     isSolved: (d) => !!state.solved[d],
     markSolved: (d) => { state.solved[d] = true; save(); },
-    renderBasket, closeModal, refreshDoor,
+    renderBasket, closeModal, refreshDoor, isUnlocked, preview: PREVIEW,
     h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, shakeEl, textAnswer },
   };
 })();

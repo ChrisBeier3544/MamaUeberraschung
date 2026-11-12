@@ -332,6 +332,19 @@ const Animals = (() => {
     .map((v) => ({ v, k: (SPECIAL[v.sp] && SPECIAL[v.sp].includes(v.col) ? 0 : 1) + rr() }))
     .sort((a, b) => a.k - b.k)
     .forEach(({ v }, i) => (v.rarity = i < 12 ? "sehrselten" : i < 37 ? "selten" : "haeufig"));
+  /* ---------- Einzugs-Wellen: manche Tiere erst ab einem Tag im Dezember ---------- */
+  // day 0 = von Anfang an. Die Tiere einer Welle erkennt man an ihrem Accessoire.
+  const WAVES = [
+    { day: 0 },
+    { day: 6, acc: "muetze", msg: "Zum Nikolaus sind neue Tiere eingezogen – alle mit Weihnachtsmütze! Halt die Augen offen." },
+    { day: 13, acc: "geweih", msg: "Neue Tiere sind eingezogen: alle mit Rentiergeweih! Sie laufen ab jetzt über die Seite." },
+    { day: 20, acc: "krone", msg: "Kurz vor Weihnachten kommen die Majestäten: Neue Tiere mit Krone sind eingezogen!" },
+  ];
+  VARIANTS.forEach((v) => { const w = WAVES.find((x) => x.acc === v.acc); v.from = w ? w.day : 0; });
+  // die drei legendären verteilen sich über den Monat
+  nth("capy", 8).from = 6; nth("elefant", 4).from = 13; nth("baer", 6).from = 20;
+  const available = (v) => v.from === 0 || App.isUnlocked(v.from);
+
   const rarityChip = (v) => `<span class="rar r-${v.rarity}">${RARITY[v.rarity].label}</span>`;
 
   const desc = (v) => {
@@ -367,7 +380,7 @@ const Animals = (() => {
     const box = document.getElementById("parade");
     const max = innerWidth < 600 ? 4 : 7;
     if (document.hidden || box.childElementCount >= max || document.querySelector(".gehege-overlay")) return;
-    const pool = VARIANTS.filter((v) => !onScreen.has(v.id));
+    const pool = VARIANTS.filter((v) => !onScreen.has(v.id) && available(v));
     if (!pool.length) return;
     const wt = (v) => RARITY[v.rarity].w * (found.has(v.id) ? 1 : UNFOUND_BOOST);
     let t = Math.random() * pool.reduce((n, v) => n + wt(v), 0), v = pool[pool.length - 1];
@@ -507,7 +520,8 @@ const Animals = (() => {
       const all = VARIANTS.filter((v) => v.rarity === k);
       sum.append(H.el("div", { class: "rar-box", html: `<span class="rar r-${k}">${r.label}</span><b>${all.filter((v) => found.has(v.id)).length} / ${all.length}</b>` }));
     });
-    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" }));
+    const waiting = VARIANTS.filter((v) => !available(v)).length;
+    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
       const vs = VARIANTS.filter((v) => v.sp === key);
@@ -515,14 +529,26 @@ const Animals = (() => {
       const grid = H.el("div", { class: "album-grid" });
       vs.forEach((v) => {
         const has = found.has(v.id);
-        const card = H.el("div", { class: "album-card r-" + v.rarity + (has ? "" : " missing") });
+        const locked = !has && !available(v);
+        const card = H.el("div", { class: "album-card r-" + v.rarity + (has ? "" : " missing") + (locked ? " locked" : "") });
         const pic = H.el("div", { class: "album-pic" }); pic.innerHTML = svg(v, { fit: true });
-        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
+        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : locked ? `zieht am ${v.from}. Dezember ein` : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
         grid.append(card);
       });
       wrap.append(H.el("h3", {}, sp.plural, H.el("span", { text: ` ${n}/${vs.length}` })), grid);
     });
     area.append(wrap);
+  }
+
+  // Meldung, wenn seit dem letzten Besuch eine neue Welle eingezogen ist
+  function announceWaves() {
+    if (App.preview) return;
+    let seen = [];
+    try { seen = JSON.parse(localStorage.getItem(KEY + "-wellen") || "[]"); } catch (e) {}
+    const fresh = WAVES.filter((w) => w.day && App.isUnlocked(w.day) && !seen.includes(w.day));
+    if (!fresh.length) return;
+    try { localStorage.setItem(KEY + "-wellen", JSON.stringify([...seen, ...fresh.map((w) => w.day)])); } catch (e) {}
+    setTimeout(() => { H.toast("🏡 " + fresh[fresh.length - 1].msg, 7000); H.sfx.jingle(); btn.classList.add("bump"); }, 2500);
   }
 
   function init() {
@@ -533,6 +559,7 @@ const Animals = (() => {
     btn.addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(500); openGehege(); });
     document.body.append(btn);
     updateBtn();
+    announceWaves();
     setTimeout(spawn, 600); setTimeout(spawn, 2500);
     setInterval(spawn, 2600);
   }

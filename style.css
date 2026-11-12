@@ -633,3 +633,5 @@ main { position: relative; z-index: 2; max-width: 980px; margin: 0 auto; padding
 .rar-box { background: #fff; border-radius: 14px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 3px 0 #ead6c8; font-variant-numeric: tabular-nums; }
 .rar-box .rar { margin: 0; }
 .rar-hint { color: var(--ink-soft); margin: 10px 0 0; font-size: 15px; }
+.album-card.locked .album-pic { filter: brightness(0) opacity(.07); }
+.album-card.locked small { color: #b08a6e; font-weight: 600; }
