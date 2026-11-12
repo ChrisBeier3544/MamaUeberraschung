@@ -312,6 +312,28 @@ const Animals = (() => {
       VARIANTS.push({ id, sp: key, col: i % sp.colors.length, acc: list[(i + si) % list.length], accColor: ACC_COLORS[(i * 3 + si) % ACC_COLORS.length], name: NAMES[id] });
     }
   });
+  /* ---------- Seltenheit ---------- */
+  // w = Gewicht beim Auftauchen. Noch nicht gefundene Tiere zählen UNFOUND_BOOST-fach,
+  // damit auch die legendären bis Weihnachten erreichbar bleiben.
+  const RARITY = {
+    haeufig: { label: "Häufig", w: 10 },
+    selten: { label: "Selten", w: 3.5 },
+    sehrselten: { label: "Sehr selten", w: 1.2 },
+    legendaer: { label: "Legendär", w: 0.5 },
+  };
+  const UNFOUND_BOOST = 4;
+  const nth = (sp, i) => VARIANTS.filter((v) => v.sp === sp)[i];
+  [[nth("capy", 8), 2], [nth("elefant", 4), 1], [nth("baer", 6), 2]].forEach(([v, col]) => { v.col = col; v.acc = "krone"; v.rarity = "legendaer"; });
+  // besondere Fellfarben landen bevorzugt in "sehr selten"
+  const SPECIAL = { capy: [2], elefant: [1], fuchs: [1], pinguin: [1], igel: [1], baer: [1, 2], schaf: [1], ente: [2], katze: [4], hund: [2] };
+  let rs = 77;
+  const rr = () => (rs = (rs * 16807) % 2147483647) / 2147483647;
+  VARIANTS.filter((v) => !v.rarity)
+    .map((v) => ({ v, k: (SPECIAL[v.sp] && SPECIAL[v.sp].includes(v.col) ? 0 : 1) + rr() }))
+    .sort((a, b) => a.k - b.k)
+    .forEach(({ v }, i) => (v.rarity = i < 12 ? "sehrselten" : i < 37 ? "selten" : "haeufig"));
+  const rarityChip = (v) => `<span class="rar r-${v.rarity}">${RARITY[v.rarity].label}</span>`;
+
   const desc = (v) => {
     const sp = SPECIES[v.sp];
     return sp.name + (sp.colors.length > 1 ? ", " + sp.colors[v.col].n : "") + (v.acc ? " " + ACC_NAME[v.acc] : "");
@@ -345,17 +367,18 @@ const Animals = (() => {
     const box = document.getElementById("parade");
     const max = innerWidth < 600 ? 4 : 7;
     if (document.hidden || box.childElementCount >= max || document.querySelector(".gehege-overlay")) return;
-    const unfound = VARIANTS.filter((v) => !found.has(v.id) && !onScreen.has(v.id));
-    const pool = unfound.length && Math.random() < 0.8 ? unfound : VARIANTS.filter((v) => !onScreen.has(v.id));
+    const pool = VARIANTS.filter((v) => !onScreen.has(v.id));
     if (!pool.length) return;
-    const v = H.pick(pool);
+    const wt = (v) => RARITY[v.rarity].w * (found.has(v.id) ? 1 : UNFOUND_BOOST);
+    let t = Math.random() * pool.reduce((n, v) => n + wt(v), 0), v = pool[pool.length - 1];
+    for (const c of pool) { t -= wt(c); if (t <= 0) { v = c; break; } }
     const sp = SPECIES[v.sp];
     const w = sp.W * sp.scale * (innerWidth < 600 ? 0.68 : 0.95);
     const ltr = Math.random() < 0.5;
     const speed = sp.speed * (0.8 + Math.random() * 0.4) * (innerWidth < 600 ? 0.8 : 1);
     const dur = (innerWidth + w + 40) / speed;
     const bottom = Math.floor(Math.random() * 34);
-    const div = H.el("div", { class: "walker" + (ltr ? "" : " rtl"), style: `bottom:${bottom}px;z-index:${60 - bottom};--from:${ltr ? -w - 10 : innerWidth + 10}px;--to:${ltr ? innerWidth + 10 : -w - 10}px;animation-duration:${dur}s`, title: "Klick mich!" });
+    const div = H.el("div", { class: "walker r-" + v.rarity + (ltr ? "" : " rtl"), style: `bottom:${bottom}px;z-index:${60 - bottom};--from:${ltr ? -w - 10 : innerWidth + 10}px;--to:${ltr ? innerWidth + 10 : -w - 10}px;animation-duration:${dur}s`, title: "Klick mich!" });
     div.innerHTML = `<div class="w-in">${svg(v, { walk: true, width: w })}</div>`;
     onScreen.add(v.id);
     div.addEventListener("animationend", (e) => { if (e.target === div) { div.remove(); onScreen.delete(v.id); } });
@@ -384,8 +407,11 @@ const Animals = (() => {
         if (isNew) s.good();
       };
     }, 550);
-    if (isNew) H.toast(`✨ Neu im Gehege: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
-    else H.toast(`${v.name} wohnt schon im Gehege – zurückgebeamt 👋`);
+    const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
+    if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, v.rarity === "haeufig" ? 3200 : 5000);
+    if (isNew && v.rarity === "sehrselten") { H.burst(r.left + r.width / 2, r.top, ["💜", "✨", "⭐"], 18, 140); [784, 988, 1175].forEach((f, i) => s.tone(f, 0.2, "triangle", 0.15, null, 0.5 + i * 0.1)); }
+    if (isNew && v.rarity === "legendaer") { setTimeout(() => { H.confetti(["👑", "✨", "⭐", "💛", "🎉"], 80); s.jingle(); }, 700); }
+    if (!isNew) H.toast(`${v.name} wohnt schon im Gehege – zurückgebeamt 👋`);
     if (isNew && found.size === VARIANTS.length) setTimeout(() => { H.confetti(); H.sfx.jingle(); H.toast("🏆 Alle 100 Tiere gefunden! Das Gehege ist komplett!", 6000); }, 1400);
   }
 
@@ -464,7 +490,7 @@ const Animals = (() => {
       a.addEventListener("click", (e) => {
         e.stopPropagation();
         a.querySelector(".pen-tag")?.remove();
-        const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: desc(v) }));
+        const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: desc(v) }), H.el("span", { html: rarityChip(v) }));
         a.append(tag);
         wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
         H.sfx.boop(300 + Math.random() * 400);
@@ -476,6 +502,12 @@ const Animals = (() => {
 
   function album(area) {
     const wrap = H.el("div", { class: "album" });
+    const sum = H.el("div", { class: "rar-sum" });
+    Object.entries(RARITY).forEach(([k, r]) => {
+      const all = VARIANTS.filter((v) => v.rarity === k);
+      sum.append(H.el("div", { class: "rar-box", html: `<span class="rar r-${k}">${r.label}</span><b>${all.filter((v) => found.has(v.id)).length} / ${all.length}</b>` }));
+    });
+    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Seltene Tiere leuchten beim Vorbeilaufen. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
       const vs = VARIANTS.filter((v) => v.sp === key);
@@ -483,9 +515,9 @@ const Animals = (() => {
       const grid = H.el("div", { class: "album-grid" });
       vs.forEach((v) => {
         const has = found.has(v.id);
-        const card = H.el("div", { class: "album-card" + (has ? "" : " missing") });
+        const card = H.el("div", { class: "album-card r-" + v.rarity + (has ? "" : " missing") });
         const pic = H.el("div", { class: "album-pic" }); pic.innerHTML = svg(v, { fit: true });
-        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : "noch nicht gefunden" }));
+        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
         grid.append(card);
       });
       wrap.append(H.el("h3", {}, sp.plural, H.el("span", { text: ` ${n}/${vs.length}` })), grid);
@@ -505,5 +537,5 @@ const Animals = (() => {
     setInterval(spawn, 2600);
   }
 
-  return { SPECIES, VARIANTS, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { SPECIES, VARIANTS, RARITY, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();

@@ -11,6 +11,8 @@ Ein knuffiger Online-Adventskalender voller süßer Tiere – mit 24 Rätseln un
 - **Tiergehege:** Unten laufen ständig gezeichnete Tiere über die Seite – 100 verschiedene Varianten.
   Wer eins anklickt, beamt es ins Gehege (Knopf unten rechts). Dort laufen alle gefundenen Tiere herum,
   und das Sammelalbum zeigt, welche noch fehlen.
+- **Seltenheit:** 60 häufige, 25 seltene, 12 sehr seltene und 3 legendäre Tiere. Seltene leuchten beim Vorbeilaufen.
+  Einstellbar in `animals.js` unter `RARITY` (Gewichte) und `UNFOUND_BOOST` (noch nicht gefundene Tiere kommen öfter).
 - Außerdem zum Anklicken: Lichterkette, Schneeflocken, Titelbuchstaben, das Herz (6×), Kalle das Kapibara (5× für die Orange).
 
 ## Anpassen
