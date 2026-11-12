@@ -477,9 +477,9 @@ const Animals = (() => {
   function makeHider(v, parent, css, o = {}) {
     const sp = SPECIES[v.sp];
     const w = Math.round(o.w || 64), svgH = (w * sp.H) / sp.W;
-    const h = H.el("div", { class: "hider r-" + v.rarity + (o.edge ? " edge" : ""), style: `width:${w}px;height:${Math.round(o.edge ? svgH * 0.55 : svgH)}px;${css}` });
-    const px = o.px || 0, py = o.py != null ? o.py : -Math.round(svgH * 0.58);
-    h.innerHTML = `<div class="w-in" style="--px:${px}px;--py:${py}px;animation-delay:-${(Math.random() * 8).toFixed(1)}s;animation-duration:${(8 + Math.random() * 4).toFixed(1)}s"><div class="${(o.flip ?? Math.random() < 0.5) ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
+    const h = H.el("div", { class: "hider r-" + v.rarity + (o.edge ? " edge" : "") + (o.cls ? " " + o.cls : ""), style: `width:${w}px;height:${Math.round(o.edge ? svgH * 0.55 : svgH)}px;${css}` });
+    const px = o.px || 0, py = o.py != null ? o.py : -Math.round(svgH * (o.rise || 0.58));
+    h.innerHTML = `<div class="w-in" style="--px:${px}px;--py:${py}px;animation-delay:-${(Math.random() * 12).toFixed(1)}s;animation-duration:${(12 + Math.random() * 7).toFixed(1)}s"><div class="${(o.flip ?? Math.random() < 0.5) ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
     h.addEventListener("click", (e) => { e.stopPropagation(); teleport(h, v); });
     legendFx(h.querySelector(".w-in"), v);
     if (o.modal) h.dataset.modal = "1";
@@ -500,30 +500,47 @@ const Animals = (() => {
     const parent = target.offsetParent; if (!parent) return null;
     const w = o.w || 64;
     const x = target.offsetLeft + rnd01(0.12, 0.88) * target.offsetWidth - w / 2;
-    return [parent, `left:${Math.round(x)}px;top:${target.offsetTop + (o.dy || 10)}px;z-index:${o.z || 1}`, { w }];
+    return [parent, `left:${Math.round(x)}px;top:${target.offsetTop + (o.dy || 6)}px;z-index:${o.z || 1}`, { w, rise: 0.82 }];
   }
   const small = () => innerWidth < 600;
-  const SPOTS = [
-    () => { const ds = [...document.querySelectorAll("#calendar .door:not(.open), #bonus:not(.hidden) .door:not(.open)")].filter((d) => !d.parentElement.querySelector(".hider")); if (!ds.length) return null; const d = H.pick(ds), wr = d.parentElement, w = Math.min(70, wr.offsetWidth * 0.5); return [wr, `left:${Math.round(rnd01(0.08, 0.92 - w / wr.offsetWidth) * wr.offsetWidth)}px;top:8px;z-index:1`, { w }]; },
-    () => { const ds = [...document.querySelectorAll("#calendar .door:not(.open)")].filter((d) => !d.parentElement.querySelector(".hider")); if (!ds.length) return null; const d = H.pick(ds), wr = d.parentElement, w = Math.min(70, wr.offsetWidth * 0.5); return [wr, `left:${Math.round(rnd01(0.08, 0.92 - w / wr.offsetWidth) * wr.offsetWidth)}px;top:8px;z-index:1`, { w }]; },
-    () => behind(document.getElementById("zoo"), { w: small() ? 56 : 78 }),
-    () => behind(document.getElementById("calendar"), { w: small() ? 56 : 76 }),
-    () => [document.body, `position:fixed;left:${small() ? 30 : 46}px;bottom:${small() ? 34 : 44}px;z-index:5`, { w: small() ? 44 : 60 }],
-    () => [document.body, `position:fixed;left:0;top:${Math.round(innerHeight * rnd01(0.25, 0.65))}px;transform-origin:0 0;z-index:6`, { edge: "left", w: small() ? 50 : 66 }],
-    () => [document.body, `position:fixed;top:${Math.round(innerHeight * rnd01(0.2, 0.6))}px;transform-origin:0 0;z-index:6`, { edge: "right", w: small() ? 50 : 66 }],
-  ];
+  // Feste Verstecke: Jedes Tier hat seinen Lieblingsplatz und versteckt sich immer nur dort.
+  // So muss man wirklich suchen – und lernt mit der Zeit, wo wer wohnt.
+  // Türchen: das Tier sitzt hinter dem runden Nummernschild und schaut darüber hervor
+  const doorSpot = (n) => () => {
+    const d = document.querySelector(`[aria-label="Türchen ${n}"]`); if (!d || d.closest(".hidden") || d.classList.contains("open") || d.querySelector(".hider")) return null;
+    const num = d.querySelector(".num"); if (!num) return null;
+    const w = Math.round(num.offsetWidth * 0.9);
+    return [d, `left:${Math.round(num.offsetLeft + (num.offsetWidth - w) / 2)}px;top:${Math.round(num.offsetTop + num.offsetHeight * 0.08)}px;z-index:0`, { w, rise: 0.62 }];
+  };
+  const todaySpot = (k) => () => { const c = document.querySelectorAll("#today .today-card")[k]; return c ? behind(c, { w: small() ? 50 : 62 }) : null; };
+  const SPOT_DEFS = {
+    tuer3: doorSpot(3), tuer8: doorSpot(8), tuer12: doorSpot(12), tuer17: doorSpot(17), tuer21: doorSpot(21), tuer24: doorSpot(24), tuer5: doorSpot(5), tuer14: doorSpot(14),
+    kranz: () => { const a = document.getElementById("hero-art"), wr = a && a.querySelector(".wreath"); if (!wr || a.querySelector(".hider")) return null; const w = Math.min(70, wr.offsetWidth * 0.42); return [a, `left:${Math.round(wr.offsetLeft + rnd01(0.15, 0.85 - w / wr.offsetWidth) * wr.offsetWidth)}px;top:${Math.round(wr.offsetTop + wr.offsetHeight * 0.35)}px;z-index:1`, { w, rise: 0.7 }]; },
+    huegelLinks: () => { const h = document.getElementById("hero"); if (!h || h.querySelector(".hider.hill-l")) return null; const w = small() ? 54 : 74; return [h, `left:${Math.round(h.offsetWidth * rnd01(0.06, 0.3))}px;bottom:${-Math.round(w * 0.76)}px;z-index:0`, { w, cls: "hill-l", rise: 1.05 }]; },
+    huegelRechts: () => { const h = document.getElementById("hero"); if (!h || h.querySelector(".hider.hill-r")) return null; const w = small() ? 54 : 74; return [h, `left:${Math.round(h.offsetWidth * rnd01(0.62, 0.86))}px;bottom:${-Math.round(w * 0.76)}px;z-index:0`, { w, cls: "hill-r", rise: 1.05 }]; },
+    heute1: todaySpot(0), heute2: todaySpot(1), heute3: todaySpot(2), heute4: todaySpot(3),
+    gehege: () => behind(document.getElementById("zoo"), { w: small() ? 56 : 78 }),
+    kalender: () => behind(document.getElementById("calendar"), { w: small() ? 56 : 76 }),
+    kalle: () => [document.body, `position:fixed;left:${small() ? 30 : 46}px;bottom:${small() ? 34 : 44}px;z-index:5`, { w: small() ? 44 : 60 }],
+    randLinks: () => [document.body, `position:fixed;left:0;top:${Math.round(innerHeight * rnd01(0.3, 0.65))}px;transform-origin:0 0;z-index:6`, { edge: "left", w: small() ? 50 : 66 }],
+    randRechts: () => [document.body, `position:fixed;top:${Math.round(innerHeight * rnd01(0.3, 0.6))}px;transform-origin:0 0;z-index:6`, { edge: "right", w: small() ? 50 : 66 }],
+  };
+  const SPOT_KEYS = Object.keys(SPOT_DEFS);
+  const spotOf = (v) => SPOT_KEYS[(v.id * 7 + 3) % SPOT_KEYS.length];
   function placeEdge(h, o) {
     const bh = h.offsetHeight, w = o.w;
     if (o.edge === "left") h.style.transform = `translateX(${bh}px) rotate(90deg)`;
     else { h.style.left = innerWidth - bh + "px"; h.style.transform = `translateY(${w}px) rotate(-90deg)`; }
   }
+  // Prüfhilfe: an einem bestimmten Platz ein Tier verstecken
+  function debugHide(key) { const v = VARIANTS.find((x) => spotOf(x) === key && !onScreen.has(x.id)); const spot = v && SPOT_DEFS[key](); if (!spot) return false; const o = { ...spot[2] }; if (o.edge) o.py = 0; const h = makeHider(v, spot[0], spot[1], o); if (o.edge) placeEdge(h, o); return true; }
   function hideLoop() {
     if (document.hidden || document.querySelector(".gehege-overlay")) return;
     const onPage = [...hiders].filter((h) => h.isConnected && !h.dataset.modal).length;
     if (onPage >= (small() ? 2 : 3)) return;
     const v = pickVariant(); if (!v) return;
-    const spot = H.pick(SPOTS)(); if (!spot || !spot[0]) return;
-    const o = { ...spot[2], life: 45000 + Math.random() * 45000 };
+    const spot = SPOT_DEFS[spotOf(v)](); if (!spot || !spot[0]) return;
+    const o = { ...spot[2], life: 50000 + Math.random() * 50000 };
     if (o.edge) o.py = 0;
     const h = makeHider(v, spot[0], spot[1], o);
     if (o.edge) placeEdge(h, o);
@@ -961,5 +978,5 @@ const Animals = (() => {
   }
 
   function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
-  return { SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();
