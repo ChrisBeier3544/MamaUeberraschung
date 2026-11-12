@@ -157,7 +157,7 @@ const App = (() => {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
   }
   /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
-  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox";
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock";
   const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
   const notes = [];
   function flushNotes() {
@@ -478,7 +478,29 @@ const App = (() => {
   }
 
   /* ---------- Start ---------- */
+  /* ---------- Bis zum 28.11., 9 Uhr: alles verschlossen ---------- */
+  const OPENS = new Date(CONFIG.year, 10, 28, 9, 0, 0);
+  const isLocked = () => (!PREVIEW || params.has("schloss")) && new Date() < OPENS;
+  function showLock() {
+    document.body.classList.add("locked-page");
+    const lock = el("div", { class: "site-lock", role: "img", "aria-label": "Verschlossen – öffnet am 28. November um 9 Uhr morgens" });
+    const pad = el("div", { class: "lock-pad", html: `<svg viewBox="0 0 200 240" aria-hidden="true">
+      <defs><linearGradient id="lkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
+      <linearGradient id="lkS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient></defs>
+      <path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#lkS)" stroke-width="20" stroke-linecap="round"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#lkG)"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
+      <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
+      <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/>
+    </svg>` });
+    pad.addEventListener("click", () => { pad.classList.remove("rattle"); void pad.offsetWidth; pad.classList.add("rattle"); });
+    lock.append(pad, el("p", { class: "lock-text", text: "Öffnet am 28. November um 9 Uhr morgens." }));
+    document.body.append(lock);
+    setInterval(() => { if (!isLocked()) location.reload(); }, 20000);
+  }
+
   function start() {
+    if (isLocked()) { showLock(); return; }
     load();
     if (typeof Zoo !== "undefined") Zoo.init();
     buildTitle(); buildLights(); buildCalendar();
@@ -505,11 +527,12 @@ const App = (() => {
     // Akku schonen: Animationen außerhalb des Bildschirms anhalten
     if ("IntersectionObserver" in window) { const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "80px" }); ["hero", "calendar", "calendar-bonus", "today"].forEach((id) => { const n = document.getElementById(id); if (n) io.observe(n); }); }
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(buildLights, 300); });
+    if (typeof Intro !== "undefined") setTimeout(Intro.maybeShow, 900);
     setInterval(() => { updateCountdown(); Object.keys(doors).forEach((d) => { if (!currentDay) refreshDoor(+d); }); }, 60000);
   }
 
   return {
-    start, config: CONFIG, get: (d) => puzzles[d],
+    start, config: CONFIG, locked: isLocked, get: (d) => puzzles[d],
     register: (day, def) => (puzzles[day] = def),
     isSolved: (d) => !!state.solved[d],
     markSolved: (d) => { state.solved[d] = true; save(); },

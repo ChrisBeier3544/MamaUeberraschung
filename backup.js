@@ -133,6 +133,7 @@ const Backup = (() => {
   const due = () => solvedCount() >= 3 && Date.now() - lastBackup() > 7 * 24 * 3600 * 1000;
   function updateIcon() { if (icon) icon.classList.toggle("has-dot", due()); }
   function init() {
+    if (App.locked()) return;
     H = App.h;
     icon = H.el("button", { class: "nav-icon backup-btn", title: "Spielstand sichern", "aria-label": "Spielstand sichern", html: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.4 3 8.3 7 9.5 4-1.2 7-5.1 7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m8.8 12.2 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` });
     icon.addEventListener("click", (e) => { e.stopPropagation(); open(); });
