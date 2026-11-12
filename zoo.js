@@ -400,7 +400,9 @@ const Zoo = (() => {
     const parade = [{ sp: "capy", col: 0, acc: "orange" }, { sp: "katze", col: 0, acc: "muetze" }, { sp: "hund", col: 0, acc: "schal", accColor: "#e85d75" }, { sp: "waschbaer", col: 0, acc: "krone" }, { sp: "pinguin", col: 0, acc: "fliege", accColor: "#e85d75" }, { sp: "giraffe", col: 0, acc: "geweih" }, { sp: "igel", col: 0, acc: "muetze" }];
     ov.append(H.el("div", { class: "finale-card" },
       H.el("div", { class: "finale-animals" }, ...parade.map((a) => H.el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.6 }) }))),
-      H.el("h2", { text: title }), H.el("div", { class: "msg", text: msg }), H.el("p", { class: "sig", text: CONFIG.signature }),
+      H.el("h2", { text: title }),
+      !fireworks ? H.el("figure", { class: "letter-photo" }, H.el("img", { src: "fotos/24.jpg", alt: "", onerror: (e) => e.target.parentElement.remove() }), H.el("figcaption", { text: "Wir zwei." })) : null,
+      H.el("div", { class: "msg", text: msg }), H.el("p", { class: "sig", text: CONFIG.signature }),
       H.el("div", { class: "row", style: "margin-top:16px" }, H.el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { H.confetti(); H.sfx.jingle(); } }), H.el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => ov.remove() }))));
     document.body.append(ov);
     H.sfx.jingle(); H.confetti();

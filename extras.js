@@ -122,6 +122,57 @@ const Extras = (() => {
   ];
   const factOfDay = () => { const d = dayNum(); const i = d >= 1 && d <= 31 ? d - 1 : seedOf(dkey()) % 31; return FACTS[i]; };
 
+  /* ================= Erinnerung des Tages (eigene Fotos, Ordner fotos/) ================= */
+  const MEMORIES = {
+    1: "Mit Alpakas kennst du dich ja schon aus – die perfekte Gehege-Direktorin.",
+    2: "Spaziergang mit Begleitung. Das Alpaka hat sich bestens benommen.",
+    3: "Malta: Sonne, Meer und ein Hut, der alles kann.",
+    4: "Meister-Pokal! Und die stolzeste Gratulantin in der Halle.",
+    5: "Hoch über dem Watt – mit Blick bis zum Horizont.",
+    6: "Zum Nikolaus: Die gefürchtetste Piratin der sieben Meere.",
+    7: "Wind in den Haaren, Sand unter den Füßen, Winken im Hintergrund.",
+    8: "Im Kochkurs. Konzentration auf höchstem Niveau.",
+    9: "Vor dem Dom, mit Mützen und guter Laune.",
+    10: "Mission Party: Houston, wir haben Spaß!",
+    11: "Abendlicht an Deck – einer der schönsten Momente.",
+    12: "Ein Abend, zwei Getränke, ganz viel Lachen.",
+    13: "Am Wasserfall: Nass, grün und wunderschön.",
+    14: "Putz-Kolonne im Einsatz. Glänzender Auftritt!",
+    15: "Mut auf der Hängebrücke – und kein bisschen wackelig.",
+    16: "Stadtbummel mit Lieblingsmensch.",
+    17: "Prost auf einen herrlichen Ausflug!",
+    18: "Leinen los im Hamburger Hafen.",
+    19: "Ein echtes Polaroid – fast so schön wie im Gehege.",
+    20: "Lichter, Lachen, Sommernacht.",
+    21: "Auf den Stufen, mit kühlen Drinks und bester Gesellschaft.",
+    22: "Sonnenbrille auf, Urlaub an.",
+    23: "Blauer Himmel über Malta – und das breiteste Grinsen.",
+    24: "Wir zwei.",
+    25: "Schick gemacht und strahlend.",
+    26: "Und einfach so, weil du so schön lachst.",
+  };
+  const memDays = () => Object.keys(MEMORIES).map(Number).filter((d) => App.preview || d <= dayNum());
+  const memImg = (d) => `fotos/${String(d).padStart(2, "0")}.jpg`;
+  function memPola(d, onclick) {
+    return H.el("button", { class: "mem-pola", style: `--r:${((d * 37) % 7) - 3}deg`, onclick },
+      H.el("div", { class: "mp-pic" }, H.el("img", { src: memImg(d), alt: MEMORIES[d], loading: "lazy", onerror: (e) => e.target.closest(".mem-pola")?.remove() })),
+      H.el("small", { text: `${d}. Dezember` }));
+  }
+  function showMemory(d) {
+    const wrap = H.el("div", { class: "pola-wrap", role: "dialog" });
+    const card = H.el("div", { class: "polaroid mem-big", style: `--rot:${((d * 37) % 7) - 3}deg` },
+      H.el("div", { class: "pola-photo done mem-photo" }, H.el("img", { src: memImg(d), alt: "" })),
+      H.el("div", { class: "pola-cap", text: MEMORIES[d] }), H.el("div", { class: "pola-meta" }, H.el("span", { text: "Erinnerung" }), H.el("span", { text: `${d}. Dezember` })));
+    wrap.append(card, H.el("button", { class: "btn btn-green", text: "Schließen", onclick: () => wrap.remove() }));
+    wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
+    document.body.append(wrap); H.sfx.pop();
+  }
+  function openMemories() {
+    const days = memDays();
+    const ov = overlay("Unsere Erinnerungen", days.length ? `${days.length} von 26 Fotos – jeden Tag kommt eins dazu` : "Ab dem 1. Dezember gibt es jeden Tag ein Foto");
+    ov.area.append(H.el("div", { class: "mem-wall" }, ...days.map((d) => memPola(d, () => showMemory(d)))));
+  }
+
   /* ================= Mini-Aufgaben ================= */
   const TASKS = [
     { id: "feed3", text: "Füttere heute 3 Tiere.", type: "fed", goal: 3, reward: 15 },
@@ -191,6 +242,8 @@ const Extras = (() => {
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp, col: 0, acc: "" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Tier des Tages" }), H.el("b", { text: spec.name }))), H.el("p", { text: fact })),
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "capy", col: 0, acc: "brille" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Kalles Tagebuch" }), H.el("b", { text: entry.date }))), H.el("p", { class: "tc-diary", text: entry.text }), H.el("button", { class: "btn btn-soft", text: "Ganzes Tagebuch", onclick: (e) => { e.stopPropagation(); openDiary(); } })),
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Aufgabe des Tages" }), H.el("b", { text: `${task.reward} Taler Belohnung` }))), H.el("p", { text: task.text }), H.el("div", { class: "zp-bar" }, H.el("div", { style: `width:${(have / task.goal) * 100}%` })), claim),
+      (() => { const ds = memDays(); const d = ds.includes(dayNum()) ? dayNum() : ds[ds.length - 1]; if (!d) return null;
+        return H.el("div", { class: "today-card mem-card-today" }, H.el("small", { text: "Erinnerung des Tages" }), memPola(d, (e) => { e.stopPropagation(); showMemory(d); }), H.el("button", { class: "btn btn-soft", text: "Alle Erinnerungen", onclick: (e) => { e.stopPropagation(); openMemories(); } })); })(),
       H.el("div", { class: "today-card small" }, H.el("small", { text: "Heute im Gehege" }), H.el("b", { text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }), H.el("button", { class: "btn btn-soft", text: "Abzeichen", onclick: (e) => { e.stopPropagation(); openBadges(); } }),
         dayNum() >= 31 && App.isSolved(31) ? H.el("button", { class: "btn", text: "Jahresrückblick", onclick: (e) => { e.stopPropagation(); review(); } }) : null));
   }
@@ -393,11 +446,14 @@ const Extras = (() => {
     area.append(
       H.el("div", { class: "rv-tiles" }, tile(solvedCount(), "Rätsel gelöst"), tile(`${found.length}/100`, "Tiere gefunden"), tile(S("fed"), "Mal gefüttert"), tile(Zoo.ownedList().length, "Dinge im Gehege"),
         tile(st.badges.length, "Abzeichen"), tile(Zoo.high("turm"), "Turm-Rekord"), tile(Zoo.high("waschbaer"), "Waschbär-Rekord"), tile(Zoo.high("pinguin"), "Pinguin-Rekord")),
+      H.el("figure", { class: "rv-director" }, H.el("img", { src: "fotos/portrait.jpg", alt: "", onerror: (e) => e.target.parentElement.remove() }), H.el("figcaption", {}, H.el("b", { text: "Die Gehege-Direktorin" }), H.el("span", { text: "31 Kapitel, ein Winterparadies – und alle Tiere lieben sie." }))),
       H.el("h3", { text: "Vorher und nachher" }),
       H.el("div", { class: "rv-before" }, H.el("figure", {}, H.el("div", { class: "rv-scene", html: Zoo.scene(null, [], true) }), H.el("figcaption", { text: "1. Dezember" })), H.el("figure", {}, H.el("div", { class: "rv-scene", html: Zoo.scene(null, null, true) }), H.el("figcaption", { text: "31. Dezember" }))),
       favs ? H.el("p", { class: "rv-fav", text: `Zuletzt gefüttert: ${favs.name} – ${Animals.desc(favs)}` }) : null,
       H.el("h3", { text: `Deine Fotowand (${found.length} Polaroids)` }),
       H.el("div", { class: "rv-wall" }, ...found.map((v, i) => H.el("button", { class: "rv-pola", style: `--r:${((i * 37) % 9) - 4}deg`, html: `<div class="rv-pic">${Photos.scene(v)}</div><small>${v.name}</small>`, onclick: () => Photos.show(v, { replay: true }) }))),
+      H.el("h3", { text: "Unser Jahr in Bildern" }),
+      H.el("div", { class: "mem-wall" }, ...Object.keys(MEMORIES).map(Number).map((d) => memPola(d, () => showMemory(d)))),
       H.el("div", { class: "rv-letter" }, H.el("h3", { text: "Ein Brief zum Abschied" }), H.el("div", { class: "gift-msg", text: FAREWELL }), H.el("p", { class: "sig", text: "Deine Tiere aus dem Gehege" })));
   }
 

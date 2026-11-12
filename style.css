@@ -1030,3 +1030,19 @@ body.game-open #snow, body.game-open #parade { display: none; }
 .rv-letter { background: #fffdf5; border-radius: 22px; padding: 20px 24px; margin: 26px auto 10px; max-width: 720px; box-shadow: var(--shadow); }
 .rv-letter .gift-msg { white-space: pre-line; }
 .pen-world.editing > :not(.zoo-scene) { pointer-events: none !important; } .pen-world.editing .pen-empty { opacity: 0; }
+
+/* ================= Eigene Fotos ================= */
+.mem-pola { background: #fffdf8; border: none; padding: 8px 8px 6px; box-shadow: 0 4px 12px rgba(0,0,0,.15); transform: rotate(var(--r)); cursor: pointer; font-family: "Caveat", cursive; font-size: 18px; color: #5a3b2e; transition: transform .2s; }
+.mem-pola:hover { transform: rotate(0) scale(1.04); }
+.mp-pic { aspect-ratio: 1; overflow: hidden; background: #eee; }
+.mp-pic img, .mem-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mem-card-today .mem-pola { width: min(180px, 70%); align-self: center; }
+.mem-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; padding: 6px; }
+.mem-big .mem-photo { aspect-ratio: 4 / 5; background: #eee; }
+.letter-photo { margin: 6px auto 14px; background: #fffdf8; padding: 10px 10px 4px; width: min(300px, 72vw); box-shadow: 0 8px 24px rgba(0,0,0,.18); transform: rotate(-2deg); }
+.letter-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; }
+.letter-photo figcaption { font-family: "Caveat", cursive; font-size: 24px; text-align: center; color: #5a3b2e; }
+.rv-director { display: flex; gap: 18px; align-items: center; margin: 22px 0 0; background: #fff; border-radius: 20px; padding: 14px; box-shadow: 0 3px 0 #ead6c8; }
+.rv-director img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #ffd84d; }
+.rv-director figcaption { display: flex; flex-direction: column; gap: 4px; }
+.rv-director b { font-size: 22px; color: var(--red); }
