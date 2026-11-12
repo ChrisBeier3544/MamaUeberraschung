@@ -439,59 +439,75 @@ const Animals = (() => {
     if (isNew && found.size === VARIANTS.length) setTimeout(() => { H.confetti(); H.sfx.jingle(); H.toast("🏆 Alle 100 Tiere gefunden! Das Gehege ist komplett!", 6000); }, 1400);
   }
 
-  /* ---------- Verstecke: Tiere lugen überall hervor ---------- */
+  /* ---------- Verstecke: Tiere sitzen HINTER Türchen, Karten & Knöpfen ---------- */
+  // Das Tier steckt hinter einem echten Element (Türchen, Gehege-Karte, Kalle …) und
+  // schaut regelmäßig darüber hervor. Sichtbar ist genau der Teil, der herausragt.
   const hiders = new Set();
-  function makeHider(v, parent, style, o = {}) {
+  function makeHider(v, parent, css, o = {}) {
     const sp = SPECIES[v.sp];
-    const w = o.w || 70, svgH = (w * sp.H) / sp.W, boxH = Math.round(svgH * (o.show || 0.55));
-    let pos = style;
-    if (o.edge === "left") pos = `position:fixed;left:0;top:${o.y}px;transform-origin:0 0;transform:translateX(${boxH}px) rotate(90deg);z-index:6`;
-    if (o.edge === "right") pos = `position:fixed;left:${innerWidth - boxH}px;top:${o.y}px;transform-origin:0 0;transform:translateY(${w}px) rotate(-90deg);z-index:6`;
-    const h = H.el("div", { class: "hider r-" + v.rarity, style: `width:${w}px;height:${boxH}px;${pos}` });
-    h.innerHTML = `<div class="w-in" style="animation-delay:-${(Math.random() * 7).toFixed(1)}s;animation-duration:${(7 + Math.random() * 4).toFixed(1)}s"><div class="${Math.random() < 0.5 ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
+    const w = Math.round(o.w || 64), svgH = (w * sp.H) / sp.W;
+    const h = H.el("div", { class: "hider r-" + v.rarity + (o.edge ? " edge" : ""), style: `width:${w}px;height:${Math.round(o.edge ? svgH * 0.55 : svgH)}px;${css}` });
+    const px = o.px || 0, py = o.py != null ? o.py : -Math.round(svgH * 0.58);
+    h.innerHTML = `<div class="w-in" style="--px:${px}px;--py:${py}px;animation-delay:-${(Math.random() * 8).toFixed(1)}s;animation-duration:${(8 + Math.random() * 4).toFixed(1)}s"><div class="${(o.flip ?? Math.random() < 0.5) ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
     h.addEventListener("click", (e) => { e.stopPropagation(); teleport(h, v); });
     if (o.modal) h.dataset.modal = "1";
+    h._v = v;
     onScreen.add(v.id); hiders.add(h);
     parent.append(h);
     if (o.life) setTimeout(() => dropHider(h, v), o.life);
-    h._v = v;
     return h;
   }
   function dropHider(h, v) {
-    if (!h.isConnected || h.dataset.gone) { hiders.delete(h); return; }
+    if (!h.isConnected || h.dataset.gone) { hiders.delete(h); onScreen.delete(v.id); return; }
     hiders.delete(h); onScreen.delete(v.id);
     h.classList.add("leaving"); setTimeout(() => h.remove(), 700);
   }
-  const rndPct = (a, b) => (a + Math.random() * (b - a)).toFixed(0) + "%";
+  const rnd01 = (a, b) => a + Math.random() * (b - a);
+  // hinter einem Element: Tier wird als Geschwister dahinter (z-index 1) unter dessen Oberkante gesetzt
+  function behind(target, o = {}) {
+    const parent = target.offsetParent; if (!parent) return null;
+    const w = o.w || 64;
+    const x = target.offsetLeft + rnd01(0.12, 0.88) * target.offsetWidth - w / 2;
+    return [parent, `left:${Math.round(x)}px;top:${target.offsetTop + (o.dy || 10)}px;z-index:${o.z || 1}`, { w }];
+  }
+  const small = () => innerWidth < 600;
   const SPOTS = [
-    () => { const ws = [...document.querySelectorAll("#calendar .door-wrap, #bonus:not(.hidden) .door-wrap")]; return ws.length ? [H.pick(ws), `left:${rndPct(5, 45)};bottom:100%;z-index:0`, { w: innerWidth < 600 ? 44 : 58 }] : null; },
-    () => { const ws = [...document.querySelectorAll("#calendar .door-wrap")]; return ws.length ? [H.pick(ws), `left:${rndPct(5, 45)};bottom:100%;z-index:0`, { w: innerWidth < 600 ? 44 : 58 }] : null; },
-    () => [document.querySelector("header"), `left:${rndPct(6, 82)};top:${innerWidth < 600 ? 40 : 30}px;z-index:1`, { w: innerWidth < 600 ? 50 : 72, show: 0.5 }],
-    () => [document.getElementById("zoo"), `left:${rndPct(8, 80)};bottom:100%`, { w: innerWidth < 600 ? 56 : 80, show: 0.5 }],
-    () => [document.getElementById("calendar"), `left:${rndPct(8, 80)};bottom:100%`, { w: innerWidth < 600 ? 56 : 78, show: 0.5 }],
-    () => [document.body, `position:fixed;left:${innerWidth < 600 ? 92 : 150}px;bottom:4px;z-index:5`, { w: innerWidth < 600 ? 46 : 62, show: 0.6 }],
-    () => [document.body, "", { edge: "left", y: innerHeight * (0.25 + Math.random() * 0.4), w: innerWidth < 600 ? 50 : 66, show: 0.5 }],
-    () => [document.body, "", { edge: "right", y: innerHeight * (0.2 + Math.random() * 0.4), w: innerWidth < 600 ? 50 : 66, show: 0.5 }],
+    () => { const ds = [...document.querySelectorAll("#calendar .door:not(.open), #bonus:not(.hidden) .door:not(.open)")].filter((d) => !d.parentElement.querySelector(".hider")); if (!ds.length) return null; const d = H.pick(ds), wr = d.parentElement, w = Math.min(70, wr.offsetWidth * 0.5); return [wr, `left:${Math.round(rnd01(0.08, 0.92 - w / wr.offsetWidth) * wr.offsetWidth)}px;top:8px;z-index:1`, { w }]; },
+    () => { const ds = [...document.querySelectorAll("#calendar .door:not(.open)")].filter((d) => !d.parentElement.querySelector(".hider")); if (!ds.length) return null; const d = H.pick(ds), wr = d.parentElement, w = Math.min(70, wr.offsetWidth * 0.5); return [wr, `left:${Math.round(rnd01(0.08, 0.92 - w / wr.offsetWidth) * wr.offsetWidth)}px;top:8px;z-index:1`, { w }]; },
+    () => behind(document.getElementById("zoo"), { w: small() ? 56 : 78 }),
+    () => behind(document.getElementById("calendar"), { w: small() ? 56 : 76 }),
+    () => [document.body, `position:fixed;left:${small() ? 30 : 46}px;bottom:${small() ? 34 : 44}px;z-index:5`, { w: small() ? 44 : 60 }],
+    () => { const b = document.getElementById("gehege-btn"); if (!b) return null; const r = b.getBoundingClientRect(); return [document.body, `position:fixed;left:${Math.round(r.left + r.width * rnd01(0.15, 0.6))}px;top:${Math.round(r.top + 4)}px;z-index:6`, { w: 32 }]; },
+    () => [document.body, `position:fixed;left:0;top:${Math.round(innerHeight * rnd01(0.25, 0.65))}px;transform-origin:0 0;z-index:6`, { edge: "left", w: small() ? 50 : 66 }],
+    () => [document.body, `position:fixed;top:${Math.round(innerHeight * rnd01(0.2, 0.6))}px;transform-origin:0 0;z-index:6`, { edge: "right", w: small() ? 50 : 66 }],
   ];
+  function placeEdge(h, o) {
+    const bh = h.offsetHeight, w = o.w;
+    if (o.edge === "left") h.style.transform = `translateX(${bh}px) rotate(90deg)`;
+    else { h.style.left = innerWidth - bh + "px"; h.style.transform = `translateY(${w}px) rotate(-90deg)`; }
+  }
   function hideLoop() {
     if (document.hidden || document.querySelector(".gehege-overlay")) return;
     const onPage = [...hiders].filter((h) => h.isConnected && !h.dataset.modal).length;
-    if (onPage >= (innerWidth < 600 ? 2 : 3)) return;
+    if (onPage >= (small() ? 2 : 3)) return;
     const v = pickVariant(); if (!v) return;
     const spot = H.pick(SPOTS)(); if (!spot || !spot[0]) return;
-    makeHider(v, spot[0], spot[1], { ...spot[2], life: 45000 + Math.random() * 45000 });
+    const o = { ...spot[2], life: 45000 + Math.random() * 45000 };
+    if (o.edge) o.py = 0;
+    const h = makeHider(v, spot[0], spot[1], o);
+    if (o.edge) placeEdge(h, o);
   }
-  // Verstecke in Rätselfenster, Shop und Album
+  // Verstecke im Rätselfenster (hinter Kalles Brief), im Shop (hinter einer Karte) und im Album (hinter den Reitern)
   function hideIn(kind, container) {
-    if (!container || Math.random() > ({ modal: 0.65, shop: 0.5, album: 0.4 }[kind] || 0.5)) return;
+    if (!container || Math.random() > ({ modal: 0.65, shop: 0.5, album: 0.45 }[kind] || 0.5)) return;
     const v = pickVariant(); if (!v) return;
-    if (kind === "modal") {
-      const spots = [`right:66px;top:6px`, `left:${rndPct(20, 70)};top:0`, `right:24px;bottom:0`, `left:20px;bottom:0`];
-      makeHider(v, container, "position:absolute;" + H.pick(spots), { w: innerWidth < 600 ? 50 : 64, modal: true });
-    } else if (kind === "shop") {
-      const cards = [...container.querySelectorAll(".shop-card")]; if (!cards.length) return;
-      makeHider(v, H.pick(cards), `right:10px;bottom:100%`, { w: 54, modal: true });
-    } else makeHider(v, container, `right:${rndPct(25, 60)};bottom:0`, { w: 60, modal: true });
+    let target = null, w = 60;
+    if (kind === "modal") { target = container.querySelector(".modal-story:not(.hidden)"); w = small() ? 52 : 66; }
+    else if (kind === "shop") { const cs = [...container.querySelectorAll(".shop-card")]; target = cs.length ? H.pick(cs) : null; w = 54; }
+    else target = container.querySelector(".g-tabs");
+    if (!target) return;
+    const spot = behind(target, { w }); if (!spot) return;
+    makeHider(v, spot[0], spot[1], { ...spot[2], modal: true });
   }
   function clearIn(container) {
     container?.querySelectorAll(".hider").forEach((h) => { if (!h.dataset.gone) { hiders.delete(h); onScreen.delete(h._v.id); } h.remove(); });
@@ -552,10 +568,12 @@ const Animals = (() => {
     if (field.id === "zoo-pen") inlineCtrls = ctrls;
     const mine = VARIANTS.filter((v) => found.has(v.id));
     if (!mine.length) {
-      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere – hinter Türchen, am Bildschirmrand, sogar in den Rätseln. Klick sie an, dann ziehen sie hier ein." })));
+      if (field.id === "zoo-pen") mountProps(field);
+      field.append(H.el("div", { class: "pen-empty" }, H.el("b", { text: "Noch wohnt hier niemand." }), H.el("div", { text: "Überall auf der Seite verstecken sich Tiere. Klick sie an, dann ziehen sie hier ein!" })));
       return;
     }
     mine.forEach((v) => ctrls.push(penAnimal(field, v, later)));
+    if (field.id === "zoo-pen") mountProps(field);
   }
 
   function penAnimal(field, v, later, o = {}) {
@@ -572,7 +590,7 @@ const Animals = (() => {
     c.walkTo = (nx, ny, done, fast) => {
       const fw = field.clientWidth, fh = field.clientHeight;
       const dist = Math.hypot(((nx - c.x) / 100) * fw, ((ny - c.y) / 100) * fh);
-      const dur = fast ? Math.min(3.2, Math.max(0.8, dist / 160)) : Math.max(0.6, dist / (sp.speed * 0.8));
+      const dur = fast ? Math.min(5, Math.max(1.6, dist / 90)) : Math.max(0.6, dist / (sp.speed * 0.8));
       a.classList.toggle("flip", nx < c.x);
       a.querySelector("svg").classList.add("walking");
       a.style.transition = `left ${dur}s linear, top ${dur}s linear`;
@@ -587,6 +605,7 @@ const Animals = (() => {
       c.walkTo(nx, ny, () => later(move, 800 + Math.random() * 3500));
     };
     c.goTo = (nx, ny, done) => { c.busy = true; c.walkTo(nx, ny, done, true); };
+    c.name = v.name;
     c.say = (text, ms = 4600) => {
       a.querySelector(".pen-say")?.remove();
       const b = H.el("div", { class: "pen-say" }, H.el("b", { text: v.name }), text);
@@ -611,44 +630,121 @@ const Animals = (() => {
     return c;
   }
 
-  /* ---------- Nach einem Kauf: drei Tiere schauen sich das Neue an ---------- */
+  /* ---------- Nach einem Kauf: drei Tiere schauen sich das Neue an – nacheinander ---------- */
   const PRAISE = [
     "Hier fühle ich mich gleich viel wohler.", "Genau das hat uns gefehlt!", "Danke, Mama – das ist wunderbar!", "Jetzt ist es richtig gemütlich hier.",
     "Wie hübsch! Das muss ich sofort Kalle zeigen.", "Ich glaube, das wird mein neuer Lieblingsplatz.", "So ein schönes Zuhause hatte ich noch nie.",
     "Ich bin ganz gerührt.", "Unser Gehege wird immer schöner!", "Mama hat wirklich Geschmack.",
   ];
   const GUESTS = [{ sp: "capy", col: 0, acc: "orange", name: "Kalle" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75", name: "Mimi" }, { sp: "hund", col: 0, acc: "schal", accColor: "#4f7fe0", name: "Bello" }];
+  let celebrating = false;
+  const sceneMap = (field) => {
+    const W = field.clientWidth, Hh = field.clientHeight, sc = Math.max(W / 1000, Hh / 600);
+    const ox = (W - 1000 * sc) / 2, oy = (Hh - 600 * sc) / 2;
+    return { W, Hh, sc, ox, oy, pct: (x, y) => [((ox + x * sc) / W) * 100, ((oy + y * sc) / Hh) * 100] };
+  };
+  const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
   function celebrate(sx, sy, itemName) {
     const field = document.getElementById("zoo-pen");
     if (!field || !field.clientWidth) return;
-    const W = field.clientWidth, Hh = field.clientHeight, sc = Math.max(W / 1000, Hh / 600);
-    const ox = (W - 1000 * sc) / 2, oy = (Hh - 600 * sc) / 2;
-    const toPct = (x, y) => [((ox + x * sc) / W) * 100, ((oy + y * sc) / Hh) * 100];
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    celebrating = true;
+    const M = sceneMap(field);
     const empty = field.querySelector(".pen-empty");
     if (empty) empty.classList.add("hidden");
-    const actors = H.shuffle(inlineCtrls.filter((c) => c.a.isConnected)).slice(0, 3);
+    const actors = H.shuffle(inlineCtrls.filter((c) => c.a.isConnected && !c.busy)).slice(0, 3);
     while (actors.length < 3) {
       const g = GUESTS[actors.length];
-      const left = actors.length % 2 === 0;
-      actors.push(penAnimal(field, g, inlineLater, { guest: true, x: left ? -6 : 98, y: 75 }));
+      actors.push(penAnimal(field, g, inlineLater, { guest: true, x: actors.length % 2 ? 98 : -6, y: 80 }));
     }
-    const lines = H.shuffle(PRAISE).slice(0, 2);
-    actors.forEach((c, i) => {
-      const [px, py] = toPct(sx + (i - 1) * 75, sy + (i === 1 ? 18 : 0));
-      const aw = (c.a.offsetWidth / W) * 100;
-      const tx = clamp(px - aw / 2, 0, 94), ty = clamp(py, 44, 98);
-      setTimeout(() => c.goTo(tx, ty, () => {
-        c.a.classList.toggle("flip", tx + aw / 2 > toPct(sx, sy)[0]);
-        c.say(i === 0 ? `Oh, ${itemName}! Wie schön!` : lines[i - 1]);
-        H.sfx.tone(500 + i * 120, 0.12, "triangle", 0.12);
+    const lines = [`Oh, ${itemName}! Wie schön!`, ...H.shuffle(PRAISE).slice(0, 2)];
+    const offs = [[-130, 30], [0, 52], [130, 30]];
+    const [ix] = M.pct(sx, sy);
+    // jedes Tier geht los, sobald das vorige zu sprechen beginnt; gesprochen wird streng nacheinander
+    const step = (i) => {
+      if (i >= actors.length) return;
+      const c = actors[i];
+      const [px, py] = M.pct(sx + offs[i][0], sy + offs[i][1]);
+      const aw = (c.a.offsetWidth / M.W) * 100;
+      const tx = clampN(px - aw / 2, 0, 94), ty = clampN(py, 46, 98);
+      c.goTo(tx, ty, () => {
+        c.a.classList.toggle("flip", tx + aw / 2 > ix);
+        c.say(lines[i], 3600);
+        H.sfx.tone(520 + i * 110, 0.12, "triangle", 0.12);
+        setTimeout(() => step(i + 1), 3900);
         setTimeout(() => {
           c.busy = false;
           if (c.guest) { c.a.style.opacity = "0"; setTimeout(() => c.a.remove(), 700); }
-          if (empty && i === 2) setTimeout(() => empty.classList.remove("hidden"), 800);
-        }, 5000);
-      }), 500 + i * 450);
+          if (i === actors.length - 1) { celebrating = false; if (empty) setTimeout(() => empty.classList.remove("hidden"), 600); }
+        }, 3900 + (actors.length - 1 - i) * 3900 + 600);
+      });
+    };
+    setTimeout(() => step(0), 600);
+  }
+
+  /* ---------- Tiere benutzen gekaufte Sachen ---------- */
+  const ACT = {
+    wasserschale: "*schlürf*", teich: "*platsch*", vogelbad: "*schlürf*", futter: "*mampf mampf*", stand: "Ein Plätzchen, bitte!", kakao: "Mit extra Sahne!",
+    kissen: "Zzz …", strohballen: "Zzz …", hoehle: "So kuschelig hier …", bank: "Kurz ausruhen.", onsen: "Ahhh … herrlich.", feuer: "Schön warm!",
+    teleskop: "Ein Stern mit Maske?!", buehne: "♪ La-la-la ♪", fotowand: "Cheese!", spielplatz: "Juhu!", rodel: "Huiii!", eisbahn: "Pirouette!",
+    karussell: "Noch eine Runde!", kletter: "Ich bin ganz oben!", schaukel: "Höher!", blumen: "Die duften so gut!", tanne: "Wie schön geschmückt!",
+    schneemann: "Hallo, Herr Schneemann!", iglu: "Schön kühl hier drin.", teddy: "Mein Kuschelfreund!", briefkasten: "Wunschzettel ist eingeworfen!",
+    giesskanne: "Blumen gießen!", holz: "Holz für kalte Abende.", windrad: "Es dreht sich!", zwerg: "Guten Tag, Herr Zwerg!", statue: "Kalle in Gold!",
+  };
+  const LIVE = ["ball", "vogel"];
+  let props = {};
+  function mountProps(field) {
+    props = {};
+    if (typeof Zoo === "undefined") return;
+    const M = sceneMap(field);
+    LIVE.forEach((k) => {
+      if (!Zoo.owns(k)) return;
+      const [x, y, w, h] = Zoo.info(k)[4];
+      const [lx, ty] = M.pct(x, y);
+      const el = H.el("div", { class: "prop prop-" + k, style: `left:${lx}%;top:${ty}%;width:${((w * M.sc) / M.W) * 100}%;height:${((h * M.sc) / M.Hh) * 100}%;z-index:${Math.round(ty)}`, html: Zoo.preview(k, true) });
+      field.append(el);
+      props[k] = { el, x: lx, y: ty, home: [lx, ty] };
     });
+  }
+  function kickBall(c) {
+    const b = props.ball; if (!b) return;
+    const nx = clampN(b.x + (Math.random() - 0.5) * 40, 2, 92), ny = clampN(b.y + (Math.random() - 0.5) * 20, 50, 92);
+    b.el.style.transition = "left 1.1s cubic-bezier(.2,.8,.3,1), top 1.1s cubic-bezier(.2,.8,.3,1)";
+    b.el.animate([{ transform: "rotate(0)" }, { transform: `rotate(${nx > b.x ? 540 : -540}deg)` }], { duration: 1100, easing: "cubic-bezier(.2,.8,.3,1)" });
+    b.el.style.left = nx + "%"; b.el.style.top = ny + "%"; b.el.style.zIndex = Math.round(ny);
+    b.x = nx; b.y = ny;
+    H.sfx.tone(300, 0.08, "sine", 0.12, 600);
+  }
+  function birdVisit() {
+    const b = props.vogel; if (!b || !Zoo.owns("meisen") || b.busy) return;
+    const field = b.el.parentElement; const M = sceneMap(field);
+    const [mx, my] = M.pct(472, 268);
+    b.busy = true;
+    const fly = (x, y, dur, done) => { b.el.classList.add("flying"); b.el.style.transition = `left ${dur}s ease-in-out, top ${dur}s ease-in-out`; b.el.style.left = x + "%"; b.el.style.top = y + "%"; setTimeout(() => { b.el.classList.remove("flying"); done(); }, dur * 1000); };
+    b.el.classList.toggle("flipx", mx < b.x);
+    fly(mx, my, 1.6, () => {
+      b.el.classList.add("pecking");
+      setTimeout(() => { b.el.classList.remove("pecking"); b.el.classList.toggle("flipx", false); fly(b.home[0], b.home[1], 1.6, () => (b.busy = false)); }, 3500);
+    });
+  }
+  function activityLoop() {
+    if (document.hidden || celebrating || typeof Zoo === "undefined") return;
+    const field = document.getElementById("zoo-pen");
+    if (!field || !field.clientWidth) return;
+    if (props.vogel && Math.random() < 0.35) birdVisit();
+    const keys = Object.keys(ACT).filter((k) => Zoo.owns(k)).concat(props.ball ? ["ball", "ball"] : []);
+    const free = inlineCtrls.filter((c) => c.a.isConnected && !c.busy && !c.guest);
+    if (!keys.length || !free.length) return;
+    const key = H.pick(keys), c = H.pick(free);
+    const M = sceneMap(field);
+    let tx, ty;
+    if (key === "ball") { tx = props.ball.x + (Math.random() < 0.5 ? -6 : 6); ty = props.ball.y + 4; }
+    else { const [ax, ay] = Zoo.anchorOf(key); [tx, ty] = M.pct(ax + (Math.random() - 0.5) * 60, ay + Math.random() * 20); }
+    const aw = (c.a.offsetWidth / M.W) * 100;
+    c.goTo(clampN(tx - aw / 2, 0, 94), clampN(ty, 46, 98), () => {
+      if (key === "ball") { kickBall(c); c.say("Fang!", 1800); }
+      else c.say(ACT[key], 2800);
+      setTimeout(() => (c.busy = false), 3200);
+    }, true);
   }
 
   function album(area) {
@@ -707,6 +803,7 @@ const Animals = (() => {
     btn.innerHTML = `<svg viewBox="0 0 40 30" width="30" height="22" aria-hidden="true"><g fill="#8a5a3b"><rect x="3" y="6" width="5" height="22" rx="2"/><rect x="17" y="6" width="5" height="22" rx="2"/><rect x="31" y="6" width="5" height="22" rx="2"/><rect x="0" y="11" width="40" height="4" rx="2"/><rect x="0" y="20" width="40" height="4" rx="2"/></g></svg><span>Gehege</span><span class="g-count"></span>`;
     btn.addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(500); openGehege(); });
     setTimeout(hideLoop, 2500); setTimeout(hideLoop, 6000); setInterval(hideLoop, 8000);
+    setInterval(activityLoop, 7500);
     document.body.append(btn);
     updateBtn();
     announceWaves();

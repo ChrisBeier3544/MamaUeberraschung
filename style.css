@@ -769,3 +769,76 @@ h1 { position: relative; z-index: 2; }
 .shop-grid.small { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 .shop-grid.small .shop-pic { height: 80px; }
 @media (max-width: 600px) { .pen-say { font-size: 11px; max-width: 130px; padding: 4px 7px; } }
+
+/* ================= Runde 7: Feinschliff ================= */
+/* Lichterkette nicht mehr abgeschnitten */
+#lights { height: 70px; }
+
+/* Kalles Sprechblase liegt über den Knöpfen */
+#capy-wrap { z-index: 9; }
+#capy-bubble { max-width: min(230px, 62vw); font-size: 14px; }
+
+/* Türchen als Päckchen */
+.door { z-index: 2; overflow: hidden; }
+.door-inside { z-index: 0; }
+.door::after { content: none; }
+.door .ribbon-v, .door .ribbon-h { position: absolute; background: rgba(255, 255, 255, .78); box-shadow: 0 0 0 2px rgba(255, 255, 255, .25); pointer-events: none; }
+.door .ribbon-v { top: 0; bottom: 0; left: 50%; width: 13%; transform: translateX(-50%); }
+.door .ribbon-h { left: 0; right: 0; top: 50%; height: 12%; transform: translateY(-50%); }
+.door .bow { position: absolute; top: 4%; left: 50%; width: 50%; transform: translateX(-50%); pointer-events: none; }
+.door .bow svg { width: 100%; display: block; }
+.door .num {
+  position: relative; z-index: 1; display: grid; place-items: center; width: 52%; aspect-ratio: 1; border-radius: 50%;
+  background: #fff; color: var(--ink); text-shadow: none; font-size: clamp(18px, 3.4vw, 30px); box-shadow: 0 3px 0 rgba(0, 0, 0, .12); margin-top: 14%;
+}
+.door .paw { position: absolute; left: 8%; bottom: 6%; width: 18%; color: #fff; opacity: .55; pointer-events: none; }
+.door .paw svg { width: 100%; display: block; }
+.door .lock { z-index: 1; }
+.door-inside .in-paw { width: 34%; color: #e7d5c8; }
+.door-inside .in-paw svg { width: 100%; display: block; }
+.modal-art { width: 110px; height: 78px; border-radius: 16px; overflow: hidden; box-shadow: 0 3px 0 #ead6c8; }
+
+/* Verstecke: echte Dahinter-Position, nichts wird abgeschnitten */
+.hider { position: absolute; pointer-events: none; z-index: 1; overflow: visible; }
+.hider.edge { overflow: hidden; }
+.hider .w-in { transform: none; animation: peekB 9s ease-in-out infinite; }
+.hider.edge .w-in { transform: translateY(105%); animation-name: peekA; }
+@keyframes peekB { 0%, 40% { transform: translate(0, 0); } 50%, 80% { transform: translate(var(--px), var(--py)); } 88%, 100% { transform: translate(0, 0); } }
+.door-wrap .hider, .modal-card .hider { z-index: 1; }
+#zoo, #calendar { z-index: 2; }
+.modal-story { position: relative; z-index: 2; }
+.shop-grid { position: relative; }
+.shop-card { position: relative; z-index: 2; }
+.g-tabs { position: relative; z-index: 2; }
+
+/* Bewegliche Figuren im Gehege */
+.prop { position: absolute; pointer-events: none; }
+.prop svg { display: block; }
+.prop-vogel.flipx svg { transform: scaleX(-1); }
+.prop-vogel.flying svg { animation: flapBird .18s ease-in-out infinite alternate; }
+.prop-vogel.pecking svg { animation: peck .45s ease-in-out infinite; transform-origin: 70% 80%; }
+@keyframes flapBird { from { transform: translateY(0) scaleY(1); } to { transform: translateY(-4px) scaleY(.85); } }
+.prop-vogel.flipx.flying svg { animation-name: flapBirdF; }
+@keyframes flapBirdF { from { transform: scaleX(-1) translateY(0); } to { transform: scaleX(-1) translateY(-4px) scaleY(.85); } }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(18deg); } }
+
+/* Shop mit Reitern */
+.shop-tabwrap { padding: 0 max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px)); }
+.shop-tabs { display: flex; flex-wrap: wrap; gap: 6px; background: #f3e4da; padding: 5px; border-radius: 18px; width: fit-content; max-width: 100%; }
+.shop-tabs .g-tab { display: inline-flex; align-items: center; gap: 6px; }
+.tab-n { background: var(--red); color: #fff; font-size: 12px; border-radius: 99px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.shop-card { background: #fff; border-radius: 18px; padding: 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 3px 0 #ead6c8; }
+.shop-card .shop-pic { height: 120px; }
+.shop-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.shop-info b { font-size: 17px; }
+.shop-buy { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shop-buy .btn { padding: 8px 14px; font-size: 15px; }
+.shop-buy .btn.btn-soft { font-size: 13px; }
+.shop-price { font-size: 17px; }
+.shop-grid.mini { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+.shop-grid.mini .shop-pic { height: 80px; }
+.shop-grid.mini .shop-buy, .shop-grid.mini small { display: none; }
+.shop-card.owned { opacity: 1; }
+.shop-empty { text-align: center; color: var(--ink-soft); font-size: 17px; padding: 30px 10px; }
+@media (max-width: 600px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .shop-card .shop-pic { height: 90px; } .shop-buy { flex-direction: column; align-items: stretch; } }

@@ -197,15 +197,19 @@ const App = (() => {
     const inside = el("div", { class: "door-inside" });
     const special = day === 24 ? "background:linear-gradient(135deg,#e85d75,#ffb84d)" : day > 24 ? "background:linear-gradient(135deg,#3b4f8a,#7b5fc4)" : null;
     const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: special },
+      el("span", { class: "ribbon-v" }), el("span", { class: "ribbon-h" }),
+      el("span", { class: "bow", html: BOW }),
       el("span", { class: "num", text: day }),
-      el("span", { class: "d-art", html: p.art && typeof Animals !== "undefined" ? Animals.svg(p.art, { fit: true }) : "" }),
-      el("span", { class: "knob" }));
+      el("span", { class: "paw", html: PAW }));
     const wrap = el("div", { class: "door-wrap" }, inside, door);
     door.addEventListener("click", (e) => { e.stopPropagation(); onDoor(day); });
     doors[day] = { wrap, door, inside };
     box.append(wrap);
     refreshDoor(day);
   }
+
+  const PAW = `<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="27" rx="9" ry="7.5" fill="currentColor"/><ellipse cx="9" cy="17" rx="3.6" ry="4.6" fill="currentColor"/><ellipse cx="16" cy="11" rx="3.6" ry="4.8" fill="currentColor"/><ellipse cx="24" cy="11" rx="3.6" ry="4.8" fill="currentColor"/><ellipse cx="31" cy="17" rx="3.6" ry="4.6" fill="currentColor"/></svg>`;
+  const BOW = `<svg viewBox="0 0 60 32" aria-hidden="true"><path d="M30 16 C18 0 4 4 8 14 C11 22 22 20 30 16Z" fill="#fff"/><path d="M30 16 C42 0 56 4 52 14 C49 22 38 20 30 16Z" fill="#fff"/><path d="M28 17 l-8 14 l6 -2 l2 4z M32 17 l8 14 l-6 -2 l-2 4z" fill="#f3f3f3"/><circle cx="30" cy="16" r="5" fill="#ffe08a"/></svg>`;
 
   function buildCalendar() {
     const cal = document.getElementById("calendar");
@@ -239,7 +243,7 @@ const App = (() => {
     d.inside.innerHTML = "";
     const st = typeof Zoo !== "undefined" && Zoo.STORY[day];
     if (solved && st) d.inside.append(el("div", { class: "in-item", html: Zoo.preview(st.item) }), el("div", { class: "in-check", text: "✓" }));
-    else d.inside.append(el("div", { class: "in-art", html: p.art ? Animals.svg(p.art, { fit: true }) : "" }));
+    else d.inside.append(el("div", { class: "in-paw", html: PAW }));
   }
 
   const T = (n) => `${n} ${n === 1 ? "Tag" : "Tage"}`;
@@ -259,6 +263,7 @@ const App = (() => {
       return;
     }
     sfx.boop(500 + day * 15);
+    if (typeof Animals !== "undefined") Animals.clearIn(d.wrap);
     d.door.classList.add("open");
     burstAt(d.door, ["✨", "⭐", "❄️"], 8, 70);
     setTimeout(() => openPuzzle(day), 450);
@@ -272,7 +277,8 @@ const App = (() => {
     currentDay = day;
     const p = puzzles[day];
     const m = document.getElementById("modal");
-    m.querySelector(".modal-art").innerHTML = p.art ? Animals.svg(p.art, { fit: true, walk: true }) : "";
+    const stItem = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    m.querySelector(".modal-art").innerHTML = stItem ? Zoo.preview(stItem.item) : "";
     m.querySelector(".modal-day").textContent = `Kapitel ${day} · ${day}. Dezember`;
     const story = typeof Zoo !== "undefined" && Zoo.STORY[day];
     const sb = m.querySelector(".modal-story");

@@ -178,6 +178,8 @@ const Zoo = (() => {
   const MID = ["briefkasten", "hoehle", "teddy", "kissen", "karussell", "futter", "spielplatz", "onsen", "wasserschale", "windrad", "teich", "eisbahn", "bruecke", "ball", "pilze", "statue", "strohballen", "zwerg", "vogelbad", "laternen"];
   const FRONT = ["feuer", "kerzen", "kakao", "iglu", "blumen", "holz", "giesskanne", "schild", "fotowand", "schneemann"];
 
+  const LIVE = ["ball", "vogel"]; // werden als bewegliche Figuren ins Gehege gesetzt (animals.js)
+
   function brokenFence() {
     const r = rnd(42);
     let o = "";
@@ -212,7 +214,7 @@ const Zoo = (() => {
     if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".85"/>`).join("");
     if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="800" cy="455" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="800" cy="453" rx="36" ry="7" fill="#a6b2b6"/>`;
     if (!o.has("baeume")) s += `<rect x="248" y="258" width="28" height="22" fill="#6b5a4a"/><ellipse cx="262" cy="258" rx="14" ry="4" fill="#8a7a66"/>`;
-    const g = (k) => (o.has(k) ? `<g class="zi${k === newKey ? " zi-new" : ""}">${DRAW[k]()}</g>` : "");
+    const g = (k) => (o.has(k) && !LIVE.includes(k) ? `<g class="zi${k === newKey ? " zi-new" : ""}">${DRAW[k]()}</g>` : "");
     BACK.forEach((k) => { s += k === "zaun" && !o.has("zaun") ? brokenFence() : g(k); });
     if (o.has("weg")) s += g("weg");
     MID.forEach((k) => (s += k === "teich" && o.has("eisbahn") ? "" : g(k)));
@@ -223,9 +225,10 @@ const Zoo = (() => {
     return `<svg class="zoo-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}</svg>`;
   }
 
-  function preview(key) {
+  function preview(key, bare) {
     const it = info(key); const [x, y, w, h] = it[4];
-    return `<svg viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"><rect x="${x - 50}" y="${y - 50}" width="${w + 100}" height="${h + 100}" fill="${key === "feuerwerk" ? "#1d2b52" : "#e9f5e2"}"/>${DRAW[key]()}</svg>`;
+    const bg = bare ? "" : `<rect x="${x - 50}" y="${y - 50}" width="${w + 100}" height="${h + 100}" fill="${key === "feuerwerk" ? "#1d2b52" : "#e9f5e2"}"/>`;
+    return `<svg viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;overflow:visible">${bg}${DRAW[key]()}</svg>`;
   }
 
   /* ---------- UI ---------- */
@@ -280,28 +283,43 @@ const Zoo = (() => {
     document.addEventListener("keydown", esc);
     const coinsEl = H.el("div", { class: "coins big", html: `${coinSvg}<b>${st.coins}</b> Taler` });
     const area = H.el("div", { class: "g-area" });
-    ov.append(H.el("div", { class: "g-head" }, H.el("div", {}, H.el("h2", { text: "Gehege-Shop" }), H.el("div", { class: "g-sub", text: "Neue Teile werden mit jedem Türchen freigeschaltet." })), coinsEl,
-      H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), area);
-    const card = (it, extra) => {
+    const card = (it) => {
       const [key, name, price, desc] = it;
-      const d = dayOfItem(key), has = owns(key), av = available(key), afford = st.coins >= price;
-      const btn = H.el("button", { class: "btn" + (has ? " btn-soft" : ""), text: has ? "Im Gehege ✓" : !av ? `Ab Türchen ${d}` : `Kaufen · ${price} T` });
-      btn.disabled = has || !av || !afford;
-      if (av && !has && !afford) btn.title = "Noch nicht genug Taler";
+      const has = owns(key), afford = st.coins >= price;
+      const btn = H.el("button", { class: "btn" + (afford ? "" : " btn-soft"), text: has ? "Im Gehege ✓" : afford ? "Kaufen" : `Noch ${price - st.coins} Taler` });
+      btn.disabled = has || !afford;
       btn.onclick = () => { if (buy(key)) close(); };
-      return H.el("div", { class: "shop-card" + (has ? " owned" : "") + (!av ? " locked" : "") + (key === highlight ? " hl" : "") },
-        H.el("div", { class: "shop-pic", html: av || has ? preview(key) : `<div class="shop-lock">?</div>` }),
-        H.el("b", { text: av || has ? name : "Überraschung" }), H.el("small", { text: av || has ? desc : `Kommt mit Türchen ${d}` }),
-        H.el("div", { class: "shop-price", html: has ? "" : `${coinSvg}<span>${price}</span>` }), btn);
+      return H.el("div", { class: "shop-card" + (has ? " owned" : "") + (key === highlight ? " hl" : "") },
+        H.el("div", { class: "shop-pic", html: preview(key) }),
+        H.el("div", { class: "shop-info" }, H.el("b", { text: name }), H.el("small", { text: desc })),
+        H.el("div", { class: "shop-buy" }, has ? null : H.el("div", { class: "shop-price", html: `${coinSvg}<span>${price}</span>` }), btn));
     };
-    const todayKeys = ITEMS.filter(([k]) => available(k) && !owns(k));
-    if (todayKeys.length) area.append(H.el("h3", { text: "Kann sofort ins Gehege" }), H.el("div", { class: "shop-grid" }, ...todayKeys.map((i) => card(i))));
-    area.append(H.el("h3", { text: "Kleinigkeiten für zwischendurch" }), H.el("div", { class: "shop-grid small" }, ...SMALL.map((i) => card(i, true))));
-    area.append(H.el("h3", { text: "Extras zum Verschönern" }), H.el("div", { class: "shop-grid" }, ...EXTRAS.map((i) => card(i, true))));
-    area.append(H.el("h3", { text: "Alle Verbesserungen der Geschichte" }), H.el("div", { class: "shop-grid" }, ...visibleItems().filter(([k]) => !todayKeys.some((t) => t[0] === k)).map((i) => card(i))));
+    const vis = visibleItems();
+    const TABS = [
+      ["neu", "Neu freigeschaltet", vis.filter(([k]) => available(k) && !owns(k)), "Gerade gibt es kein neues Teil aus der Geschichte. Mit dem nächsten Türchen kommt wieder etwas dazu!"],
+      ["klein", "Kleinigkeiten", SMALL.filter(([k]) => !owns(k)), "Alle Kleinigkeiten stehen schon im Gehege."],
+      ["extras", "Extras", EXTRAS.filter(([k]) => !owns(k)), "Alle Extras stehen schon im Gehege."],
+      ["gehege", "Schon im Gehege", ALL.filter(([k]) => owns(k)), "Noch ist nichts gekauft – leg los!"],
+    ];
+    const tabBar = H.el("div", { class: "shop-tabs", role: "tablist" });
+    const show = (id) => {
+      const [, , list, emptyText] = TABS.find((t) => t[0] === id);
+      tabBar.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.t === id));
+      if (typeof Animals !== "undefined") Animals.clearIn(area);
+      area.innerHTML = "";
+      area.append(list.length ? H.el("div", { class: "shop-grid" + (id === "gehege" ? " mini" : "") }, ...list.map(card)) : H.el("p", { class: "shop-empty", text: emptyText }));
+      if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
+    };
+    TABS.forEach(([id, label, list]) => {
+      const b = H.el("button", { class: "g-tab", role: "tab", "data-t": id }, label, id !== "gehege" && list.length ? H.el("span", { class: "tab-n", text: list.length }) : null);
+      b.onclick = () => { H.sfx.tick(); show(id); };
+      tabBar.append(b);
+    });
+    ov.append(H.el("div", { class: "g-head" }, H.el("div", {}, H.el("h2", { text: "Gehege-Shop" })), coinsEl,
+      H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), H.el("div", { class: "shop-tabwrap" }, tabBar), area);
     document.body.append(ov); document.body.style.overflow = "hidden";
-    if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
-    setTimeout(() => ov.querySelector(".shop-card.hl")?.scrollIntoView({ block: "center", behavior: "smooth" }), 150);
+    const start = highlight ? (SMALL.some((i) => i[0] === highlight) ? "klein" : EXTRAS.some((i) => i[0] === highlight) ? "extras" : owns(highlight) ? "gehege" : "neu") : TABS[0][2].length ? "neu" : "klein";
+    show(start);
   }
 
   function letter(title, msg, fireworks) {
@@ -324,5 +342,5 @@ const Zoo = (() => {
     refresh();
   }
 
-  return { STORY, ITEMS, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, coins: () => st.coins, owns };
+  return { STORY, ITEMS, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();
