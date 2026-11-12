@@ -195,7 +195,7 @@ const App = (() => {
   function makeDoor(day, i, box) {
     const p = puzzles[day] || {};
     const inside = el("div", { class: "door-inside" });
-    const special = day === 24 ? "background:linear-gradient(135deg,#e85d75,#ffb84d)" : day > 24 ? "background:linear-gradient(135deg,#3b4f8a,#7b5fc4)" : null;
+    const special = day === 24 ? "background:linear-gradient(150deg,#c9a04a,#8e2d3b)" : day > 24 ? "background:linear-gradient(160deg,#3c5a8a,#22314f)" : null;
     const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: special },
       el("span", { class: "ribbon-v" }), el("span", { class: "ribbon-h" }),
       el("span", { class: "bow", html: BOW }),
@@ -349,9 +349,10 @@ const App = (() => {
   function buildTitle() {
     const h = document.getElementById("title");
     const words = ["Mamas", "tierischer", "Adventskalender"];
+    h.classList.add("title-serif");
     let k = 0;
     words.forEach((w, wi) => {
-      const ws = el("span", { class: "t-word" + (wi === 1 ? " t-green" : "") });
+      const ws = el("span", { class: "t-word" + (wi === 1 ? " t-accent" : "") + (wi === 2 ? " t-break" : "") });
       [...w].forEach((ch) => {
         const s = el("span", { class: "t-letter", text: ch, "aria-hidden": "true" });
         const f = 330 + (k++ % 12) * 40;
@@ -370,7 +371,7 @@ const App = (() => {
   }
 
   /* ---------- Deko: Lichterkette ---------- */
-  const BULB_COLORS = ["#ff5a7a", "#ffcf3f", "#4fd18b", "#58b6ff", "#c77dff", "#ff9a3c"];
+  const BULB_COLORS = ["#ffe7a3", "#ffd27a", "#fff3cf", "#f6c25b"];
   function buildLights() {
     const box = document.getElementById("lights");
     box.innerHTML = "";
@@ -446,8 +447,8 @@ const App = (() => {
       c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { Object.keys(localStorage).filter((k) => k.startsWith("mama-")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} location.reload(); } }));
       c.append(" ", el("a", { href: "test.html", class: "btn btn-soft", text: "📅 Testzentrale", style: "padding:4px 10px;font-size:14px;text-decoration:none;display:inline-block" }));
     }
-    else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen! 🐾`; }
-    else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> – Kapitel ${t} wartet auf dich! 🎁`;
+    else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen`; }
+    else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> · Kapitel ${t} wartet auf dich`;
     else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖";
     else c.innerHTML = "Frohes neues Jahr! 🎆";
   }
@@ -462,8 +463,17 @@ const App = (() => {
     if (typeof Games !== "undefined") Games.init();
     if (typeof Extras !== "undefined") Extras.init();
     const st = document.getElementById("sound-toggle");
-    st.textContent = soundOn ? "🔔" : "🔕";
-    st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; st.textContent = soundOn ? "🔔" : "🔕"; try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });
+    const SND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const SND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+    st.classList.add("nav-icon"); st.title = "Ton an/aus";
+    const setSnd = () => { st.innerHTML = soundOn ? SND_ON : SND_OFF; st.classList.toggle("off", !soundOn); };
+    // Navigationsleiste: alle Knöpfe an einem Ort
+    const navA = document.getElementById("nav-actions"), navI = document.getElementById("nav-icons");
+    const gb = document.getElementById("gehege-btn");
+    if (navA && gb) { gb.classList.add("nav-btn"); navA.prepend(gb); }
+    if (navI) navI.append(st);
+    setSnd();
+    st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; setSnd(); try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });
     const m = document.getElementById("modal");
     m.querySelector(".modal-close").addEventListener("click", closeModal);
     m.addEventListener("click", (e) => { if (e.target === m) closeModal(); });

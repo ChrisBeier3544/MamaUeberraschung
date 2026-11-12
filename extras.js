@@ -83,7 +83,7 @@ const Extras = (() => {
     svg += `</svg>`;
     const el = H.el("button", { id: "wreath", class: "wreath", title: lit ? `${lit}. Advent` : "Bald ist der 1. Advent", html: svg });
     el.addEventListener("click", (e) => { e.stopPropagation(); H.burstAt(el, ["✨", "⭐"], 10, 60); [784, 988, 1175, 1568].slice(0, Math.max(1, lit)).forEach((f, i) => H.sfx.tone(f, 0.6, "sine", 0.12, null, i * 0.18)); H.toast(lit ? `Heute brennen ${lit === 1 ? "eine Kerze" : lit + " Kerzen"} – ${lit}. Advent.` : "Am 29. November wird die erste Kerze angezündet."); });
-    document.getElementById("countdown").before(el);
+    (document.getElementById("hero-art") || document.getElementById("countdown")).append(el);
   }
 
   /* ================= Tier des Tages ================= */
@@ -245,8 +245,14 @@ const Extras = (() => {
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Aufgabe des Tages" }), H.el("b", { text: `${task.reward} Taler Belohnung` }))), H.el("p", { text: task.text }), H.el("div", { class: "zp-bar" }, H.el("div", { style: `width:${(have / task.goal) * 100}%` })), claim),
       (() => { const ds = memDays(); const d = ds.includes(dayNum()) ? dayNum() : ds[ds.length - 1]; if (!d) return null;
         return H.el("div", { class: "today-card mem-card-today" }, H.el("small", { text: "Erinnerung des Tages" }), memPola(d, (e) => { e.stopPropagation(); showMemory(d); }), H.el("button", { class: "btn btn-soft", text: "Alle Erinnerungen", onclick: (e) => { e.stopPropagation(); openMemories(); } })); })(),
-      H.el("div", { class: "today-card small" }, H.el("small", { text: "Heute im Gehege" }), H.el("b", { text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }), H.el("button", { class: "btn btn-soft badge-btn", text: "Abzeichen", onclick: (e) => { e.stopPropagation(); openBadges(); } }),
-        dayNum() >= 31 && App.isSolved(31) ? H.el("button", { class: "btn", text: "Jahresrückblick", onclick: (e) => { e.stopPropagation(); review(); } }) : null));
+    );
+    // Wetter & Rückblick stehen klein in der Kopfzeile des Abschnitts
+    const meta = document.getElementById("today-meta");
+    if (meta) {
+      meta.innerHTML = "";
+      meta.append(H.el("span", { class: "meta-chip", text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }));
+      if (dayNum() >= 31 && App.isSolved(31)) meta.append(H.el("button", { class: "nav-btn primary", text: "Jahresrückblick", onclick: (e) => { e.stopPropagation(); review(); } }));
+    }
   }
 
   /* ================= Zufallsereignisse ================= */
@@ -390,21 +396,47 @@ const Extras = (() => {
   function santa() {
     if (document.querySelector(".gehege-overlay, .finale-overlay, .pola-wrap, .post-run, .gift-parcel") || !document.getElementById("modal").classList.contains("hidden")) { setTimeout(santa, 5000); return; }
     st.santa = true; save();
+    // Gespann: vorne zwei Rentier-Hunde, dahinter an Zügeln der Schlitten (Flugrichtung: nach rechts)
     const fly = H.el("div", { class: "santa-fly" });
-    const deer = Animals.svg({ sp: "hund", col: 2, acc: "geweih" }, { walk: true, width: 70 });
-    fly.innerHTML = `<div class="sleigh"><svg viewBox="0 0 160 90" aria-hidden="true"><path d="M10 60 Q20 80 60 78 L130 78 Q150 78 152 64" stroke="#d9a521" stroke-width="5" fill="none"/><path d="M20 30 L120 30 L132 64 L28 64 Q14 64 16 48z" fill="#d93a4a"/><path d="M20 30 L120 30" stroke="#ffd84d" stroke-width="4"/><circle cx="70" cy="18" r="14" fill="#d93a4a"/><circle cx="70" cy="14" r="9" fill="#f5d0b5"/><path d="M60 18 Q70 34 80 18z" fill="#fff"/><path d="M60 10 L70 -6 L82 10z" fill="#d93a4a"/><circle cx="70" cy="-6" r="3.5" fill="#fff"/><rect x="58" y="8" width="24" height="4" rx="2" fill="#fff"/><rect x="92" y="14" width="22" height="18" fill="#58b6ff"/><rect x="100" y="14" width="5" height="18" fill="#fff"/></svg></div><div class="deer">${deer}</div><div class="deer">${deer}</div>`;
+    const deerW = Math.min(76, innerWidth * 0.14), sleighW = Math.min(150, innerWidth * 0.3);
+    const deer = Animals.svg({ sp: "hund", col: 2, acc: "geweih" }, { walk: true, width: deerW });
+    fly.innerHTML = `<svg class="reins" aria-hidden="true"></svg>
+      <div class="sleigh" style="width:${sleighW}px"><svg viewBox="0 -14 160 104" aria-hidden="true">
+        <path d="M6 72 Q10 86 40 86 L136 86 Q152 86 156 70" stroke="#c9a04a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M40 86 v-12 M120 86 v-12" stroke="#c9a04a" stroke-width="4"/>
+        <path d="M14 30 L118 30 Q140 30 144 52 L146 74 L24 74 Q8 74 10 52z" fill="#8e2d3b"/>
+        <path d="M14 30 L118 30" stroke="#c9a04a" stroke-width="4"/><path d="M24 64 h118" stroke="#c9a04a" stroke-width="2.5" opacity=".7"/>
+        <rect x="20" y="10" width="22" height="20" rx="2" fill="#2f5d4a"/><rect x="29" y="10" width="4" height="20" fill="#c9a04a"/>
+        <rect x="40" y="16" width="18" height="14" rx="2" fill="#c9a04a"/><rect x="47" y="16" width="4" height="14" fill="#fff6d0"/>
+        <circle cx="92" cy="20" r="15" fill="#b3333f"/><circle cx="96" cy="8" r="9" fill="#f5d0b5"/><path d="M86 12 Q96 30 106 12z" fill="#fff"/>
+        <path d="M86 4 L94 -12 L106 4z" fill="#b3333f"/><circle cx="94" cy="-12" r="3.5" fill="#fff"/><rect x="85" y="2" width="22" height="4" rx="2" fill="#fff"/>
+        <path d="M104 22 l16 2" stroke="#f5d0b5" stroke-width="5" stroke-linecap="round"/>
+      </svg></div>
+      <div class="deer d1">${deer}</div><div class="deer d2">${deer}</div>`;
     document.body.append(fly);
+    // Zügel: von der Hand des Weihnachtsmanns zu beiden Hunden
+    const drawReins = () => {
+      const fr = fly.getBoundingClientRect(), sr = fly.querySelector(".sleigh").getBoundingClientRect();
+      const hand = [sr.left - fr.left + sr.width * 0.75, sr.top - fr.top + sr.height * 0.33];
+      const necks = [...fly.querySelectorAll(".deer")].map((d) => { const r = d.getBoundingClientRect(); return [r.left - fr.left + r.width * 0.62, r.top - fr.top + r.height * 0.62]; });
+      const svgR = fly.querySelector(".reins");
+      svgR.setAttribute("viewBox", `0 0 ${fr.width} ${fr.height}`);
+      svgR.innerHTML = necks.map(([x, y]) => `<path d="M${hand[0]} ${hand[1]} Q${(hand[0] + x) / 2} ${Math.max(hand[1], y) + 10} ${x} ${y}" stroke="#7a4a2a" stroke-width="2.2" fill="none"/>`).join("") +
+        `<path d="M${necks[0][0]} ${necks[0][1]} L${necks[1][0]} ${necks[1][1]}" stroke="#c9a04a" stroke-width="2" fill="none"/>` +
+        necks.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="#c9a04a"/>`).join("");
+    };
+    requestAnimationFrame(drawReins);
     H.sfx.jingle(); H.toast("Ho ho ho! Der Weihnachtsmann fliegt übers Gehege!", 4000);
     const field = document.getElementById("zoo-pen");
-    field?.scrollIntoView({ behavior: "smooth", block: "center" });
-    fly.animate([{ transform: `translateX(-420px) translateY(0)` }, { transform: `translateX(${innerWidth * 0.5}px) translateY(-20px)` }, { transform: `translateX(${innerWidth + 60}px) translateY(10px)` }], { duration: 9000, easing: "linear", fill: "forwards" }).onfinish = () => fly.remove();
+    fly.animate([{ transform: `translateX(${-fly.offsetWidth - 40}px) translateY(0)` }, { transform: `translateX(${innerWidth * 0.45}px) translateY(-18px)` }, { transform: `translateX(${innerWidth + 40}px) translateY(8px)` }], { duration: 10000, easing: "linear", fill: "forwards" }).onfinish = () => fly.remove();
     // Geschenke fallen ins Gehege
     const owned = [...new Set(Animals.VARIANTS.filter((v) => Animals.isFound(v.id)).map((v) => v.sp))];
     for (let i = 0; i < 8; i++) setTimeout(() => {
-      const r = fly.querySelector(".sleigh").getBoundingClientRect(); if (!r.width) return;
+      const r = fly.querySelector(".sleigh").getBoundingClientRect(); if (!r.width || r.left < 0 || r.right > innerWidth) return;
       const g = H.el("div", { class: "santa-gift", html: `<svg viewBox="0 0 20 20"><rect x="2" y="6" width="16" height="13" fill="${["#e85d75", "#58b6ff", "#ffd84d", "#4fae7f"][i % 4]}"/><rect x="8.5" y="6" width="3" height="13" fill="#fff"/><rect x="1" y="4" width="18" height="4" fill="#fff" opacity=".9"/></svg>`, style: `left:${r.left + r.width * 0.6}px;top:${r.top + r.height * 0.6}px` });
       document.getElementById("fx").append(g);
-      const fr = field ? field.getBoundingClientRect() : { left: 0, width: innerWidth, top: innerHeight * 0.6, height: 100 };
+      let fr = field ? field.getBoundingClientRect() : null;
+      if (!fr || fr.bottom < 80 || fr.top > innerHeight - 80) fr = { left: 0, width: innerWidth, top: innerHeight * 0.55, height: innerHeight * 0.4 };
       const tx = fr.left + fr.width * (0.1 + Math.random() * 0.8) - (r.left + r.width * 0.6), ty = fr.top + fr.height * (0.55 + Math.random() * 0.35) - (r.top + r.height * 0.6);
       g.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${tx}px, ${ty}px) rotate(${Math.random() * 360}deg)` }], { duration: 1600, easing: "cubic-bezier(.5,0,.8,.6)", fill: "forwards" }).onfinish = () => { H.burst(r.left + r.width * 0.6 + tx, r.top + r.height * 0.6 + ty, ["✨", "⭐"], 6, 40); g.remove(); };
     }, 2000 + i * 650);
@@ -487,7 +519,11 @@ const Extras = (() => {
     // Spieluhr-Knopf
     const mb = H.el("button", { id: "music-toggle", class: "music-toggle" + (st.music ? "" : " off"), title: "Spieluhr an/aus", text: "♪" });
     mb.addEventListener("click", (e) => { e.stopPropagation(); music(!st.music); H.toast(st.music ? "Die Spieluhr spielt." : "Die Spieluhr ist aus."); });
-    document.body.append(mb);
+    const icons = document.getElementById("nav-icons");
+    const bb = H.el("button", { class: "nav-icon badge-btn", title: "Abzeichen", "aria-label": "Abzeichen", html: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>` });
+    bb.addEventListener("click", (e) => { e.stopPropagation(); openBadges(); });
+    mb.classList.add("nav-icon"); mb.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg>`;
+    if (icons) icons.append(bb, mb); else document.body.append(mb);
     if (st.music) { const once = () => { music(true); document.removeEventListener("pointerdown", once); }; document.addEventListener("pointerdown", once); }
     wreath();
     renderToday();

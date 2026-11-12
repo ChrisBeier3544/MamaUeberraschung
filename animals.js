@@ -509,7 +509,6 @@ const Animals = (() => {
     () => behind(document.getElementById("zoo"), { w: small() ? 56 : 78 }),
     () => behind(document.getElementById("calendar"), { w: small() ? 56 : 76 }),
     () => [document.body, `position:fixed;left:${small() ? 30 : 46}px;bottom:${small() ? 34 : 44}px;z-index:5`, { w: small() ? 44 : 60 }],
-    () => { const b = document.getElementById("gehege-btn"); if (!b) return null; const r = b.getBoundingClientRect(); return [document.body, `position:fixed;left:${Math.round(r.left + r.width * rnd01(0.15, 0.6))}px;top:${Math.round(r.top + 4)}px;z-index:6`, { w: 32 }]; },
     () => [document.body, `position:fixed;left:0;top:${Math.round(innerHeight * rnd01(0.25, 0.65))}px;transform-origin:0 0;z-index:6`, { edge: "left", w: small() ? 50 : 66 }],
     () => [document.body, `position:fixed;top:${Math.round(innerHeight * rnd01(0.2, 0.6))}px;transform-origin:0 0;z-index:6`, { edge: "right", w: small() ? 50 : 66 }],
   ];

@@ -38,7 +38,7 @@
   addEventListener("DOMContentLoaded", () => {
     const st = document.createElement("style");
     st.textContent = `
-      #testbar { position: fixed; left: 0; right: 0; top: 0; z-index: 1000; background: #2b2140; color: #fff; font: 600 14px Fredoka, Arial, sans-serif;
+      #testbar { position: fixed; left: 0; right: 0; top: 0; z-index: 1000; background: #2b2140; color: #fff; font: 600 14px DM Sans, Arial, sans-serif;
         display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 6px max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px)); box-shadow: 0 2px 10px rgba(0,0,0,.3); }
       #testbar b { color: #ffd84d; }
       #testbar button, #testbar input { font: inherit; border: none; border-radius: 8px; padding: 5px 9px; cursor: pointer; }
@@ -47,7 +47,7 @@
       #testbar input { background: #fff; color: #2b2140; padding: 3px 6px; }
       #testbar .grow { flex: 1; }
       #testbar .tb-toggle { background: #ffd84d; color: #2b2140; font-weight: 700; }
-      #testbar.collapsed { left: auto; right: max(10px, env(safe-area-inset-right, 0px)); top: max(8px, env(safe-area-inset-top, 0px)); padding: 4px; border-radius: 12px; opacity: .85; }
+      #testbar.collapsed { left: 50%; right: auto; top: auto; bottom: max(8px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 115; padding: 3px; border-radius: 12px; opacity: .8; }
       #testbar.collapsed:hover { opacity: 1; }
       #testbar.collapsed > :not(.tb-toggle) { display: none; }
 `;

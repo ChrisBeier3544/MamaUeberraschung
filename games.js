@@ -136,7 +136,7 @@ const Games = (() => {
       if (ba) { ctx.strokeStyle = `rgba(60,40,50,${0.7 * ba})`; ctx.lineWidth = 2; for (const bd of birds) { bd.x += bd.v * dt; if (bd.x > W + 30) bd.x = -30; const f = Math.sin(tt * 8 + bd.y) * 4; ctx.beginPath(); ctx.moveTo(bd.x - 9, bd.y - f); ctx.quadraticCurveTo(bd.x - 4, bd.y - 6, bd.x, bd.y); ctx.quadraticCurveTo(bd.x + 4, bd.y - 6, bd.x + 9, bd.y - f); ctx.stroke(); } }
       const st = STAGES.find(([n]) => stack.length - 1 === n && (!banner || banner.n !== n));
       if (st) { banner = { n: st[0], text: st[1], t: 2.2 }; H.sfx.tone(988, 0.3, "sine", 0.12); }
-      if (banner && banner.t > 0) { banner.t -= dt; ctx.globalAlpha = clamp01(banner.t); ctx.fillStyle = lv > 18 ? "#fff6d0" : "#5a3b2e"; ctx.font = "700 30px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(banner.text, W / 2, Hh * 0.32); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
+      if (banner && banner.t > 0) { banner.t -= dt; ctx.globalAlpha = clamp01(banner.t); ctx.fillStyle = lv > 18 ? "#fff6d0" : "#5a3b2e"; ctx.font = "700 30px DM Sans, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(banner.text, W / 2, Hh * 0.32); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
     };
     const BW = 600;
     const baleImg = layer(BW, bh, dpr, (x) => {
@@ -177,8 +177,8 @@ const Games = (() => {
       draw(ctx, sheep, top.x + top.w / 2 - sw / 2, topY(stack.length - 1) - sh + 4, sw, sh);
       if (!done) bale(cur.x, topY(stack.length) - bh * 1.2, cur.w);
       ctx.restore();
-      if (perfectT > 0) { perfectT -= dt; ctx.globalAlpha = Math.max(0, Math.min(1, perfectT * 2)); ctx.fillStyle = "#e85d75"; ctx.font = "700 28px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(combo > 1 ? `Perfekt! ×${combo}` : "Perfekt!", W / 2, Hh * 0.2); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
-      ctx.fillStyle = lv > 18 ? "#fff6d0" : "#5a3b2e"; ctx.font = "700 24px Fredoka, Arial, sans-serif"; ctx.fillText(`${score}`, 16, 34);
+      if (perfectT > 0) { perfectT -= dt; ctx.globalAlpha = Math.max(0, Math.min(1, perfectT * 2)); ctx.fillStyle = "#e85d75"; ctx.font = "700 28px DM Sans, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(combo > 1 ? `Perfekt! ×${combo}` : "Perfekt!", W / 2, Hh * 0.2); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
+      ctx.fillStyle = lv > 18 ? "#fff6d0" : "#5a3b2e"; ctx.font = "700 24px DM Sans, Arial, sans-serif"; ctx.fillText(`${score}`, 16, 34);
     });
     return () => { stopLoop(); cv.removeEventListener("pointerdown", pd); document.removeEventListener("keydown", kd); };
   }
@@ -236,8 +236,8 @@ const Games = (() => {
         if (b.who) draw(ctx, b.who === "coon" ? coon : kalle, b.cx - sw / 2, b.by - binH - sh * 1.0 * b.up + sh * 0.12, sw, sh);
         ctx.drawImage(can, b.cx - binW * 0.6, b.by - binH - 10, binW * 1.2, binH + 12);
       }
-      if (msg && msg.t > 0) { msg.t -= dt; ctx.globalAlpha = Math.max(0, Math.min(1, msg.t * 2)); ctx.fillStyle = "#fff"; ctx.font = "700 20px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(msg.text, msg.x, msg.y); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
-      ctx.fillStyle = "#fff"; ctx.font = "700 24px Fredoka, Arial, sans-serif"; ctx.fillText(`${score}`, 16, 36);
+      if (msg && msg.t > 0) { msg.t -= dt; ctx.globalAlpha = Math.max(0, Math.min(1, msg.t * 2)); ctx.fillStyle = "#fff"; ctx.font = "700 20px DM Sans, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(msg.text, msg.x, msg.y); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
+      ctx.fillStyle = "#fff"; ctx.font = "700 24px DM Sans, Arial, sans-serif"; ctx.fillText(`${score}`, 16, 36);
       for (let i = 0; i < 5; i++) { ctx.fillStyle = i < cookies ? "#d9a05c" : "rgba(255,255,255,.25)"; ctx.beginPath(); ctx.arc(W - 24 - i * 28, 28, 11, 0, 7); ctx.fill(); }
     });
     return () => { stopLoop(); cv.removeEventListener("pointerdown", pd); };
@@ -354,9 +354,9 @@ const Games = (() => {
       ctx.save(); ctx.translate(px + pw / 2, y + ph / 2); ctx.rotate(onGround ? 0 : jumps === 2 ? (t * 12) % (Math.PI * 2) : -0.2);
       if (shield || shieldT > 0) { ctx.fillStyle = `rgba(120,190,255,${shieldT > 0 ? 0.25 + Math.sin(t * 30) * 0.2 : 0.3})`; ctx.beginPath(); ctx.arc(0, 0, ph * 0.75, 0, 7); ctx.fill(); }
       draw(ctx, shield ? shieldP : peng, -pw / 2, -ph / 2, pw, ph); ctx.restore();
-      pops = pops.filter((q) => { q.t -= dt; q.y -= 40 * dt; ctx.globalAlpha = clamp01(q.t * 1.5); ctx.fillStyle = q.col; ctx.font = "700 18px Fredoka, Arial, sans-serif"; ctx.fillText(q.text, q.x, q.y); ctx.globalAlpha = 1; return q.t > 0; });
-      if (banner && banner.t > 0) { banner.t -= dt; ctx.globalAlpha = clamp01(banner.t); ctx.fillStyle = nightA > 0.5 ? "#fff6d0" : "#3b4f8a"; ctx.font = "700 26px Fredoka, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(banner.text, W / 2, Hh * 0.16); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
-      ctx.fillStyle = nightA > 0.5 ? "#fff6d0" : "#3b4f8a"; ctx.font = "700 24px Fredoka, Arial, sans-serif"; ctx.fillText(`${score()}`, 16, 34);
+      pops = pops.filter((q) => { q.t -= dt; q.y -= 40 * dt; ctx.globalAlpha = clamp01(q.t * 1.5); ctx.fillStyle = q.col; ctx.font = "700 18px DM Sans, Arial, sans-serif"; ctx.fillText(q.text, q.x, q.y); ctx.globalAlpha = 1; return q.t > 0; });
+      if (banner && banner.t > 0) { banner.t -= dt; ctx.globalAlpha = clamp01(banner.t); ctx.fillStyle = nightA > 0.5 ? "#fff6d0" : "#3b4f8a"; ctx.font = "700 26px DM Sans, Arial, sans-serif"; ctx.textAlign = "center"; ctx.fillText(banner.text, W / 2, Hh * 0.16); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
+      ctx.fillStyle = nightA > 0.5 ? "#fff6d0" : "#3b4f8a"; ctx.font = "700 24px DM Sans, Arial, sans-serif"; ctx.fillText(`${score()}`, 16, 34);
     });
     return () => { stopLoop(); document.removeEventListener("keydown", kd); cv.removeEventListener("pointerdown", pd); };
   }

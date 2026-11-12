@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Mamas tierischer Adventskalender</title>
-  <meta name="theme-color" content="#ffe9d6">
+  <meta name="theme-color" content="#1f3d33">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -13,43 +13,62 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="test.js"></script>
 </head>
 <body>
   <div id="snow" aria-hidden="true"></div>
 
-  <!-- Lichterkette -->
-  <div id="lights" aria-hidden="true"></div>
-
-  <header>
-    <h1 id="title" aria-label="Mamas tierischer Adventskalender"></h1>
-    <p class="subtitle">Hilf den Tieren, ihr Gehege in ein Winterparadies zu verwandeln <span id="title-heart">💖</span></p>
-    <div id="countdown"></div>
+  <header id="hero">
+    <div id="lights" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="eyebrow">Advent 2026 <span class="eyebrow-long"><span class="dot">·</span> Eine Geschichte in 31 Kapiteln</span> <span id="title-heart" title="?">♥</span></p>
+        <h1 id="title" aria-label="Mamas tierischer Adventskalender"></h1>
+        <p class="subtitle">Hilf den Tieren, ihr Gehege in ein Winterparadies zu verwandeln.</p>
+        <div id="countdown"></div>
+      </div>
+      <div class="hero-art" id="hero-art"></div>
+    </div>
   </header>
 
-  <main>
-    <section id="zoo" aria-label="Das Gehege">
-      <div class="zoo-bar">
-        <div class="coins"><span id="coin-icon"></span><b id="coin-count">0</b><span>Taler</span></div>
-        <div class="zoo-progress" id="zoo-progress"></div>
-        <button id="hunger-pill" class="hunger-pill hidden"></button>
-        <button id="games-btn" class="btn btn-green">Spiele</button>
-        <button id="shop-btn" class="btn">Shop</button>
+  <nav id="topnav" aria-label="Navigation">
+    <div class="nav-inner">
+      <span class="nav-brand">Mamas Gehege</span>
+      <div class="coins" title="Deine Taler"><span id="coin-icon"></span><b id="coin-count">0</b><span class="coins-label">Taler</span></div>
+      <span class="nav-spacer"></span>
+      <button id="hunger-pill" class="hunger-pill hidden"></button>
+      <div class="nav-actions" id="nav-actions">
+        <button id="games-btn" class="nav-btn">Spiele</button>
+        <button id="shop-btn" class="nav-btn primary">Shop</button>
       </div>
-      <div id="zoo-pen" class="pen inline"></div>
+      <div class="nav-icons" id="nav-icons"></div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="block" id="block-zoo">
+      <div class="block-head"><h2>Dein Gehege</h2><div class="zoo-progress" id="zoo-progress"></div></div>
+      <div id="zoo"><div id="zoo-pen" class="pen inline"></div></div>
     </section>
 
-    <section id="today" aria-label="Heute im Gehege"></section>
+    <section class="block" id="block-today">
+      <div class="block-head"><h2>Heute</h2><div class="block-meta" id="today-meta"></div></div>
+      <div id="today" aria-label="Heute im Gehege"></div>
+    </section>
 
-    <section id="calendar" aria-label="Adventskalender"></section>
+    <section class="block" id="block-calendar">
+      <div class="block-head"><h2>Der Adventskalender</h2><span class="block-sub">Jeden Tag ein neues Kapitel</span></div>
+      <div id="calendar" aria-label="Adventskalender"></div>
+    </section>
 
-    <section id="bonus" class="hidden" aria-label="Bonus-Türchen">
-      <h2 class="bonus-title">Die sieben Päckchen aus dem Paket</h2>
-      <p class="bonus-sub">Die Geschichte geht weiter – bis Silvester.</p>
+    <section id="bonus" class="block hidden" aria-label="Bonus-Türchen">
+      <div class="block-head"><h2 class="bonus-title">Die sieben Päckchen</h2><span class="block-sub bonus-sub">Die Geschichte geht weiter – bis Silvester.</span></div>
       <div id="calendar-bonus"></div>
     </section>
+
+    <footer class="site-foot">Mit Liebe gemacht – für die beste Gehege-Direktorin der Welt.</footer>
   </main>
 
   <!-- Kapibara-Maskottchen -->
