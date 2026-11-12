@@ -7,7 +7,7 @@
 const Extras = (() => {
   let H;
   const KEY = "mama-extras-" + CONFIG.year;
-  let st = { stats: {}, daily: {}, log: {}, badges: [], events: {}, donation: {}, santa: false, music: false, tasks: 0 };
+  let st = { stats: {}, daily: {}, log: {}, badges: [], claimed: null, events: {}, donation: {}, santa: false, music: false, tasks: 0 };
   const load = () => { try { const r = localStorage.getItem(KEY); if (r) st = Object.assign(st, JSON.parse(r)); } catch (e) {} };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   const dkey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -238,13 +238,14 @@ const Extras = (() => {
     const claim = H.el("button", { class: "btn" + (done && !t.claimed ? " btn-green" : " btn-soft"), text: t.claimed ? "Erledigt ✓" : done ? `${task.reward} Taler abholen` : `${have} / ${task.goal}` });
     claim.disabled = !done || t.claimed;
     claim.onclick = (e) => { e.stopPropagation(); if (t.claimed) return; t.claimed = true; st.tasks = (st.tasks || 0) + 1; save(); const r = claim.getBoundingClientRect(); Zoo.addCoins(task.reward, { x: r.left + r.width / 2, y: r.top }); H.sfx.win(); renderToday(); checkBadges(); };
+    setTimeout(markUnclaimed, 0);
     box.append(
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp, col: 0, acc: "" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Tier des Tages" }), H.el("b", { text: spec.name }))), H.el("p", { text: fact })),
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "capy", col: 0, acc: "brille" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Kalles Tagebuch" }), H.el("b", { text: entry.date }))), H.el("p", { class: "tc-diary", text: entry.text }), H.el("button", { class: "btn btn-soft", text: "Ganzes Tagebuch", onclick: (e) => { e.stopPropagation(); openDiary(); } })),
       H.el("div", { class: "today-card" }, H.el("div", { class: "tc-head" }, H.el("span", { class: "tc-pic", html: Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { fit: true }) }), H.el("div", {}, H.el("small", { text: "Aufgabe des Tages" }), H.el("b", { text: `${task.reward} Taler Belohnung` }))), H.el("p", { text: task.text }), H.el("div", { class: "zp-bar" }, H.el("div", { style: `width:${(have / task.goal) * 100}%` })), claim),
       (() => { const ds = memDays(); const d = ds.includes(dayNum()) ? dayNum() : ds[ds.length - 1]; if (!d) return null;
         return H.el("div", { class: "today-card mem-card-today" }, H.el("small", { text: "Erinnerung des Tages" }), memPola(d, (e) => { e.stopPropagation(); showMemory(d); }), H.el("button", { class: "btn btn-soft", text: "Alle Erinnerungen", onclick: (e) => { e.stopPropagation(); openMemories(); } })); })(),
-      H.el("div", { class: "today-card small" }, H.el("small", { text: "Heute im Gehege" }), H.el("b", { text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }), H.el("button", { class: "btn btn-soft", text: "Abzeichen", onclick: (e) => { e.stopPropagation(); openBadges(); } }),
+      H.el("div", { class: "today-card small" }, H.el("small", { text: "Heute im Gehege" }), H.el("b", { text: `${WEATHER[weather()]}${isNight() ? " · Nacht" : ""}` }), H.el("button", { class: "btn btn-soft badge-btn", text: "Abzeichen", onclick: (e) => { e.stopPropagation(); openBadges(); } }),
         dayNum() >= 31 && App.isSolved(31) ? H.el("button", { class: "btn", text: "Jahresrückblick", onclick: (e) => { e.stopPropagation(); review(); } }) : null));
   }
 
@@ -344,11 +345,32 @@ const Extras = (() => {
     BADGES.forEach(([id, name]) => {
       if (st.badges.includes(id)) return;
       let ok = false; try { ok = BADGES.find((b) => b[0] === id)[4](); } catch (e) {}
-      if (ok) { st.badges.push(id); save(); setTimeout(() => { H.toast(`Abzeichen freigeschaltet: „${name}“ – 5 Taler!`, 4000); Zoo.addCoins(5); H.sfx.good(); }, 600); }
+      if (ok) { st.badges.push(id); save(); setTimeout(() => { H.toast(`Neues Abzeichen: „${name}“! Hol dir die Taler unter „Abzeichen“ ab.`, 4500); H.sfx.good(); markUnclaimed(); }, 600); }
     });
+    markUnclaimed();
+  }
+  // Taler gibt es erst, wenn das Abzeichen in der Übersicht angetippt wird
+  const BADGE_COINS = 5;
+  const unclaimed = () => st.badges.filter((id) => !(st.claimed || []).includes(id)).length;
+  function markUnclaimed() {
+    const n = unclaimed();
+    document.querySelectorAll(".badge-btn").forEach((b) => { b.dataset.n = n || ""; b.classList.toggle("has-claim", n > 0); });
   }
   function badgeGrid() {
-    return H.el("div", { class: "badges" }, ...BADGES.map(([id, name, desc, icon]) => { const has = st.badges.includes(id); return H.el("div", { class: "badge" + (has ? " has" : "") }, H.el("div", { class: "medal", text: icon }), H.el("b", { text: name }), H.el("small", { text: desc })); }));
+    return H.el("div", { class: "badges" }, ...BADGES.map(([id, name, desc, icon]) => {
+      const has = st.badges.includes(id), open = has && !st.claimed.includes(id);
+      const card = H.el(open ? "button" : "div", { class: "badge" + (has ? " has" : "") + (open ? " claim" : "") }, H.el("div", { class: "medal", text: icon }), H.el("b", { text: name }), H.el("small", { text: desc }), open ? H.el("span", { class: "claim-label", text: `Antippen: +${BADGE_COINS} Taler` }) : null);
+      if (open) card.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (st.claimed.includes(id)) return;
+        st.claimed.push(id); save();
+        const r = card.getBoundingClientRect(); Zoo.addCoins(BADGE_COINS, { x: r.left + r.width / 2, y: r.top + r.height / 3 });
+        H.sfx.win(); H.burstAt(card, ["✨", "⭐", "💛"], 14, 80);
+        card.classList.remove("claim"); card.querySelector(".claim-label").textContent = "Abgeholt ✓"; card.disabled = true;
+        markUnclaimed();
+      });
+      return card;
+    }));
   }
   function openBadges() { const ov = overlay("Abzeichen", `${st.badges.length} von ${BADGES.length} freigeschaltet`); ov.area.append(badgeGrid()); }
 
@@ -461,6 +483,7 @@ const Extras = (() => {
   function init() {
     H = App.h;
     load();
+    if (!Array.isArray(st.claimed)) { st.claimed = st.badges.slice(); save(); } // alte Abzeichen wurden schon bezahlt
     // Spieluhr-Knopf
     const mb = H.el("button", { id: "music-toggle", class: "music-toggle" + (st.music ? "" : " off"), title: "Spieluhr an/aus", text: "♪" });
     mb.addEventListener("click", (e) => { e.stopPropagation(); music(!st.music); H.toast(st.music ? "Die Spieluhr spielt." : "Die Spieluhr ist aus."); });
@@ -476,5 +499,5 @@ const Extras = (() => {
     let wasNight = isNight();
     setInterval(() => { if (isNight() !== wasNight) { wasNight = isNight(); Zoo.refresh(); Animals.refreshPens(); renderToday(); } }, 60000);
   }
-  return { init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
+  return { unclaimed, markUnclaimed, init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
 })();

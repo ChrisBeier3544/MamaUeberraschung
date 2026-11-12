@@ -1049,3 +1049,58 @@ body.game-open #snow, body.game-open #parade { display: none; }
 .gift-parcel .parcel-svg { filter: drop-shadow(0 6px 10px rgba(122, 31, 51, .25)) drop-shadow(0 0 14px rgba(255, 216, 77, .55)); }
 .gift-hint { background: var(--red); color: #fff; border: 3px solid #fff; font-size: 16px; padding: 10px 16px; }
 .gift-parcel.opening .p-tag { transform-box: fill-box; animation: lidOff 1s cubic-bezier(.3, .7, .4, 1) .45s forwards; }
+
+/* ================= Runde 13 ================= */
+.g-area.pen-mode { padding: 0 max(8px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); overflow: hidden; display: flex; }
+.g-area.pen-mode .pen-viewport { flex: 1; height: auto; min-height: 0; border-width: 6px; border-radius: 18px; }
+.pen-world .zoo-scene svg { width: 100%; height: 100%; }
+.badge-btn { position: relative; }
+.badge-btn.has-claim::after { content: attr(data-n); position: absolute; top: -12px; right: -14px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: #f2b51f; color: #5a3b00; font-size: 13px; font-weight: 700; display: grid; place-items: center; border: 2px solid #fff; animation: pulseDot 1.4s infinite; }
+button.badge { font-family: inherit; color: inherit; border: none; cursor: pointer; }
+.badge.claim { box-shadow: 0 0 0 3px #f2b51f, 0 0 18px rgba(242, 181, 31, .55); animation: parcelBob 1.6s ease-in-out infinite; }
+.badge .claim-label { font-weight: 700; color: #a3720f; font-size: 13px; }
+
+/* ---------- Legendäre Tiere: übertrieben golden ---------- */
+.r-legendaer .w-in, .pen-animal.r-legendaer .pa-in { position: relative; }
+.r-legendaer .ani { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px #ffd84d) drop-shadow(0 0 16px #ffb300) !important; animation: lgPulse 1.4s ease-in-out infinite; }
+.walker.r-legendaer .w-in { animation: none !important; filter: none !important; }
+.hider.r-legendaer svg, .walker.r-legendaer svg { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px #ffd84d) drop-shadow(0 0 16px #ffb300) !important; }
+@keyframes lgPulse { 0%, 100% { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #ffd84d) drop-shadow(0 0 12px #ffb300); } 50% { filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 12px #ffe680) drop-shadow(0 0 26px #ff9f00); } }
+.lg-rays { position: absolute; left: 50%; top: 55%; width: 170%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: -1;
+  background: repeating-conic-gradient(rgba(255, 216, 77, .55) 0 10deg, rgba(255, 216, 77, 0) 10deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%); animation: lgSpin 9s linear infinite; }
+@keyframes lgSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.lg-star { position: absolute; color: #ffd84d; text-shadow: 0 0 6px #fff, 0 0 12px #ffb300; font-size: 18px; pointer-events: none; z-index: 2; animation: lgTwinkle 1.6s ease-in-out infinite; }
+.lg-star.s1 { left: -8%; top: 0; }
+.lg-star.s2 { right: -6%; top: 12%; font-size: 14px; animation-delay: -.5s; }
+.lg-star.s3 { left: 45%; top: -22%; font-size: 22px; animation-delay: -1s; }
+.lg-star.s4 { right: 8%; bottom: 0; font-size: 12px; animation-delay: -.3s; }
+@keyframes lgTwinkle { 0%, 100% { opacity: .2; transform: scale(.6) rotate(0); } 50% { opacity: 1; transform: scale(1.25) rotate(25deg); } }
+.walker.r-legendaer::after { content: none; }
+.album-card.r-legendaer:not(.missing) { background: radial-gradient(circle at 50% 35%, #fff6c9, #ffe28a 55%, #f6c531); box-shadow: 0 0 0 3px #ffd75a, 0 0 22px rgba(255, 190, 40, .8); animation: lgCard 2s ease-in-out infinite; }
+.album-card.r-legendaer:not(.missing) b { color: #7a5300; }
+@keyframes lgCard { 50% { box-shadow: 0 0 0 3px #fff2b0, 0 0 34px rgba(255, 170, 0, .95); } }
+.rar.r-legendaer { background: linear-gradient(90deg, #ffe58a, #ffc94a, #fff3b8, #ffc94a); background-size: 200% 100%; animation: lgShine 2s linear infinite; box-shadow: 0 0 8px rgba(255, 190, 40, .8); }
+@keyframes lgShine { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .lg-rays, .lg-star, .r-legendaer .ani { animation: none !important; } }
+.album-card.missing .ani { filter: none !important; animation: none !important; }
+
+/* ---------- Spielecke: neue Karten ---------- */
+.game-menu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: 1080px; margin: 6px auto 0; }
+@media (max-width: 860px) { .game-menu { grid-template-columns: 1fr; max-width: 520px; } }
+.game-card { padding: 0; overflow: hidden; gap: 0; align-items: stretch; border-radius: 24px; box-shadow: 0 4px 0 #ead6c8, 0 12px 26px rgba(90, 59, 46, .1); }
+.gc-banner { height: 150px; display: grid; place-items: center; position: relative; }
+.gc-banner .game-art { width: 170px; height: 125px; }
+.gc-turm .gc-banner { background: linear-gradient(180deg, #9fd0ef, #ffd3a8 70%, #a8d78f 70%); }
+.gc-coon .gc-banner { background: linear-gradient(180deg, #c98f74, #b47a60); }
+.gc-peng .gc-banner { background: linear-gradient(180deg, #bfe2f6, #f2faff 72%, #fff 72%); }
+.gc-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.gc-body h3 { margin: 0; font-size: 23px; }
+.gc-body p { margin: 0; color: var(--ink-soft); line-height: 1.45; flex: 1; font-size: 15px; }
+.gc-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.gc-record { display: flex; flex-direction: column; align-items: flex-start; background: #fff7d6; border: 2px solid #f2d27a; border-radius: 14px; padding: 6px 14px 6px 12px; min-width: 0; }
+.gc-record small { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #a3720f; }
+.gc-record b { font-size: 30px; line-height: 1; color: #7a5300; font-variant-numeric: tabular-nums; }
+.gc-record span { font-size: 13px; color: #a3720f; }
+.gc-record.none b { font-size: 22px; color: #c9b27a; }
+.gc-foot .btn { padding: 12px 22px; font-size: 18px; }

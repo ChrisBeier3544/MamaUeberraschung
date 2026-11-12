@@ -426,6 +426,7 @@ const Animals = (() => {
     const bottom = Math.floor(Math.random() * 34);
     const div = H.el("div", { class: "walker r-" + v.rarity + (ltr ? "" : " rtl"), style: `bottom:${bottom}px;z-index:${60 - bottom};--from:${ltr ? -w - 10 : innerWidth + 10}px;--to:${ltr ? innerWidth + 10 : -w - 10}px;animation-duration:${dur}s`, title: "Klick mich!" });
     div.innerHTML = `<div class="w-in">${svg(v, { walk: true, width: w })}</div>`;
+    legendFx(div.querySelector(".w-in"), v);
     onScreen.add(v.id);
     div.addEventListener("animationend", (e) => { if (e.target === div) { div.remove(); onScreen.delete(v.id); } });
     div.addEventListener("click", (e) => { e.stopPropagation(); teleport(div, v); });
@@ -470,6 +471,9 @@ const Animals = (() => {
   // Das Tier steckt hinter einem echten Element (Türchen, Gehege-Karte, Kalle …) und
   // schaut regelmäßig darüber hervor. Sichtbar ist genau der Teil, der herausragt.
   const hiders = new Set();
+  // legendäre Tiere: Strahlenkranz + funkelnde Sterne
+  const LEGEND_FX = `<span class="lg-rays"></span><span class="lg-star s1">✦</span><span class="lg-star s2">✧</span><span class="lg-star s3">✦</span><span class="lg-star s4">★</span>`;
+  const legendFx = (el, v) => { if (v.rarity === "legendaer") el.insertAdjacentHTML("afterbegin", LEGEND_FX); };
   function makeHider(v, parent, css, o = {}) {
     const sp = SPECIES[v.sp];
     const w = Math.round(o.w || 64), svgH = (w * sp.H) / sp.W;
@@ -477,6 +481,7 @@ const Animals = (() => {
     const px = o.px || 0, py = o.py != null ? o.py : -Math.round(svgH * 0.58);
     h.innerHTML = `<div class="w-in" style="--px:${px}px;--py:${py}px;animation-delay:-${(Math.random() * 8).toFixed(1)}s;animation-duration:${(8 + Math.random() * 4).toFixed(1)}s"><div class="${(o.flip ?? Math.random() < 0.5) ? "flipx" : ""}">${svg(v, { width: w })}</div></div>`;
     h.addEventListener("click", (e) => { e.stopPropagation(); teleport(h, v); });
+    legendFx(h.querySelector(".w-in"), v);
     if (o.modal) h.dataset.modal = "1";
     h._v = v;
     onScreen.add(v.id); hiders.add(h);
@@ -556,7 +561,7 @@ const Animals = (() => {
     document.addEventListener("keydown", esc);
     const tabPen = H.el("button", { class: "g-tab active", text: "Gehege" });
     const tabAlbum = H.el("button", { class: "g-tab", text: "Sammelalbum" });
-    const tabBadges = H.el("button", { class: "g-tab", text: "Abzeichen" });
+    const tabBadges = H.el("button", { class: "g-tab badge-btn", text: "Abzeichen" });
     const area = H.el("div", { class: "g-area" });
     ov.append(H.el("div", { class: "g-head" },
       H.el("div", {}, H.el("h2", { text: "Mamas Tiergehege" }), H.el("div", { class: "g-sub", text: `${found.size} von 100 Tieren gefunden` })),
@@ -565,7 +570,7 @@ const Animals = (() => {
     const show = (which) => {
       timers.forEach(clearTimeout); timers.clear();
       tabPen.classList.toggle("active", which === "pen"); tabAlbum.classList.toggle("active", which === "album"); tabBadges.classList.toggle("active", which === "badges");
-      area.innerHTML = "";
+      area.innerHTML = ""; area.classList.remove("pen-mode");
       if (which === "pen") pen(area, later);
       else if (which === "album") { album(area); (typeof Extras !== "undefined" && Extras.track("album")); }
       else area.append(Extras.badgeGrid());
@@ -574,6 +579,7 @@ const Animals = (() => {
     document.body.append(ov); document.body.style.overflow = "hidden";
     show("pen");
     hideIn("album", ov.querySelector(".g-head"));
+    if (typeof Extras !== "undefined") Extras.markUnclaimed();
   }
 
   const DECOR = `<svg class="pen-decor" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
@@ -586,12 +592,15 @@ const Animals = (() => {
 
   function pen(area, later) {
     const vp = H.el("div", { class: "pen-viewport" });
+    area.classList.add("pen-mode");
+    area.append(vp);
+    // Die Welt bekommt das Seitenverhältnis des Bildschirms – so füllt sie ihn ganz aus
     const n = VARIANTS.filter((v) => found.has(v.id)).length;
-    const baseW = Math.round(Math.max(1500, 1100 + n * 16)), baseH = Math.round(baseW * 0.6);
+    const ratio = Math.max(0.45, Math.min(2.4, (vp.clientHeight || 600) / (vp.clientWidth || 1000)));
+    const baseW = Math.round(Math.max(1500, 1100 + n * 16) * (ratio > 1 ? 0.75 : 1)), baseH = Math.round(baseW * ratio);
     const world = H.el("div", { class: "pen pen-world", style: `width:${baseW}px;height:${baseH}px` });
     const ctrl = H.el("div", { class: "zoom-ctrl" });
     vp.append(world, ctrl);
-    area.append(vp);
     mountPen(world, later);
     let z = 1, tx = 0, ty = 0, zMin = 0.2;
     const apply = () => { world.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; world.style.setProperty("--inv", (1 / z).toFixed(3)); };
@@ -670,10 +679,11 @@ const Animals = (() => {
     const small = innerWidth < 600;
     const k = field.classList.contains("inline") ? (small ? 0.42 : 0.7) : small ? 0.62 : 1;
     const w = sp.W * sp.scale * k;
-    const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : "") });
+    const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : " r-" + v.rarity) });
     const wrap = H.el("div", { class: "pa-in" });
     wrap.innerHTML = svg(v, { width: w });
     a.append(wrap);
+    if (!o.guest) legendFx(wrap, v);
     const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? Math.random() * 88, y: o.y ?? 48 + Math.random() * 46 };
     c.setSad = (on) => { a.classList.toggle("sad", on); if (on && !a.querySelector(".tear")) a.append(H.el("div", { class: "tear" })); if (!on) a.querySelector(".tear")?.remove(); };
     if (!o.guest) c.setSad(hungry(v));
