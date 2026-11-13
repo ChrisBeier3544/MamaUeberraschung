@@ -575,7 +575,8 @@ const App = (() => {
       const MUNKEL_LOCK = ["Psst … ich darf noch nichts verraten!", "Ich hab da was gemunkelt gehört … über Tiere!", "Noch ein bisschen Geduld, liebe Mama.", "Ich passe gut auf das Schloss auf.", "Tschirp! Bald geht es los.", "Ich glaube, hinter dem Schloss wohnt ein Kapibara …"];
       let mi = 0;
       const bird = Munkel.mount(perch, { sit: true, dreamy: true, onTap: (b) => b.say(MUNKEL_LOCK[mi++ % MUNKEL_LOCK.length]) });
-      setTimeout(() => bird.say("Hallo! Ich bin der Munkelvogel."), 1600);
+      if (typeof MunkelShow !== "undefined") MunkelShow.attach(lock, pad, perch, bird);
+      else setTimeout(() => bird.say("Hallo! Ich bin der Munkelvogel."), 1600);
     }
     lock.append(pad,
       el("div", { class: "lock-copy" },
@@ -621,12 +622,37 @@ const App = (() => {
     ov.append(pad);
     document.body.append(ov);
     const click = () => { sfx.tone(1900, 0.03, "square", 0.08); sfx.tone(900, 0.05, "square", 0.07, null, 0.03); };
-    setTimeout(() => ov.classList.add("key-in"), 700);           // Schlüssel fährt ins Schloss
-    setTimeout(() => { ov.classList.add("key-turn"); sfx.tone(420, 0.25, "triangle", 0.06, 520); }, 2100); // umdrehen
-    setTimeout(() => { ov.classList.add("open"); click(); }, 2900); // Bügel springt auf
-    setTimeout(() => { ov.classList.add("vanish"); sfx.good(); }, 3900); // Schloss verschwindet
-    setTimeout(() => ov.classList.add("reveal"), 4400);          // Kalender kommt langsam zum Vorschein
-    setTimeout(() => { ov.remove(); document.body.style.overflow = ""; done(); }, 6600);
+    // Der Munkelvogel bringt den goldenen Schlüssel geflogen
+    let bird = null, perch = null, D = 0;
+    if (typeof Munkel !== "undefined") {
+      D = 2600;
+      perch = el("div", { class: "ul-bird" });
+      ov.append(perch);
+      bird = Munkel.mount(perch, { sit: true });
+      bird.busy = true;
+      try { const hat = JSON.parse(localStorage.getItem("mama-munkel-" + CONFIG.year) || "{}").hat; if (hat && typeof MunkelShow !== "undefined") bird.setHat(MunkelShow.HATS[hat]); } catch (e) {}
+      bird.carry(`<g transform="translate(-4 4) rotate(70) scale(1.1)"><circle cx="-2" cy="0" r="6" fill="none" stroke="#e8c46b" stroke-width="3"/><path d="M4 0 h22 M18 0 v5 M23 0 v4" stroke="#e8c46b" stroke-width="3" stroke-linecap="round"/></g>`);
+      const at = (x, y) => { const r = pad.getBoundingClientRect(); return [r.left + (x / 200) * r.width, r.top + (y / 240) * r.height]; };
+      const fly = (pts, ms) => perch.animate(pts.map(([x, y]) => { const [px, py] = at(x, y); return { transform: `translate(${px}px, ${py}px) translate(-50%, -79%)` }; }), { duration: ms, easing: "ease-in-out", fill: "forwards" });
+      requestAnimationFrame(() => {
+        perch.style.width = pad.getBoundingClientRect().width * 0.4 + "px";
+        bird.classList.add("mk-fly");
+        fly([[320, -120], [220, 10], [150, 60], [104, 196]], 1900);
+        sfx.tone(1400, 0.08, "sine", 0.06, 1900); sfx.tone(1700, 0.08, "sine", 0.06, 2200, 0.15);
+        setTimeout(() => { bird.say("Ich hab den Schlüssel!", 1600); }, 900);
+        setTimeout(() => { bird.carry(""); ov.classList.add("key-in"); sfx.tone(700, 0.12, "triangle", 0.08); }, 2000);
+        setTimeout(() => { fly([[104, 196], [150, 120], [146, 104]], 700); }, 2200);
+        setTimeout(() => { bird.classList.remove("mk-fly"); }, 2950);
+        setTimeout(() => { bird.act("mk-hop", 700); bird.say("Jetzt!", 1200); }, 3900 + 0);
+        setTimeout(() => { bird.act("mk-flutter", 900); bird.act("mk-hop", 700); }, 2900 + D);
+        setTimeout(() => { bird.classList.add("mk-fly"); fly([[146, 104], [220, 20], [340, -140]], 1300); }, 3700 + D);
+      });
+    } else setTimeout(() => ov.classList.add("key-in"), 700);           // Schlüssel fährt ins Schloss
+    setTimeout(() => { ov.classList.add("key-turn"); sfx.tone(420, 0.25, "triangle", 0.06, 520); }, 2100 + D); // umdrehen
+    setTimeout(() => { ov.classList.add("open"); click(); }, 2900 + D); // Bügel springt auf
+    setTimeout(() => { ov.classList.add("vanish"); sfx.good(); }, 3900 + D); // Schloss verschwindet
+    setTimeout(() => ov.classList.add("reveal"), 4400 + D);          // Kalender kommt langsam zum Vorschein
+    setTimeout(() => { ov.remove(); document.body.style.overflow = ""; done(); }, 6600 + D);
   }
 
   function start() {
