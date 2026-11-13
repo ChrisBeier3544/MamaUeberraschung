@@ -1,0 +1,663 @@
+/* =========================================================
+   Mamas tierischer Adventskalender – Kern
+   ---------------------------------------------------------
+   ✏️  HIER KANNST DU ALLES PERSÖNLICH ANPASSEN:
+   ========================================================= */
+const CONFIG = {
+  // Jahr des Adventskalenders (Türchen öffnen sich ab dem 1.12. dieses Jahres)
+  year: 2026,
+
+  // Brief am 24. Dezember (erscheint nach dem Rätsel unter dem Weihnachtsbaum)
+  christmasTitle: "Frohe Weihnachten, Mama! 🎄",
+  christmasMessage:
+    "Schau dir an, was aus dem tristen Gehege geworden ist – das warst alles du!\n\n" +
+    "Und genauso, wie du aus einem tristen Gehege etwas Wunderschönes zauberst, " +
+    "machst du das Leben jedes Menschen schöner, der mit dir in Kontakt kommt!\n\n" +
+    "Danke, dass du immer für mich da bist, für deine Umarmungen, dein Lachen und dafür, " +
+    "dass du mich bedingungslos unterstützt, wenn ich es am meisten brauche. Und das gilt auch andersrum: Ich bin immer für dich da.\n\n" +
+    "Ich hab dich unendlich lieb!",
+  christmasPhoto: "fotos/24.jpg",
+  christmasCaption: "Wir zwei.",
+
+  // Brief zu Silvester (erscheint, wenn das Feuerwerk gekauft ist)
+  newYearTitle: "Frohes neues Jahr, Mama! 🎆",
+  newYearMessage:
+    "31 Türchen, ein ganzes Gehege voller glücklicher Tiere – und eine Direktorin, " +
+    "die sich das alles mehr als verdient hat.\n\n" +
+    "Auf ein wunderbares neues Jahr mit dir!",
+  newYearPhoto: "fotos/neujahr.jpg",
+  newYearCaption: "Wir vier.",
+
+  signature: "Dein Chris ❤️",
+
+  // Persönliche Seite ganz am Anfang der Begrüßung (vor Kalles Erklärung)
+  welcomeTitle: "Liebe Mama,",
+  welcomeMessage:
+    "es freut mich sehr, dir hiermit deinen diesjährigen Adventskalender zu übergeben.\n\n" +
+    "Und du wirst dringend gebraucht: Die Tiere warten schon sehnsüchtig auf dich – sie brauchen deine Hilfe.\n\n" +
+    "In diesem Sinne wünsche ich dir eine wunderschöne, besinnliche Adventszeit und übergebe jetzt an Kalle.",
+  welcomeSignature: "Dein Chris ❤️",
+  welcomePhoto: "fotos/brief.jpg",
+};
+
+/* ========================================================= */
+
+const App = (() => {
+  const STORE_KEY = "mama-advent-" + CONFIG.year;
+  const params = new URLSearchParams(location.search);
+  const PREVIEW = !window.TEST && (!!window.FORCE_PREVIEW || params.has("vorschau") || params.has("test"));
+  const LAST_DAY = 31;
+
+  const puzzles = {};
+  let state = { solved: {}, flakes: 0 };
+  let soundOn = true;
+
+  /* ---------- Speicher ---------- */
+  function load() {
+    try {
+      if (params.has("reset")) localStorage.removeItem(STORE_KEY);
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) state = Object.assign(state, JSON.parse(raw));
+      soundOn = localStorage.getItem(STORE_KEY + "-sound") !== "off";
+    } catch (e) { /* privates Fenster o. ä. – egal */ }
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  /* ---------- Hilfsfunktionen ---------- */
+  function el(tag, props = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null) continue;
+      if (k === "class") n.className = v;
+      else if (k === "text") n.textContent = v;
+      else if (k === "html") n.innerHTML = v;
+      else if (k === "style") n.style.cssText = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null) n.append(kid);
+    return n;
+  }
+  function seeded(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function shuffle(arr, rnd = Math.random) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  function norm(s) {
+    return String(s).toLowerCase().trim()
+      .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  /* ---------- Buchstaben-Verteilung ---------- */
+  // Jeder Tag 1–23 bekommt einen Buchstaben – absichtlich durcheinander!
+
+  /* ---------- Sound (selbst gebaut, keine Dateien nötig) ---------- */
+  let actx = null;
+  function ctx() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  function tone(freq, dur = 0.15, type = "sine", vol = 0.18, slideTo = null, delay = 0) {
+    if (!soundOn) return;
+    const c = ctx(); if (!c) return;
+    const t = c.currentTime + delay;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
+  }
+  const sfx = {
+    tone,
+    pop: () => tone(600 + Math.random() * 500, 0.09, "sine", 0.2, 1400),
+    boop: (f = 440) => tone(f, 0.18, "triangle", 0.2, f * 1.5),
+    tick: () => tone(900, 0.05, "square", 0.05),
+    good: () => [523, 659, 784].forEach((f, i) => tone(f, 0.18, "triangle", 0.18, null, i * 0.08)),
+    bad: () => { tone(300, 0.18, "sawtooth", 0.08, 200); tone(220, 0.25, "sawtooth", 0.07, 150, 0.12); },
+    meow: () => { tone(700, 0.35, "sawtooth", 0.06, 450); tone(1050, 0.2, "sine", 0.08, 800); },
+    squeak: () => tone(1200, 0.12, "sine", 0.15, 2200),
+    win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, 0.22, "triangle", 0.18, null, i * 0.11)),
+    jingle: () => [659, 659, 659, 0, 659, 659, 659, 0, 659, 784, 523, 587, 659].forEach((f, i) => f && tone(f, 0.2, "triangle", 0.15, null, i * 0.15)),
+  };
+
+  /* ---------- Effekte ---------- */
+  const fx = () => document.getElementById("fx");
+  /* ---------- Effekte: gezeichnete Funken, Herzen, Sterne statt Emojis ---------- */
+  const G = (body, vb = "0 0 24 24") => `<svg viewBox="${vb}" aria-hidden="true">${body}</svg>`;
+  const SPARK = (c1, c2) => G(`<path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0Z" fill="${c1}"/><circle cx="12" cy="12" r="2.2" fill="${c2}"/>`);
+  const STAR = (c) => G(`<path d="M12 1.5 l3.1 6.6 7.2.9 -5.3 5 1.4 7.1 -6.4-3.6 -6.4 3.6 1.4-7.1 -5.3-5 7.2-.9z" fill="${c}" stroke="rgba(120,80,10,.35)" stroke-width=".8" stroke-linejoin="round"/>`);
+  const HEART = (c) => G(`<path d="M12 21 C5 16 1.5 12.5 1.5 8.2 A5.2 5.2 0 0 1 12 6 A5.2 5.2 0 0 1 22.5 8.2 C22.5 12.5 19 16 12 21Z" fill="${c}"/><path d="M6 6.5 a3 3 0 0 1 3 -1.5" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round" fill="none"/>`);
+  const FLAKE = G(`<g stroke="#eaf6ff" stroke-width="1.8" stroke-linecap="round">${[0, 60, 120].map((a) => `<g transform="rotate(${a} 12 12)"><path d="M12 1.5 V22.5"/><path d="M12 5.5 l-2.6 -2.4 M12 5.5 l2.6 -2.4 M12 18.5 l-2.6 2.4 M12 18.5 l2.6 2.4"/></g>`).join("")}</g>`);
+  const PAWG = G(`<g fill="#3c6b59"><ellipse cx="12" cy="16" rx="5.4" ry="4.4"/><ellipse cx="5.4" cy="10" rx="2.2" ry="2.8"/><ellipse cx="9.6" cy="6.4" rx="2.2" ry="2.9"/><ellipse cx="14.4" cy="6.4" rx="2.2" ry="2.9"/><ellipse cx="18.6" cy="10" rx="2.2" ry="2.8"/></g>`);
+  const GIFT = G(`<rect x="3" y="9" width="18" height="13" rx="2" fill="#8e2d3b"/><rect x="2" y="6" width="20" height="5" rx="1.5" fill="#a63a4b"/><rect x="10.5" y="6" width="3" height="16" fill="#e8c46b"/><path d="M12 6 C9 1 4.5 2 6 5 C7 6.5 10 6 12 6Z M12 6 C15 1 19.5 2 18 5 C17 6.5 14 6 12 6Z" fill="#e8c46b"/>`);
+  const DROP = G(`<path d="M12 2 C16 8 19 11.5 19 15 A7 7 0 0 1 5 15 C5 11.5 8 8 12 2Z" fill="#7fc4ea"/><path d="M8.5 15 a3.5 3.5 0 0 0 2.5 3.5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".8"/>`);
+  const NOTE = G(`<path d="M9 18V5l11-2v13" fill="none" stroke="#3c6b59" stroke-width="2.2"/><circle cx="6" cy="18" r="3" fill="#3c6b59"/><circle cx="17" cy="16" r="3" fill="#3c6b59"/>`);
+  const DOT = G(`<circle cx="12" cy="12" r="3.2" fill="#fff1b0"/><circle cx="12" cy="12" r="6.5" fill="#ffd25a" opacity=".3"/>`);
+  const GLYPHS = {
+    "✨": () => SPARK(pick(["#f3d27a", "#ffe9a8", "#e7b94a"]), "#fffbe8"), "✦": () => SPARK("#f3d27a", "#fff"), "💫": () => SPARK("#fff1b8", "#fff"), "✧": () => SPARK("#fff4cf", "#fff"),
+    "⭐": () => STAR(pick(["#f2c84b", "#f6d572", "#e6b23a"])), "★": () => STAR("#f2c84b"), "🌟": () => STAR("#f6d572"),
+    "💖": () => HEART("#c9415a"), "💕": () => HEART("#e07a8f"), "💗": () => HEART("#d4566e"), "💞": () => HEART("#e58fa0"), "❤️": () => HEART("#b8324b"), "🤎": () => HEART("#9c6b45"), "💛": () => HEART("#e8b93e"),
+    "❄️": () => FLAKE, "❄": () => FLAKE, "❅": () => FLAKE, "❆": () => FLAKE,
+    "🐾": () => PAWG, "🎁": () => GIFT, "💧": () => DROP, "♪": () => NOTE, "♫": () => NOTE, "·": () => DOT,
+  };
+  function particle(x, y, content, { dx = 0, dy = -120, rot = 0, dur = 1000, size = 24, delay = 0, scale = 1 } = {}) {
+    const g = GLYPHS[content];
+    const p = el("div", { class: "particle" + (g ? " glyph" : ""), style: `left:${x}px;top:${y}px;font-size:${size}px;${g ? `width:${size}px;height:${size}px;` : ""}` });
+    if (g) p.innerHTML = g(); else p.textContent = content;
+    fx().append(p);
+    // leichter Bogen: erst nach außen und oben, dann sinkt es etwas ab
+    const fall = Math.abs(dy) * 0.18 + 18;
+    const anim = p.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(.2) rotate(0deg)", opacity: 0 },
+        { transform: `translate(calc(-50% + ${dx * 0.35}px), calc(-50% + ${dy * 0.35}px)) scale(${scale * 1.15}) rotate(${rot * 0.3}deg)`, opacity: 1, offset: 0.18 },
+        { transform: `translate(calc(-50% + ${dx * 0.8}px), calc(-50% + ${dy * 0.8}px)) scale(${scale}) rotate(${rot * 0.75}deg)`, opacity: 1, offset: 0.62 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + fall}px)) scale(${scale * 0.55}) rotate(${rot}deg)`, opacity: 0 },
+      ],
+      { duration: dur, delay, easing: "cubic-bezier(.22,.7,.35,1)", fill: "backwards" }
+    );
+    anim.onfinish = () => p.remove();
+  }
+  function burst(x, y, emojis = ["💖", "✨", "🐾"], n = 10, spread = 120) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, r = spread * (0.45 + Math.random() * 0.75);
+      particle(x, y, pick(emojis), { dx: Math.cos(a) * r, dy: Math.sin(a) * r - 30, rot: (Math.random() - 0.5) * 300, dur: 850 + Math.random() * 650, size: 13 + Math.random() * 15, delay: Math.random() * 90 });
+    }
+  }
+  function burstAt(node, emojis, n, spread) {
+    const r = node.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, emojis, n, spread);
+  }
+  // Konfetti: echte Papierschnipsel, die flattern – dazu ein paar der gewünschten Motive
+  const PAPER = ["#c9a04a", "#e8c46b", "#8e2d3b", "#c9415a", "#2a5a46", "#4f8a6e", "#f3e3b5", "#ffffff", "#e8a0ab"];
+  function paperPiece(x, delay) {
+    const w = 6 + Math.random() * 7, h = w * (0.4 + Math.random() * 0.9);
+    const p = el("div", { class: "confetti-paper", style: `left:${x}px;top:-24px;width:${w}px;height:${h}px;background:${pick(PAPER)};border-radius:${Math.random() < 0.25 ? "50%" : "1.5px"}` });
+    fx().append(p);
+    const dur = 2600 + Math.random() * 2200, sway = 40 + Math.random() * 90, dir = Math.random() < 0.5 ? -1 : 1, spin = 360 + Math.random() * 900;
+    const frames = [];
+    for (let k = 0; k <= 8; k++) {
+      const t = k / 8;
+      frames.push({ transform: `translate(${Math.sin(t * Math.PI * 3 + dir) * sway}px, ${t * (innerHeight + 60)}px) rotateZ(${t * spin * dir}deg) rotateX(${t * spin * 1.4}deg) rotateY(${t * spin * 0.8}deg)`, opacity: t > 0.9 ? 1 - (t - 0.9) * 10 : 1 });
+    }
+    p.animate(frames, { duration: dur, delay, easing: "linear", fill: "backwards" }).onfinish = () => p.remove();
+  }
+  function confetti(emojis = ["✨", "💖", "⭐", "❄️"], n = 60) {
+    const W = innerWidth;
+    const pieces = Math.round(n * 1.3), motifs = Math.round(n * 0.25);
+    for (let i = 0; i < pieces; i++) paperPiece(Math.random() * W, Math.random() * 1100);
+    for (let i = 0; i < motifs; i++) particle(Math.random() * W, -20, pick(emojis), { dx: (Math.random() - 0.5) * 200, dy: innerHeight + 60, rot: (Math.random() - 0.5) * 540, dur: 2800 + Math.random() * 1800, size: 16 + Math.random() * 14, delay: Math.random() * 1100, scale: 1 });
+  }
+  function rain(emojis, n = 40) { confetti(emojis, n); }
+
+  let toastTimer;
+  function toast(msg, ms = 2600) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+  }
+  /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits";
+  const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
+  const notes = [];
+  function flushNotes() {
+    document.body.classList.toggle("is-busy", busy());
+    document.body.classList.toggle("covered", !!document.querySelector(".gehege-overlay, .lightbox"));
+    if (!notes.length || busy() || document.getElementById("toast").classList.contains("show")) return;
+    const [m, ms] = notes.shift(); toast(m, ms);
+  }
+  function notify(msg, ms) { notes.push([msg, ms]); flushNotes(); }
+  setInterval(flushNotes, 600);
+  function shakeEl(n) { n.classList.remove("shake"); void n.offsetWidth; n.classList.add("shake"); }
+
+  /* ---------- Textantwort-Baustein ---------- */
+  function textAnswer(root, { answers, placeholder = "Deine Antwort…", onRight, wrong = ["Hmm, nicht ganz! 🙈", "Fast! Probier's nochmal 🐾", "Nope – aber du schaffst das! 💪"], button = "Prüfen ✔️", type = "text" }) {
+    const input = el("input", { class: "text-in", placeholder, type, autocomplete: "off", autocapitalize: "off", spellcheck: "false", inputmode: type === "number" ? "numeric" : null });
+    const fb = el("div", { class: "feedback" });
+    const ok = answers.map(norm);
+    const check = () => {
+      if (!input.value.trim()) { shakeEl(input); return; }
+      const v = norm(input.value);
+      if (ok.some((a) => v === a || (a.length >= 4 && v.endsWith(a)))) { input.disabled = true; btn.disabled = true; onRight(); }
+      else { sfx.bad(); shakeEl(input); fb.textContent = pick(wrong); }
+    };
+    const btn = el("button", { class: "btn", text: button, onclick: check });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
+    root.append(el("div", { class: "row", style: "margin-top:14px" }, input, btn), fb);
+    return input;
+  }
+
+  /* ---------- Datum ---------- */
+  function now() { return new Date(); }
+  function unlockDate(day) { return new Date(CONFIG.year, 11, day, 0, 0, 0); }
+  function isUnlocked(day) { return PREVIEW || now() >= unlockDate(day); }
+  function daysUntil(day) { return Math.ceil((unlockDate(day) - now()) / 86400000); }
+  function todayDay() {
+    const n = now();
+    return n.getFullYear() === CONFIG.year && n.getMonth() === 11 ? n.getDate() : 0;
+  }
+
+  /* ---------- Kalender ---------- */
+  const DOOR_ORDER = [7, 15, 1, 22, 10, 18, 3, 13, 24, 5, 20, 9, 16, 2, 11, 23, 6, 19, 12, 4, 14, 8, 21, 17];
+  const doors = {};
+
+  const BONUS = [25, 26, 27, 28, 29, 30, 31];
+  const bonusVisible = () => PREVIEW || !!state.solved[18];
+
+  function makeDoor(day, i, box) {
+    const p = puzzles[day] || {};
+    const inside = el("div", { class: "door-inside" });
+    const special = day === 24 ? "background:linear-gradient(150deg,#c9a04a,#8e2d3b)" : day > 24 ? "background:linear-gradient(160deg,#3c5a8a,#22314f)" : null;
+    const door = el("button", { class: `door c${(i * 5 + day) % 6}`, "aria-label": "Türchen " + day, style: special },
+      el("span", { class: "ribbon-v" }), el("span", { class: "ribbon-h" }),
+      el("span", { class: "bow", html: BOW }),
+      el("span", { class: "num", text: day }),
+      el("span", { class: "paw", html: PAW }));
+    const wrap = el("div", { class: "door-wrap" }, inside, door);
+    door.addEventListener("click", (e) => { e.stopPropagation(); onDoor(day); });
+    doors[day] = { wrap, door, inside };
+    box.append(wrap);
+    refreshDoor(day);
+  }
+
+  const PAW = `<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="27" rx="9" ry="7.5" fill="currentColor"/><ellipse cx="9" cy="17" rx="3.6" ry="4.6" fill="currentColor"/><ellipse cx="16" cy="11" rx="3.6" ry="4.8" fill="currentColor"/><ellipse cx="24" cy="11" rx="3.6" ry="4.8" fill="currentColor"/><ellipse cx="31" cy="17" rx="3.6" ry="4.6" fill="currentColor"/></svg>`;
+  const BOW = `<svg viewBox="0 0 60 32" aria-hidden="true"><path d="M30 16 C18 0 4 4 8 14 C11 22 22 20 30 16Z" fill="#fff"/><path d="M30 16 C42 0 56 4 52 14 C49 22 38 20 30 16Z" fill="#fff"/><path d="M28 17 l-8 14 l6 -2 l2 4z M32 17 l8 14 l-6 -2 l-2 4z" fill="#f3f3f3"/><circle cx="30" cy="16" r="5" fill="#ffe08a"/></svg>`;
+
+  function buildCalendar() {
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+    DOOR_ORDER.forEach((day, i) => makeDoor(day, i, cal));
+    buildBonus();
+  }
+
+  function buildBonus(reveal) {
+    const sec = document.getElementById("bonus");
+    if (!bonusVisible()) { sec.classList.add("hidden"); return; }
+    sec.classList.remove("hidden");
+    const cal = document.getElementById("calendar-bonus");
+    cal.innerHTML = "";
+    BONUS.forEach((day, i) => makeDoor(day, i, cal));
+    if (reveal) {
+      sec.classList.add("reveal");
+      setTimeout(() => { sec.scrollIntoView({ behavior: "smooth", block: "center" }); burstAt(sec, ["🎁", "✨", "⭐"], 24, 240); sfx.jingle(); }, 300);
+    }
+  }
+
+  function refreshDoor(day) {
+    const d = doors[day]; if (!d) return;
+    const p = puzzles[day] || { emoji: "🎁" };
+    const solved = !!state.solved[day];
+    d.door.classList.toggle("locked", !isUnlocked(day));
+    d.door.classList.toggle("today", todayDay() === day && !solved);
+    d.door.classList.toggle("missed", isUnlocked(day) && !solved && todayDay() !== day);
+    d.door.querySelector(".lock")?.remove();
+    if (!isUnlocked(day)) d.door.append(el("span", { class: "lock", text: "🔒" }));
+    d.door.classList.toggle("open", solved);
+    d.inside.innerHTML = "";
+    const st = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    if (solved && st) d.inside.append(el("div", { class: "in-item", html: Zoo.preview(st.item) }), el("div", { class: "in-check", text: "✓" }));
+    else d.inside.append(el("div", { class: "in-paw", html: PAW }));
+  }
+
+  const T = (n) => `${n} ${n === 1 ? "Tag" : "Tage"}`;
+  const LOCKED_MSGS = [
+    (n) => `Nicht schummeln, Ute! Noch ${T(n)}.`,
+    (n) => `Die Katze sitzt noch auf diesem Türchen. Noch ${T(n)}.`,
+    (n) => `Der Waschbär hat abgeschlossen. Noch ${T(n)}.`,
+    (n) => `Gut Ding will Weile haben – noch ${T(n)}.`,
+    (n) => `Hier wird noch geprobt. Premiere in ${T(n)}.`,
+  ];
+
+  function onDoor(day) {
+    const d = doors[day];
+    if (!isUnlocked(day)) {
+      d.door.classList.remove("shake"); void d.door.offsetWidth; d.door.classList.add("shake");
+      sfx.bad(); toast(Texts.say("gesperrt", { T: T(daysUntil(day)) }));
+      return;
+    }
+    sfx.boop(500 + day * 15);
+    if (typeof Animals !== "undefined") Animals.clearIn(d.wrap);
+    d.wrap.classList.add("opening"); setTimeout(() => d.wrap.classList.remove("opening"), 1300);
+    d.door.classList.add("open");
+    burstAt(d.door, ["✨", "⭐", "❄️"], 10, 80);
+    setTimeout(() => openPuzzle(day), 450);
+  }
+
+  /* ---------- Modal ---------- */
+  const PRAISE = ["Bravo, Ute!", "Glänzend kombiniert!", "Messerscharf gelöst!", "Respekt!", "Elegant gemacht!", "Klasse!", "Sauber gelöst!", "Tierisch gut!", "Ganz große Klasse!", "Wie immer souverän!"];
+  let currentDay = null;
+
+  function openPuzzle(day) {
+    currentDay = day;
+    const p = puzzles[day];
+    const m = document.getElementById("modal");
+    const stItem = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    m.querySelector(".modal-art").innerHTML = stItem ? Zoo.preview(stItem.item) : "";
+    m.querySelector(".modal-day").textContent = `Kapitel ${day} · ${day}. Dezember`;
+    const story = typeof Zoo !== "undefined" && Zoo.STORY[day];
+    const sb = m.querySelector(".modal-story");
+    sb.innerHTML = "";
+    if (story) sb.append(el("div", { class: "story-avatar", html: Animals.svg({ sp: "capy", col: 0, acc: "orange" }, { fit: true }) }), el("p", { text: story.story }));
+    sb.classList.toggle("hidden", !story);
+    m.querySelector(".modal-title").textContent = p.title;
+    m.querySelector(".modal-intro").textContent = p.intro || "";
+    const body = m.querySelector(".modal-body");
+    body.innerHTML = "";
+    m.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    if (state.solved[day]) showReward(day, true);
+    else p.render(body, { solve: () => solved(day), day });
+    if (!state.solved[day] && typeof Animals !== "undefined") Animals.hideIn("modal", m.querySelector(".modal-card"));
+  }
+
+  function closeModal() {
+    const m = document.getElementById("modal");
+    if (m.classList.contains("hidden")) return;
+    m.classList.add("hidden");
+    document.body.style.overflow = "";
+    const body = m.querySelector(".modal-body");
+    if (body._cleanup) { body._cleanup(); body._cleanup = null; }
+    body.innerHTML = "";
+    if (typeof Animals !== "undefined") Animals.clearIn(m.querySelector(".modal-card"));
+    if (currentDay) refreshDoor(currentDay);
+    currentDay = null;
+  }
+
+  function solved(day) {
+    const first = !state.solved[day];
+    state.solved[day] = true; save();
+    if (first && typeof Extras !== "undefined") Extras.track("door");
+    sfx.win(); confetti();
+    setTimeout(() => showReward(day, false), 700);
+  }
+
+  function showReward(day, again) {
+    const m = document.getElementById("modal");
+    const body = m.querySelector(".modal-body");
+    if (body._cleanup) { body._cleanup(); body._cleanup = null; }
+    m.querySelector(".modal-intro").textContent = "";
+    m.querySelector(".modal-story").classList.add("hidden");
+    body.innerHTML = "";
+    const st = Zoo.STORY[day], it = Zoo.info(st.item);
+    const coins = again ? 0 : Zoo.earn(day);
+    const coinBox = el("div", { class: "r-coins", html: `<span class="coin-ic"></span>+${coins || st.coins} Taler` });
+    coinBox.querySelector(".coin-ic").innerHTML = document.getElementById("coin-icon").innerHTML;
+    const has = Zoo.owns(st.item);
+    const shopBtn = el("button", { class: "btn btn-green", text: has ? "Ist schon im Gehege ✓" : `Zum Shop: ${it[1]}`, onclick: () => { closeModal(); Zoo.openShop(st.item); } });
+    shopBtn.disabled = has;
+    const later = el("button", { class: "btn btn-soft", text: "Zurück zum Kalender", onclick: () => closeModal() });
+    const replay = el("button", { class: "btn btn-soft", text: "Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
+    const letterBtn = day === 24 ? el("button", { class: "btn", text: "Zur Bescherung unter dem Baum", onclick: () => { closeModal(); const letter = () => Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); typeof Extras !== "undefined" ? Extras.christmasShow(letter) : letter(); } })
+      : day === 31 && typeof Extras !== "undefined" ? el("button", { class: "btn", text: "Jahresrückblick ansehen", onclick: () => { closeModal(); Extras.review(); } }) : null;
+    body.append(el("div", { class: "reward" },
+      el("h3", { text: again ? "Dieses Kapitel ist geschafft" : Texts.say("lob") }),
+      again ? null : coinBox,
+      puzzles[day].outro ? el("p", { class: "r-solution", text: puzzles[day].outro }) : null,
+      el("div", { class: "r-story" }, el("div", { class: "r-item", html: Zoo.preview(st.item) }), el("p", { text: st.outro })),
+      el("div", { class: "row" }, letterBtn, shopBtn, again ? replay : later)));
+    if (!again && coins) { const r = coinBox.getBoundingClientRect(); setTimeout(() => Zoo.addCoins(coins, { x: r.left + r.width / 2, y: r.top + r.height / 2 }), 500); }
+    if (!again && day === 18) setTimeout(() => buildBonus(true), 900);
+  }
+
+  /* ---------- Deko: Titel ---------- */
+  function buildTitle() {
+    const h = document.getElementById("title");
+    const words = ["Mamas", "tierischer", "Adventskalender"];
+    h.classList.add("title-serif");
+    let k = 0;
+    words.forEach((w, wi) => {
+      const ws = el("span", { class: "t-word" + (wi === 1 ? " t-accent" : "") + (wi === 2 ? " t-break" : "") });
+      [...w].forEach((ch) => {
+        const s = el("span", { class: "t-letter", text: ch, "aria-hidden": "true" });
+        const f = 330 + (k++ % 12) * 40;
+        s.addEventListener("click", (e) => { e.stopPropagation(); s.classList.remove("jump"); void s.offsetWidth; s.classList.add("jump"); sfx.boop(f); burstAt(s, ["✨", "⭐"], 4, 40); });
+        ws.append(s);
+      });
+      h.append(ws, " ");
+    });
+    let hearts = 0;
+    const heart = document.getElementById("title-heart");
+    heart.addEventListener("click", (e) => {
+      e.stopPropagation(); hearts++; sfx.pop(); burstAt(heart, ["💖", "💗", "💕"], 8, 60);
+      heart.style.transform = `scale(${1 + Math.min(hearts, 6) * 0.15})`;
+      if (hearts === 6) { rain(["💖", "💗", "💕", "💞", "🐾"], 70); toast("Herzregen für die beste Mama! 💖"); sfx.win(); hearts = 0; setTimeout(() => (heart.style.transform = ""), 400); }
+    });
+  }
+
+  /* ---------- Deko: Lichterkette ---------- */
+  const BULB_COLORS = ["#ffe7a3", "#ffd27a", "#fff3cf", "#f6c25b"];
+  function buildLights() {
+    const box = document.getElementById("lights");
+    box.innerHTML = "";
+    const n = Math.max(8, Math.floor(innerWidth / 48));
+    for (let i = 0; i < n; i++) {
+      let c = i % BULB_COLORS.length;
+      const b = el("button", { class: "bulb", "aria-label": "Lämpchen", style: `background:${BULB_COLORS[c]};color:${BULB_COLORS[c]};animation-delay:${(i % 4) * 0.4}s;margin-top:${14 + Math.sin(i / n * Math.PI) * 10}px` });
+      b.addEventListener("click", (e) => {
+        e.stopPropagation(); c = (c + 1) % BULB_COLORS.length;
+        b.style.background = b.style.color = BULB_COLORS[c];
+        sfx.tone(523 * Math.pow(2, c / 6), 0.15, "sine", 0.15);
+      });
+      box.append(b);
+    }
+  }
+
+  /* ---------- Deko: Schnee ---------- */
+  function startSnow() {
+    const box = document.getElementById("snow");
+    const flakes = ["❄", "❅", "❆", "✻"];
+    setInterval(() => {
+      if (document.hidden || document.body.classList.contains("game-open") || document.body.classList.contains("covered") || box.childElementCount > (innerWidth < 600 ? 18 : 30)) return;
+      const size = 14 + Math.random() * 18;
+      const f = el("div", { class: "flake", text: pick(flakes), style: `left:${Math.random() * 100}vw;font-size:${size}px;animation-duration:${9 + Math.random() * 9}s;--drift:${(Math.random() - 0.5) * 160}px;opacity:${0.6 + Math.random() * 0.4}` });
+      f.addEventListener("animationend", () => f.remove());
+      f.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        burst(e.clientX, e.clientY, ["💖", "✨", "💧"], 6, 50); sfx.pop(); f.remove();
+        state.flakes = (state.flakes || 0) + 1; save();
+        if (state.flakes % 15 === 0) toast(`❄️ ${state.flakes} Schneeflocken gefangen! Profi-Fängerin!`);
+      });
+      box.append(f);
+    }, 700);
+  }
+
+  /* ---------- Deko: Kapibara ---------- */
+  const CAPY = ["Hallo Ute! 🍊", "Ich bin Kalle, das Kapibara 🥰", "Ganz entspannt bleiben… 🧘", "Hast du heute schon ein Türchen geöffnet?", "Streichelst du mich? 🥺", "Kapibaras sind mit allen befreundet 💕", "Orange auf dem Kopf = Stil 🍊", "Ich mag Badewannen 🛁", "Rätseln macht hungrig 🍉", "Du schaffst das! 💪", "*kuschel* 🤎"];
+  function setupCapy() {
+    const wrap = document.getElementById("capy-wrap"), capy = document.getElementById("capy"), bubble = document.getElementById("capy-bubble"), orange = document.getElementById("capy-orange");
+    let t;
+    // Wenn neben dem Inhalt kein Platz ist, schaut Kalle nur unten aus der Ecke und kommt zum Sprechen hoch
+    const peek = () => innerWidth < 1420;
+    const pastHero = () => (document.getElementById("topnav")?.getBoundingClientRect().top ?? 0) < 80;
+    const say = (msg, ambient) => {
+      if (ambient && (busy() || (peek() && !pastHero()))) return;
+      bubble.textContent = msg; bubble.classList.add("show"); wrap.classList.add("up");
+      clearTimeout(t); t = setTimeout(() => { bubble.classList.remove("show"); wrap.classList.remove("up"); }, 3000);
+    };
+    let clicks = 0;
+    wrap.addEventListener("click", (e) => {
+      e.stopPropagation(); clicks++;
+      if (typeof Extras !== "undefined") Extras.track("kalle");
+      capy.classList.remove("boing"); void capy.offsetWidth; capy.classList.add("boing");
+      sfx.tone(220, 0.2, "sine", 0.25, 330);
+      burstAt(capy, ["🤎", "💖", "🍊", "✨"], 7, 70);
+      if (clicks % 5 === 0) { orange.classList.toggle("gone"); say(orange.classList.contains("gone") ? "Huch! Meine Orange! 🍊💨" : "Ah, da ist sie wieder 🍊😌"); }
+      else say(Texts.say("kalle"));
+    });
+    setTimeout(() => {
+      if (!peek() || pastHero()) { say(CAPY[0], true); return; }
+      const onScroll = () => { if (!pastHero()) return; removeEventListener("scroll", onScroll); setTimeout(() => say(CAPY[0], true), 600); };
+      addEventListener("scroll", onScroll, { passive: true });
+    }, 1200);
+    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle"), true); }, 22000);
+  }
+
+  /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */
+  function setupPaws() {
+    document.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button, input, select, .modal-card, #modal, .walker, #capy-wrap, .flake, .finale-overlay, .gehege-overlay, .gift-parcel, .post-run")) return;
+      const p = el("div", { class: "paw", text: pick(["🐾", "🐾", "🐾", "💗", "⭐"]), style: `left:${e.clientX - 10}px;top:${e.clientY - 10}px;--r:${Math.random() * 60 - 30}deg` });
+      fx().append(p); p.addEventListener("animationend", () => p.remove());
+      sfx.tone(800 + Math.random() * 400, 0.06, "sine", 0.08);
+    });
+  }
+
+  /* ---------- Countdown ---------- */
+  function updateCountdown() {
+    const c = document.getElementById("countdown");
+    const n = now();
+    const t = todayDay();
+    if (PREVIEW) {
+      c.innerHTML = "🔓 <b>Vorschau-Modus</b>: alle Türchen offen · ";
+      c.append(el("button", { class: "btn btn-soft", text: "🔄 Fortschritt löschen", style: "padding:4px 10px;font-size:14px", onclick: () => { try { Object.keys(localStorage).filter((k) => k.startsWith("mama-")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} location.reload(); } }));
+      c.append(" ", el("a", { href: "test.html", class: "btn btn-soft", text: "📅 Testzentrale", style: "padding:4px 10px;font-size:14px;text-decoration:none;display:inline-block" }));
+    }
+    else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen`; }
+    else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> · Kapitel ${t} wartet auf dich`;
+    else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖";
+    else c.innerHTML = "Frohes neues Jahr! Dein Gehege bleibt für dich geöffnet – schau vorbei, wann immer du magst.";
+  }
+
+  /* ---------- Start ---------- */
+  /* ---------- Bis zum 28.11., 9 Uhr: alles verschlossen ---------- */
+  const OPENS = new Date(CONFIG.year, 10, 28, 9, 0, 0);
+  const isLocked = () => (!PREVIEW || params.has("schloss")) && new Date() < OPENS;
+  function showLock() {
+    document.body.classList.add("locked-page");
+    const lock = el("div", { class: "site-lock", role: "img", "aria-label": "Verschlossen – öffnet am 28. November um 9 Uhr morgens" });
+    const pad = el("div", { class: "lock-pad", html: `<svg viewBox="0 0 200 240" aria-hidden="true">
+      <defs><linearGradient id="lkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
+      <linearGradient id="lkS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient></defs>
+      <path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#lkS)" stroke-width="20" stroke-linecap="round"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#lkG)"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
+      <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
+      <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/>
+    </svg>` });
+    pad.addEventListener("click", () => { pad.classList.remove("rattle"); void pad.offsetWidth; pad.classList.add("rattle"); });
+    // Kleine goldene Taschenuhr mit Countdown
+    const ticks = Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="${i % 3 ? 15 : 13}" x2="50" y2="${i % 3 ? 19 : 21}" stroke="#7a5a1c" stroke-width="${i % 3 ? 1.4 : 2.4}" stroke-linecap="round" transform="rotate(${i * 30} 50 50)"/>`).join("");
+    const watch = el("div", { class: "lock-watch", html: `<svg viewBox="0 0 100 112" aria-hidden="true">
+      <defs><linearGradient id="lwG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".55" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient></defs>
+      <circle cx="50" cy="6" r="5" fill="none" stroke="url(#lwG)" stroke-width="3"/><rect x="45" y="9" width="10" height="6" rx="2" fill="url(#lwG)"/>
+      <g transform="translate(0 12)"><circle cx="50" cy="50" r="46" fill="url(#lwG)"/><circle cx="50" cy="50" r="40" fill="#fbf6ea" stroke="#a8812f" stroke-width="1.5"/>${ticks}
+      <g class="lw-hour"><line x1="50" y1="50" x2="50" y2="32" stroke="#2b241f" stroke-width="3.2" stroke-linecap="round"/></g>
+      <g class="lw-min"><line x1="50" y1="50" x2="50" y2="22" stroke="#2b241f" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g class="lw-sec"><line x1="50" y1="56" x2="50" y2="18" stroke="#8e2d3b" stroke-width="1.1" stroke-linecap="round"/></g>
+      <circle cx="50" cy="50" r="2.6" fill="#8e2d3b"/></g></svg>` });
+    const left = el("div", { class: "lock-left" });
+    const hand = (cls, deg) => { const g = watch.querySelector(cls); if (g) g.setAttribute("transform", `rotate(${deg} 50 50)`); };
+    const p2 = (n) => String(n).padStart(2, "0");
+    const tickClock = () => {
+      const ms = Math.max(0, OPENS - new Date()), t = Math.floor(ms / 1000);
+      const d = Math.floor(t / 86400), h = Math.floor((t % 86400) / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+      left.innerHTML = `${d ? `<b>${d}</b><span>${d === 1 ? "Tag" : "Tage"}</span>` : ""}<b>${p2(h)}</b><span>Std.</span><b>${p2(m)}</b><span>Min.</span><b>${p2(sec)}</b><span>Sek.</span>`;
+      // die Uhr läuft rückwärts: Zeiger zeigen die verbleibende Zeit
+      hand(".lw-sec", sec * 6); hand(".lw-min", m * 6 + sec * 0.1); hand(".lw-hour", (h % 12) * 30 + m * 0.5);
+    };
+    tickClock(); setInterval(tickClock, 1000);
+    lock.append(pad,
+      el("div", { class: "lock-copy" },
+        el("p", { class: "lock-text", text: "Hier wartet etwas ganz Besonderes auf dich, liebe Mama." }),
+        el("p", { class: "lock-sub", text: "Das Schloss öffnet sich am 28.\u00a0November um 9\u00a0Uhr morgens." })),
+      el("div", { class: "lock-clock" }, watch, left));
+    document.body.append(lock);
+    setInterval(() => { if (!isLocked()) location.reload(); }, 5000);
+  }
+
+  // Beim allerersten Besuch nach dem 28.11.: Schlüssel schließt auf, Schloss klackt auf und gibt den Kalender frei
+  const UNLOCK_KEY = "mama-aufgeschlossen-" + CONFIG.year;
+  const PAD = (withKey) => `<svg viewBox="0 0 200 300" aria-hidden="true">
+      <defs><linearGradient id="ulG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
+      <linearGradient id="ulS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient>
+      <linearGradient id="ulK" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9bcc1"/><stop offset=".5" stop-color="#f4f5f7"/><stop offset="1" stop-color="#9a9da2"/></linearGradient>
+      <linearGradient id="ulE" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7d8086"/><stop offset=".35" stop-color="#e9ebee"/><stop offset=".7" stop-color="#b4b7bc"/><stop offset="1" stop-color="#6f7278"/></linearGradient>
+      <clipPath id="ulClip" clipPathUnits="userSpaceOnUse"><rect x="0" y="183" width="200" height="140"/></clipPath></defs>
+      <g class="ul-shackle"><path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#ulS)" stroke-width="20" stroke-linecap="round"/></g>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#ulG)"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
+      <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
+      <rect x="93" y="168" width="14" height="30" rx="6" fill="#6f2230"/>
+      ${withKey ? `<g clip-path="url(#ulClip)"><g class="ul-key">
+        <rect class="k-shaft" x="94" y="150" width="12" height="104" rx="3" fill="url(#ulK)" stroke="#8c8f94" stroke-width="1"/>
+        <path d="M106 157 h9 v7 h-5 v7 h6 v8 h-10z" fill="#c9cdd2" stroke="#8c8f94" stroke-width="1"/>
+        <g class="k-bow">
+          ${[6, 5, 4, 3, 2, 1].map((n) => `<path class="k-depth" style="--d:${n * 3}px" d="M100 296 c-17 -12 -31 -21 -31 -35 a15 15 0 0 1 31 -7 a15 15 0 0 1 31 7 c0 14 -14 23 -31 35z" fill="${n === 6 ? "#7d8086" : "#a3a6ab"}" stroke="#7d8086" stroke-width="${n === 6 ? 2 : 0}"/>`).join("")}
+          <g class="k-face">
+            <path d="M100 296 c-17 -12 -31 -21 -31 -35 a15 15 0 0 1 31 -7 a15 15 0 0 1 31 7 c0 14 -14 23 -31 35z" fill="url(#ulK)" stroke="#7d8086" stroke-width="2"/>
+            <path d="M100 282 c-8 -6 -15 -10 -15 -17 a7 7 0 0 1 15 -3 a7 7 0 0 1 15 3 c0 7 -7 11 -15 17z" fill="#8e2d3b"/>
+          </g>
+        </g>
+      </g></g>` : ""}
+    </svg>`;
+  function playUnlock(done) {
+    let seen = false; try { seen = !!localStorage.getItem(UNLOCK_KEY); } catch (e) {}
+    if (seen) { done(); return; }
+    try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+    document.body.style.overflow = "hidden";
+    const ov = el("div", { class: "site-lock unlocking", "aria-hidden": "true" });
+    const pad = el("div", { class: "lock-pad ul-pad", html: PAD(true) });
+    ov.append(pad);
+    document.body.append(ov);
+    const click = () => { sfx.tone(1900, 0.03, "square", 0.08); sfx.tone(900, 0.05, "square", 0.07, null, 0.03); };
+    setTimeout(() => ov.classList.add("key-in"), 700);           // Schlüssel fährt ins Schloss
+    setTimeout(() => { ov.classList.add("key-turn"); sfx.tone(420, 0.25, "triangle", 0.06, 520); }, 2100); // umdrehen
+    setTimeout(() => { ov.classList.add("open"); click(); }, 2900); // Bügel springt auf
+    setTimeout(() => { ov.classList.add("vanish"); sfx.good(); }, 3900); // Schloss verschwindet
+    setTimeout(() => ov.classList.add("reveal"), 4400);          // Kalender kommt langsam zum Vorschein
+    setTimeout(() => { ov.remove(); document.body.style.overflow = ""; done(); }, 6600);
+  }
+
+  function start() {
+    if (isLocked()) { showLock(); return; }
+    load();
+    if (typeof Zoo !== "undefined") Zoo.init();
+    buildTitle(); buildLights(); buildCalendar();
+    updateCountdown(); setupCapy(); setupPaws(); startSnow();
+    if (typeof Animals !== "undefined") Animals.init();
+    if (typeof Games !== "undefined") Games.init();
+    if (typeof Extras !== "undefined") Extras.init();
+    const st = document.getElementById("sound-toggle");
+    const SND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const SND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+    st.classList.add("nav-icon"); st.title = "Ton an/aus";
+    const setSnd = () => { st.innerHTML = soundOn ? SND_ON : SND_OFF; st.classList.toggle("off", !soundOn); };
+    // Navigationsleiste: alle Knöpfe an einem Ort
+    const navA = document.getElementById("nav-actions"), navI = document.getElementById("nav-icons");
+    const gb = document.getElementById("gehege-btn");
+    if (navA && gb) { gb.classList.add("nav-btn"); navA.prepend(gb); }
+    if (navI) navI.append(st);
+    setSnd();
+    st.addEventListener("click", (e) => { e.stopPropagation(); soundOn = !soundOn; setSnd(); try { localStorage.setItem(STORE_KEY + "-sound", soundOn ? "on" : "off"); } catch (er) {} if (soundOn) sfx.good(); });
+    const m = document.getElementById("modal");
+    m.querySelector(".modal-close").addEventListener("click", closeModal);
+    m.addEventListener("click", (e) => { if (e.target === m) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+    // Akku schonen: Animationen außerhalb des Bildschirms anhalten
+    if ("IntersectionObserver" in window) { const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "80px" }); ["hero", "calendar", "calendar-bonus", "today"].forEach((id) => { const n = document.getElementById(id); if (n) io.observe(n); }); }
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(buildLights, 300); });
+    playUnlock(() => { if (typeof Intro !== "undefined") setTimeout(Intro.maybeShow, 500); });
+    setInterval(() => { updateCountdown(); Object.keys(doors).forEach((d) => { if (!currentDay) refreshDoor(+d); }); }, 60000);
+  }
+
+  return {
+    start, config: CONFIG, locked: isLocked, get: (d) => puzzles[d],
+    register: (day, def) => (puzzles[day] = def),
+    isSolved: (d) => !!state.solved[d],
+    markSolved: (d) => { state.solved[d] = true; save(); },
+    closeModal, refreshDoor, isUnlocked, preview: PREVIEW, bonusVisible,
+    h: { el, shuffle, seeded, pick, sleep, norm, sfx, burst, burstAt, confetti, rain, toast, notify, busy, shakeEl, textAnswer },
+  };
+})();
