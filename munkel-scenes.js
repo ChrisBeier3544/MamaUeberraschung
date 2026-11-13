@@ -20,6 +20,8 @@ const MunkelShow = (() => {
   /* ---------- Zeit: welcher Tag, morgens oder abends ---------- */
   const isEvening = (d = new Date()) => d.getHours() >= 17 || d.getHours() < 6;
   function currentSlot(d = new Date()) {
+    // zwischen 0 und 6 Uhr gehört die Zeit noch zum Abend davor
+    if (d.getHours() < 6) { d = new Date(d); d.setDate(d.getDate() - 1); d.setHours(22); }
     let day = d.getMonth() === 10 ? d.getDate() : d.getMonth() < 10 ? 14 : 27;
     if (d.getMonth() === 10 && d.getDate() >= 28) day = 27;
     day = Math.max(14, Math.min(27, day));
@@ -346,8 +348,8 @@ const MunkelShow = (() => {
     pad.querySelectorAll(".mk-item, .mk-sheen").forEach((d) => d.remove());
     const put = (html, x, y, w, extra = "", title = "") => { const d = document.createElement("div"); d.className = "mk-prop mk-item" + extra; d.innerHTML = html; place(d, x, y); d.style.width = (w / 200) * 100 + "%"; if (title) d.title = title; d.addEventListener("click", (e) => { e.stopPropagation(); d.classList.remove("wiggle"); void d.offsetWidth; d.classList.add("wiggle"); tone(900 + Math.random() * 300, 0.08, "sine", 0.06); }); pad.append(d); return d; };
     if (st.items.includes("brief")) put(ART.letter, 40, 236, 36, " lean", "Brief für Ute – erst am 28. öffnen!");
-    if (st.items.includes("schneemann")) put(ART.snowman, 70, 106, 36, "", "Mini-Schneemann");
-    if (st.items.includes("kerze")) put(ART.candle, 112, 106, 12, " lit candle", "Adventskerze");
+    if (st.items.includes("schneemann")) put(ART.snowman, 70, 106, 46, "", "Mini-Schneemann");
+    if (st.items.includes("kerze")) put(ART.candle, 112, 106, 16, " lit candle", "Adventskerze");
     if (st.items.includes("laterne")) put(ART.lantern, 36, 108, 13, " lit lantern-item", "Laterne");
     if (st.items.includes("nest")) { put(NEST_BACK, 148, 110, 84, " nest-back", "Munkels Nest"); put(ART.nestFront, 148, 110, 84, " nest-front", "Munkels Nest"); }
     if (st.items.includes("glanz")) { const g = document.createElement("div"); g.className = "mk-sheen"; pad.append(g); }
@@ -467,7 +469,7 @@ const MunkelShow = (() => {
       const spots = [[18, 14], [32, 9], [70, 12], [62, 22], [48, 6], [12, 26], [88, 26]];
       c.face("focus");
       for (const [x, y] of spots) { bird.classList.add("wings-up"); await c.wait(220); bird.classList.remove("wings-up"); keepStar(x, y).classList.add("pop"); tone(1200 + Math.random() * 900, 0.15, "sine", 0.06); await c.wait(300); }
-      c.face("happy"); c.hint("Tipp in den Himmel – mach selbst Sterne an! Sie bleiben die ganze Nacht.", 7000);
+      c.face("happy"); c.hint("Tipp in den Himmel – mach selbst Sterne an!", 7000);
       let mine = 0;
       const tapSky = (e) => { if (e.target.closest(".lock-pad svg *, .munkel, .lock-clock, .mk-album-btn, .mk-album, .lock-copy, .sky-orb")) return; mine++; keepStar((e.clientX / innerWidth) * 100, (e.clientY / innerHeight) * 100).classList.add("pop"); tone(1400 + Math.random() * 900, 0.12, "sine", 0.06); bird.act("mk-hop", 600); };
       lock.addEventListener("click", tapSky);
@@ -755,24 +757,24 @@ const MunkelShow = (() => {
         }
         return ball;
       };
-      const sm = c.prop(SNOWMAN(0), 70, 106, 36, { z: 5 });
-      let b = await roll(4, 10.8, 140, 70); b.remove(); sm.innerHTML = SNOWMAN(1); bird.act("mk-hop", 600); c.say("Der Bauch!", 1200); await c.wait(900);
+      const sm = c.prop(SNOWMAN(0), 70, 106, 46, { z: 5 });
+      let b = await roll(4, 13.8, 140, 70); b.remove(); sm.innerHTML = SNOWMAN(1); bird.act("mk-hop", 600); c.say("Der Bauch!", 1200); await c.wait(900);
       await c.moveTo(150, 104, 900, { land: "stand" });
-      b = await roll(3, 7.9, 140, 98);
+      b = await roll(3, 10.1, 140, 100);
       c.face("happy"); c.say("Hepp!", 900);
-      await c.anim(b, [{ left: "49%", top: "44.2%" }, { left: "42%", top: "26%" }, { left: "35%", top: "36%" }], 750, { easing: "ease-out" }).finished;
+      await c.anim(b, [{ left: "49%", top: "44.2%" }, { left: "42%", top: "26%" }, { left: "35%", top: "33.8%" }], 750, { easing: "ease-out" }).finished;
       b.remove(); sm.innerHTML = SNOWMAN(2); bird.act("squash", 450); await c.wait(600);
       await c.moveTo(150, 104, 900, { land: "stand" });
-      b = await roll(2.5, 6.1, 140, 98);
-      await c.anim(b, [{ left: "49%", top: "44.2%" }, { left: "41%", top: "18%" }, { left: "35%", top: "29.8%" }], 750, { easing: "ease-out" }).finished;
+      b = await roll(2.5, 7.8, 140, 100);
+      await c.anim(b, [{ left: "49%", top: "44.2%" }, { left: "41%", top: "18%" }, { left: "35%", top: "26%" }], 750, { easing: "ease-out" }).finished;
       b.remove(); sm.innerHTML = SNOWMAN(3); c.say("Und der Kopf!", 1300); await c.wait(1300);
       // Karotte holen
       await c.fetch(ART.carrot, { side: 1, y: 20, away: 800 });
-      await c.moveTo(106, 58, 1500, { keepFlying: true, arc: 20 });
+      await c.moveTo(108, 48, 1500, { keepFlying: true, arc: 20 });
       bird.carry(""); sm.innerHTML = SNOWMAN(4); tone(1200, 0.08, "triangle", 0.07); c.burstPt(78, 70, ["✨"], 6, 20);
       c.say("Karottennase und Kohleaugen!", 1800); await c.wait(1500);
       await c.fetch(ART.twigBeak2, { side: 1, y: 30, away: 700 });
-      await c.moveTo(110, 76, 1500, { keepFlying: true, arc: 20 });
+      await c.moveTo(114, 70, 1500, { keepFlying: true, arc: 20 });
       bird.carry(""); sm.innerHTML = SNOWMAN(5); tone(900, 0.08, "triangle", 0.07); c.say("Zweig-Arme!", 1300); await c.wait(1100);
       sm.innerHTML = SNOWMAN(6); tone(1400, 0.1, "triangle", 0.07); c.burstAt(sm, ["❄️", "✨"], 10, 30);
       await c.moveTo(120, 104, 600, { land: "stand" });
@@ -787,9 +789,10 @@ const MunkelShow = (() => {
       c.face("dreamy"); c.say("Bald ist der erste Advent … ich hol eine Kerze.", 2400); await c.wait(1900);
       const unlit = ART.candle.replace('class="cd-flame"', 'class="cd-flame" style="opacity:0"').replace('class="cd-glow"', 'class="cd-glow" style="opacity:0"');
       await c.fetch(`<g transform="translate(-5 -6) scale(.5)">${unlit.replace(/<\/?svg[^>]*>/g, "")}</g>`, { side: 1, y: 20 });
-      await c.moveTo(84, 104, 1500, { land: "stand" });
-      bird.carry(""); const k = c.prop(unlit, 112, 106, 12, { z: 7 });
-      c.face("focus"); c.say("Ganz vorsichtig …", 1500); await c.wait(1000); c.pose("mk-open"); await c.wait(1100); c.pose("mk-open", false);
+      await c.moveTo(118, 64, 1500, { keepFlying: true, arc: 20 });
+      bird.carry(""); const k = c.prop(unlit, 112, 106, 16, { z: 7 }); tone(600, 0.08, "triangle", 0.06);
+      await c.moveTo(134, 58, 500, { keepFlying: true, arc: 4 }); bird.glide(true);
+      c.face("focus"); c.say("Ganz vorsichtig …", 1500); await c.wait(1000); c.pose("mk-open"); await c.wait(1100); c.pose("mk-open", false); bird.glide(false);
       k.innerHTML = ART.candle.replace(/^<svg/, "<svg"); k.classList.add("lit", "candle-lit"); tone(523, 0.6, "sine", 0.08); tone(784, 0.6, "sine", 0.06, null, 0.1);
       lock.classList.add("candle-glow"); c.face("wow"); await c.wait(700); c.face("happy");
       c.hint("Tipp die Kerze an!", 5000);
@@ -1051,7 +1054,7 @@ const MunkelShow = (() => {
     try {
       await c.wait(auto ? 1200 : 200);
       // morgens: aus dem Schlaf aufwachen, bevor die Szene beginnt
-      if (id.endsWith("m") && id !== "14m" && (wasAsleep || auto)) {
+      if (id.endsWith("m") && id !== "14m" && (wasAsleep || (auto && new Date().getHours() < 11))) {
         if (st.items.includes("nest")) { c.jump(SEATS.nest[0], SEATS.nest[1]); c.legsNow = "tuck"; }
         c.face("sleep"); await c.wait(1300); c.face("wow"); tone(900, 0.1, "triangle", 0.06); await c.wait(500);
         c.face("sleepy"); bird.classList.add("wings-up"); c.pose("mk-open"); await c.wait(900); bird.classList.remove("wings-up"); c.pose("mk-open", false);

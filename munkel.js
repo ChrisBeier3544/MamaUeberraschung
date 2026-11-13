@@ -102,6 +102,7 @@ const Munkel = (() => {
   /* ---------- Sprechblasen: schweben frei über dem Vogel ---------- */
   function bubble(el, text, ms) {
     el._bubble?.remove();
+    document.querySelectorAll(".mk-bubble").forEach((x) => x.remove());
     const b = document.createElement("div");
     b.className = "mk-bubble";
     b.textContent = text;
@@ -112,6 +113,9 @@ const Munkel = (() => {
       if (!alive) return;
       if (!el.isConnected) { b.remove(); return; }
       const r = el.querySelector(".mk-head")?.getBoundingClientRect() || el.getBoundingClientRect();
+      // Vogel (fast) außerhalb des Bildes oder versteckt → Blase ausblenden
+      const hidden = r.right < 20 || r.left > innerWidth - 20 || r.bottom < 0 || getComputedStyle(el.closest(".lock-perch") || el).visibility === "hidden";
+      b.style.opacity = hidden ? "0" : "";
       const bw = b.offsetWidth, bh = b.offsetHeight, m = 10;
       let x = r.left + r.width / 2, y = r.top - 6 - bh;
       let below = false;
