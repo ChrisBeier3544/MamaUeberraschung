@@ -7,7 +7,7 @@
 const Extras = (() => {
   let H;
   const KEY = "mama-extras-" + CONFIG.year;
-  let st = { stats: {}, daily: {}, log: {}, badges: [], claimed: null, events: {}, donation: {}, santa: false, music: false, tasks: 0 };
+  let st = { stats: {}, daily: {}, log: {}, badges: [], claimed: null, events: {}, donation: {}, santa: false, music: false, tasks: 0, xmasPhoto: 0, xmasIds: null, cookies: {}, thanks: false };
   const load = () => { try { const r = localStorage.getItem(KEY); if (r) st = Object.assign(st, JSON.parse(r)); } catch (e) {} };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   const dkey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -216,6 +216,7 @@ const Extras = (() => {
     if (type === "bought" && detail) lg.bought.push(detail);
     if (["fed", "found", "games", "door"].includes(type)) lg[type] += n;
     save(); renderToday(); checkBadges();
+    if (type === "door" && App.isSolved(23) && !st.xmasPhoto && !document.querySelector(".xp-wrap")) whenFree(xmasPhoto, 2500);
   }
   const OPEN = {
     schnee: ["Heute hat es den ganzen Tag geschneit.", "Draußen tanzen die Schneeflocken.", "Schnee, Schnee, Schnee – die Pinguine sind im Glück."],
@@ -308,10 +309,12 @@ const Extras = (() => {
       Animals.sayRandom("Oh! Ich hab einen Taler im Stroh gefunden!"); setTimeout(() => { const r = field.getBoundingClientRect(); Zoo.addCoins(3, { x: r.left + r.width / 2, y: r.top + r.height / 2 }); }, 1200);
     } else if (ev === "rocky") {
       const stock = Zoo.foodStock(); const sps = Object.keys(stock).filter((s) => stock[s] > 0);
-      const coon = H.el("div", { class: "ev-coon", html: Animals.svg({ sp: "waschbaer", col: 0, acc: "muetze" }, { walk: true, width: 80 }) });
+      const reformed = App.isSolved(21);
+      const coon = H.el("div", { class: "ev-coon", html: Animals.svg({ sp: "waschbaer", col: 0, acc: reformed ? "postmuetze" : "muetze", accColor: "#2b3a5c" }, { walk: true, width: 80 }) });
       field.append(coon);
       coon.animate([{ left: "-12%" }, { left: "106%" }], { duration: 5000, fill: "forwards" }).onfinish = () => coon.remove();
-      if (sps.length) { const s = H.pick(sps); Zoo.setFood(s, stock[s] - 1); H.toast(`Rocky hat sich ${Zoo.FOOD[s][0]} stibitzt – und ist schon weg!`); }
+      if (reformed) H.toast(H.pick(["Rocky dreht seine Runde – alles in Ordnung bei den Vorräten!", "Rocky patrouilliert durchs Gehege. Kein einziger Keks fehlt!", "Rocky winkt im Vorbeigehen: „Alles sicher, Ute!“"]));
+      else if (sps.length) { const s = H.pick(sps); Zoo.setFood(s, stock[s] - 1); H.toast(`Rocky hat sich ${Zoo.FOOD[s][0]} stibitzt – und ist schon weg!`); }
       else H.toast("Rocky schleicht durchs Gehege … zum Glück ist die Futterkiste leer!");
     } else if (ev === "sturm") {
       field.classList.add("storm"); Animals.sayRandom("Brrr! Was für ein Schneesturm!"); setTimeout(() => Animals.sayRandom("Alle zusammenkuscheln!"), 3500);
@@ -426,7 +429,7 @@ const Extras = (() => {
 
   /* ================= Weihnachtsmann (24.12.) ================= */
   function santa() {
-    if (document.querySelector(".gehege-overlay, .finale-overlay, .pola-wrap, .post-run, .gift-parcel") || !document.getElementById("modal").classList.contains("hidden")) { setTimeout(santa, 5000); return; }
+    if (H.busy() || document.querySelector(".post-run, .gift-parcel")) { setTimeout(santa, 5000); return; }
     st.santa = true; save();
     // Gespann: vorne zwei Rentier-Hunde, dahinter an Zügeln der Schlitten (Flugrichtung: nach rechts)
     const fly = H.el("div", { class: "santa-fly" });
@@ -526,6 +529,7 @@ const Extras = (() => {
     "Wir sind so froh, dass es dich gibt.";
   function review() {
     const { area } = overlay("Dein Dezember", "Ein Rückblick auf 31 Kapitel im Tiergehege", "review-overlay");
+    area.append(H.el("div", { class: "rv-actions" }, st.xmasPhoto ? H.el("button", { class: "btn", text: "Das Weihnachtsfoto ansehen", onclick: showXmasPhoto }) : null, App.isSolved(31) ? H.el("button", { class: "btn btn-soft", text: "Abspann ansehen", onclick: credits }) : null));
     const found = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
     const favs = found.length ? found.slice().sort((a, b) => Zoo.fedAt(b.id) - Zoo.fedAt(a.id))[0] : null;
     const tile = (n, l) => H.el("div", { class: "rv-tile" }, H.el("b", { text: n }), H.el("span", { text: l }));
@@ -541,6 +545,135 @@ const Extras = (() => {
       H.el("h3", { text: "Unser Jahr in Bildern" }),
       H.el("div", { class: "mem-wall" }, ...Object.keys(MEMORIES).map(Number).map((d) => memPola(d, () => showMemory(d)))),
       H.el("div", { class: "rv-letter" }, H.el("h3", { text: "Ein Brief zum Abschied" }), H.el("div", { class: "gift-msg", text: FAREWELL }), H.el("p", { class: "sig", text: "Deine Tiere aus dem Gehege" })));
+  }
+
+
+  /* ================= Warten, bis kein Fenster offen ist ================= */
+  const whenFree = (fn, wait = 800) => { const tick = () => (H.busy() || document.hidden ? setTimeout(tick, wait) : fn()); setTimeout(tick, wait); };
+
+  /* ================= Das echte Weihnachtsfoto (Kapitel 20/23) ================= */
+  const KALLE = { sp: "capy", col: 0, acc: "orange", name: "Kalle" };
+  function photoCast(ids) {
+    const all = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
+    let cast = ids ? ids.map((id) => all.find((v) => v.id === id) || Animals.BABIES.find((b) => b.id === id)).filter(Boolean) : H.shuffle(all).slice(0, 12).concat(App.isSolved(17) ? Animals.BABIES.slice(0, 2) : []);
+    return cast;
+  }
+  function photoStage(cast) {
+    const stage = H.el("div", { class: "xp-stage" });
+    stage.append(H.el("div", { class: "xp-tree", html: Zoo.preview("tanne", true) }), H.el("div", { class: "xp-lights" }), H.el("div", { class: "xp-floor" }));
+    const people = [KALLE].concat(cast);
+    // drei Reihen: hinten klein, vorne groß
+    const rows = [[], [], []];
+    // Kalle vorne in der Mitte, die anderen gleichmäßig auf drei Reihen
+    const others = people.slice(1);
+    others.forEach((v, i) => rows[i % 3].push(v));
+    rows[2].splice(Math.floor(rows[2].length / 2), 0, people[0]);
+    rows.forEach((row, r) => {
+      const rowEl = H.el("div", { class: `xp-row xp-row${r}` });
+      row.forEach((v, i) => { const a = H.el("div", { class: "xp-ani", style: `--d:${(r * 6 + i) * 0.09}s`, html: Animals.svg(v, { fit: true }) }); if (v.sp === "capy" && v.acc === "orange") a.classList.add("xp-kalle"); rowEl.append(a); });
+      stage.append(rowEl);
+    });
+    return stage;
+  }
+  function xmasPhoto() {
+    if (document.querySelector(".xp-wrap")) return;
+    const cast = photoCast();
+    const wrap = H.el("div", { class: "pola-wrap xp-wrap", role: "dialog", "aria-label": "Weihnachtsfoto" });
+    const say = H.el("div", { class: "xp-say", text: "Alle aufstellen zum Weihnachtsfoto!" });
+    const stage = photoStage(cast);
+    const frame = H.el("div", { class: "xp-frame" }, stage);
+    const cap = H.el("div", { class: "xp-cap" });
+    const btn = H.el("button", { class: "btn btn-green xp-btn", text: "Ins Album legen" });
+    wrap.append(say, frame, cap, btn);
+    document.body.append(wrap);
+    H.sfx.jingle();
+    const steps = [[2600, "Kalle, bitte in die Mitte!"], [4200, "Und alle lächeln …"], [5200, "3"], [5900, "2"], [6600, "1"]];
+    steps.forEach(([t, txt]) => setTimeout(() => { say.textContent = txt; say.classList.remove("pop"); void say.offsetWidth; say.classList.add("pop"); H.sfx.tick(); }, t));
+    setTimeout(() => {
+      const fl = H.el("div", { class: "cam-flash" }); document.body.append(fl); fl.addEventListener("animationend", () => fl.remove());
+      H.sfx.tone(2200, 0.03, "square", 0.08); H.sfx.tone(700, 0.06, "square", 0.07, null, 0.04);
+      say.textContent = "Klick!"; frame.classList.add("taken");
+      cap.innerHTML = `<b>Weihnachten ${CONFIG.year}</b><span>Utes Tiergehege – alle zusammen</span>`;
+      st.xmasPhoto = Date.now(); st.xmasIds = cast.map((v) => v.id); save();
+      btn.classList.add("show");
+    }, 7300);
+    btn.onclick = () => { wrap.remove(); H.toast("Das Weihnachtsfoto liegt jetzt in deinem Sammelalbum."); };
+  }
+  function showXmasPhoto() {
+    if (!st.xmasPhoto) return;
+    const wrap = H.el("div", { class: "pola-wrap xp-wrap", role: "dialog" });
+    const frame = H.el("div", { class: "xp-frame taken still" }, photoStage(photoCast(st.xmasIds)));
+    wrap.append(frame, H.el("div", { class: "xp-cap" }, H.el("b", { text: `Weihnachten ${CONFIG.year}` }), H.el("span", { text: "Utes Tiergehege – alle zusammen" })), H.el("button", { class: "btn btn-green xp-btn show", text: "Schließen", onclick: () => wrap.remove() }));
+    wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
+    document.body.append(wrap);
+  }
+
+  /* ================= Abspann wie im Kino (31.12.) ================= */
+  function credits() {
+    if (document.querySelector(".credits")) return;
+    const found = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
+    let solved = 0; for (let d = 1; d <= 31; d++) if (App.isSolved(d)) solved++;
+    const ov = H.el("div", { class: "credits", role: "dialog", "aria-label": "Abspann" });
+    const roll = H.el("div", { class: "cr-roll" });
+    const block = (role, ...names) => H.el("div", { class: "cr-block" }, H.el("small", { text: role }), ...names.map((n) => H.el("b", { text: n })));
+    roll.append(
+      H.el("div", { class: "cr-title" }, H.el("span", { text: "Utes Tiergehege" }), H.el("em", { text: "Ein Adventskalender in 31 Kapiteln" })),
+      block("Gehege-Direktorin", "Ute"),
+      block("Erzähler", "Kalle, das Kapibara"),
+      block("Briefträger", "Bello"),
+      block("Wachmann (früher Keksdieb)", "Rocky"),
+      App.isSolved(17) ? block("Nachwuchs", ...Animals.BABIES.map((b) => b.name)) : null,
+      block("Wintergäste", "Die Fledermäuse & die Meisen"),
+      block("Besondere Gäste", "Der Nikolaus", "Der Weihnachtsmann", "Die Nachbarinnen vom Lindenweg"),
+      found.length ? H.el("div", { class: "cr-block" }, H.el("small", { text: "Bewohnerinnen und Bewohner" }), H.el("div", { class: "cr-cast" }, ...found.map((v) => H.el("span", {}, H.el("b", { text: v.name }), " ", H.el("i", { text: Animals.SPECIES[v.sp].name }))))) : null,
+      block("In Zahlen", `${solved} von 31 Kapiteln gelöst`, `${found.length} von 100 Tieren gefunden`, `${Zoo.ownedList().length} Dinge gebaut`),
+      block("Idee, Geschichte & ganz viel Liebe", "Chris"),
+      H.el("div", { class: "cr-end" }, H.el("b", { text: "Danke, dass du dabei warst." }), H.el("span", { text: "Frohes neues Jahr, Ute!" }), H.el("em", { text: "Das Gehege bleibt für dich geöffnet." })));
+    const close = () => { ov.classList.add("out"); setTimeout(() => ov.remove(), 600); document.body.style.overflow = ""; };
+    ov.append(H.el("div", { class: "cr-stars" }), roll, H.el("button", { class: "cr-skip", text: "Schließen", onclick: close }));
+    document.body.append(ov); document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => {
+      const dist = roll.offsetHeight + innerHeight * 0.55;
+      const anim = roll.animate([{ transform: `translateY(${innerHeight}px)` }, { transform: `translateY(${innerHeight * 0.5 - roll.offsetHeight + 60}px)` }], { duration: Math.max(26000, dist * 32), easing: "linear", fill: "forwards" });
+      anim.onfinish = () => H.sfx.good();
+    });
+    H.sfx.jingle();
+  }
+
+  /* ================= Rockys Keks-Spur: jeden Tag ein versteckter Keks ================= */
+  const COOKIE = `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 a17 17 0 1 0 17 17 a6 6 0 0 1 -7 -6 a6 6 0 0 1 -6 -8 a6 6 0 0 1 -4 -3z" fill="#d9a05c" stroke="#a8743a" stroke-width="1.6"/><circle cx="13" cy="15" r="2.4" fill="#5a3b2e"/><circle cx="21" cy="24" r="2.6" fill="#5a3b2e"/><circle cx="12" cy="26" r="2" fill="#5a3b2e"/><circle cx="27" cy="31" r="1.8" fill="#5a3b2e"/><circle cx="18" cy="11" r="1.3" fill="#f3d9a8"/></svg>`;
+  function hideCookie() {
+    const d = dayNum(); if (d < 1 || d > 31 || st.cookies[dkey()]) return;
+    document.querySelector(".keks")?.remove();
+    const spots = ["#block-today .block-head h2", "#block-calendar .block-head h2", ".site-foot", "#today .today-card:nth-child(2)", "#today .today-card:nth-child(3)", "#block-zoo .block-head h2", `#calendar .door-wrap:nth-child(${1 + (seedOf(dkey()) % 24)})`, "#today .today-card:nth-child(1)"];
+    const host = document.querySelector(spots[seedOf(dkey() + "k") % spots.length]); if (!host) return;
+    if (getComputedStyle(host).position === "static") host.style.position = "relative";
+    const k = H.el("button", { class: "keks", "aria-label": "Ein Keks", html: COOKIE, style: `--r:${(seedOf(dkey()) % 50) - 25}deg` });
+    k.addEventListener("click", (e) => {
+      e.stopPropagation(); if (st.cookies[dkey()]) return;
+      st.cookies[dkey()] = 1; save();
+      const r = k.getBoundingClientRect(); k.remove();
+      H.burst(r.left + r.width / 2, r.top + r.height / 2, ["·", "✨"], 10, 40); H.sfx.pop();
+      Zoo.addCoins(2, { x: r.left + r.width / 2, y: r.top });
+      H.toast(App.isSolved(21) ? "Rocky hat dir einen Keks versteckt – als Entschuldigung. +2 Taler!" : "Gefunden: ein Keks aus Rockys geheimem Vorrat! +2 Taler.", 4200);
+    });
+    host.append(k);
+  }
+
+  /* ================= Nach Silvester: Gehege bleibt offen, kleiner Dankesgruß ================= */
+  function thanks() {
+    if (st.thanks || dayNum() < 32) return;
+    whenFree(() => {
+      if (st.thanks) return; st.thanks = true; save();
+      const wrap = H.el("div", { class: "pola-wrap start-gift", role: "dialog" });
+      wrap.append(H.el("div", { class: "sg-card" },
+        H.el("div", { class: "sg-art", html: Animals.svg({ sp: "capy", col: 0, acc: "orange" }, { fit: true }) }),
+        H.el("b", { class: "sg-title", text: "Danke, Ute!" }),
+        H.el("p", { class: "sg-text", text: "31 Kapitel, ein Gehege voller glücklicher Tiere – und alles dank dir. Das Gehege bleibt für dich offen: Schau vorbei, wann immer du magst. Wir freuen uns jedes Mal." }),
+        H.el("p", { class: "sg-sign", text: "Kalle & alle Tiere" }),
+        H.el("button", { class: "btn btn-green", text: "Zum Gehege", onclick: () => { wrap.remove(); document.getElementById("block-zoo")?.scrollIntoView({ behavior: "smooth" }); } })));
+      document.body.append(wrap); H.sfx.jingle();
+    }, 2500);
   }
 
   /* ================= Start ================= */
@@ -563,10 +696,13 @@ const Extras = (() => {
     checkBadges();
     setTimeout(randomEvent, 60000 + Math.random() * 60000); setInterval(randomEvent, 240000 + Math.random() * 120000);
     setTimeout(visitor, 8000); setInterval(visitor, 26000);
-    if (!st.santa && App.isUnlocked(24)) setTimeout(santa, 9000);
+    if (!st.santa && App.isUnlocked(24) && dayNum() <= 31) setTimeout(santa, 9000);
+    if (App.isSolved(23) && !st.xmasPhoto) whenFree(xmasPhoto, 6000);
+    setTimeout(hideCookie, 3500);
+    thanks();
     // Tag/Nacht regelmäßig aktualisieren
     let wasNight = isNight();
     setInterval(() => { if (isNight() !== wasNight) { wasNight = isNight(); Zoo.refresh(); Animals.refreshPens(); renderToday(); } }, 60000);
   }
-  return { renderChecks, unclaimed, markUnclaimed, init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
+  return { xmasPhoto, showXmasPhoto, hasXmasPhoto: () => !!st.xmasPhoto, credits, renderChecks, unclaimed, markUnclaimed, init, isNight, weather, decoratePen, track, checkBadges, renderToday, openBadges, badgeGrid, christmasShow, review, santa, BADGES };
 })();

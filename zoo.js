@@ -26,17 +26,17 @@ const Zoo = (() => {
     18: { item: "lichter", coins: 100, story: "Heute Morgen stand ein riesiges Paket vor dem Tor. Auf dem Deckel klebt ein Silbenrätsel und ein Zettel: „Nur für die Gehege-Direktorin.“ Kalle meint, das Paket öffnet sich erst, wenn jemand Kluges das Rätsel löst.", outro: "Im Paket steckt eine Lichterkette – und sieben kleine Päckchen mit den Zahlen 25 bis 31! Der Adventskalender geht nach Weihnachten weiter." },
     19: { item: "schneemann", coins: 100, story: "Der erste richtige Schnee! Leider verschlafen ihn die Siebenschläfer. Weck sie auf – dann bauen alle zusammen einen Schneemann.", outro: "Alle sind wach, und im Shop wartet ein Schneemann." },
     20: { item: "fotowand", coins: 100, story: "Die Tiere wollen ein Weihnachtsfoto für ihre Verwandten in anderen Zoos machen. Dafür brauchen sie eine schöne Fotowand.", outro: "Die Fotowand steht bereit. Bitte recht freundlich!" },
-    21: { item: "stand", coins: 100, story: "Nach dem Zimtstern-Vorfall hat Kalle beschlossen: Plätzchen gibt es ab jetzt ganz offiziell, an einem eigenen Plätzchenstand. Vorher muss aber der Dieb gefunden werden.", outro: "Fall gelöst! Der Plätzchenstand bekommt ein großes Schild: „Bitte nicht waschen.“" },
+    21: { item: "stand", coins: 100, story: "Nach dem Zimtstern-Vorfall hat Kalle beschlossen: Plätzchen gibt es ab jetzt ganz offiziell, an einem eigenen Plätzchenstand. Vorher muss aber der Dieb gefunden werden.", outro: "Fall gelöst! Rocky hat gestanden – und ist ganz zerknirscht. Er verspricht hoch und heilig: Ab jetzt wird nichts mehr stibitzt. Der Plätzchenstand bekommt trotzdem ein großes Schild: „Bitte nicht waschen.“" },
     22: { item: "rodel", coins: 100, story: "Der Schnee bleibt liegen! Die Pinguine wollen rodeln, die Otter auch, und Kalle will zuschauen. Ein Rodelhügel muss her.", outro: "Der Rodelhügel ist im Shop. Die Pinguine haben schon ihre Bäuche aufgewärmt." },
     23: { item: "bruecke", coins: 100, story: "Morgen kommt die ganze Tierfamilie zum Weihnachtsfoto, aber die Hälfte will am Teich keine nassen Füße bekommen. Eine kleine Brücke wäre die Lösung.", outro: "Eine Brücke über den Teich. Morgen ist Heiligabend!" },
     24: { item: "tanne", coins: 150, story: "Heiligabend. Das Gehege ist kaum wiederzuerkennen. Jetzt fehlt nur noch eins: ein echter Weihnachtsbaum, unter dem sich alle versammeln können.", outro: "Frohe Weihnachten! Der Weihnachtsbaum ist im Shop – und unter dem Baum liegt ein Brief für dich." },
     25: { item: "eisbahn", coins: 100, story: "Erster Weihnachtstag! Der Teich ist über Nacht zugefroren, und die Pinguine haben ihn sofort zur Eisbahn erklärt. Mit Bande und Fähnchen wäre sie perfekt.", outro: "Die Eisbahn ist eröffnet. Bitte nicht drängeln, Pinguine." },
     26: { item: "iglu", coins: 100, story: "Zweiter Weihnachtstag. Den Eisbären ist die Kuschelhöhle zu warm. Sie wünschen sich ein Iglu – ganz klassisch.", outro: "Ein Iglu für die Eisbären. Die Pinguine wollen Untermieter werden." },
     27: { item: "kakao", coins: 100, story: "Nach dem Eislaufen frieren alle. Ein Kakao-Stand mit Sahne und Marshmallows würde die Stimmung retten.", outro: "Kakao für alle. Der Mops möchte bitte die doppelte Portion Sahne." },
-    28: { item: "feuer", coins: 100, story: "Die Abende zwischen den Jahren sind lang. Die Tiere möchten am Lagerfeuer sitzen und sich Geschichten erzählen – am liebsten die von der neuen Direktorin.", outro: "Ein Lagerfeuer. Heute Abend erzählt Kalle, wie alles anfing." },
-    29: { item: "teleskop", coins: 100, story: "Rocky behauptet, er hätte einen Stern mit Waschbär-Maske gesehen. Niemand glaubt ihm. Mit einem Teleskop ließe sich das klären.", outro: "Ein Teleskop! Rocky sucht schon den Himmel ab." },
+    28: { item: "feuer", coins: 100, story: "Die Abende zwischen den Jahren sind lang. Die Tiere möchten am Lagerfeuer sitzen und sich Geschichten erzählen – am liebsten die von der neuen Direktorin.", outro: "Ein Lagerfeuer. Heute Abend erzählt Kalle, wie alles anfing – und Rocky hält freiwillig Nachtwache vor der Vorratshütte. Niemand traut seinen Augen." },
+    29: { item: "teleskop", coins: 100, story: "Rocky behauptet, er hätte einen Stern mit Waschbär-Maske gesehen. Niemand glaubt ihm. Mit einem Teleskop ließe sich das klären.", outro: "Ein Teleskop! Und tatsächlich: Da oben funkelt ein Stern mit Waschbär-Maske. Zum ersten Mal glauben alle Rocky – er ist so stolz, dass er die ganze Nacht nicht schläft." },
     30: { item: "karussell", coins: 100, story: "Der Elefant hat einen Traum: einmal Karussell fahren. Er verspricht, sich ganz leicht zu machen.", outro: "Ein Karussell! Der Elefant hat Tränen in den Augen." },
-    31: { item: "feuerwerk", coins: 150, story: "Silvester! Das letzte Türchen. Alle Tiere sitzen auf der Bank, im Iglu und auf dem Rodelhügel und warten auf Mitternacht. Es fehlt nur noch das Feuerwerk – ein leises natürlich, wegen der Tiere.", outro: "Kauf das Feuerwerk im Shop – und dann: Frohes neues Jahr!" },
+    31: { item: "feuerwerk", coins: 150, story: "Silvester! Das letzte Türchen. Alle Tiere sitzen auf der Bank, im Iglu und auf dem Rodelhügel und warten auf Mitternacht. Rocky trägt seit heute eine Mütze mit der Aufschrift „Wachmann“: Kalle hat ihn offiziell zum Hüter der Vorräte ernannt. Es fehlt nur noch das Feuerwerk – ein leises natürlich, wegen der Tiere.", outro: "Kauf das Feuerwerk im Shop – und dann: Frohes neues Jahr!" },
   };
 
   /* ---------- Shop-Artikel ---------- */
@@ -272,6 +272,28 @@ const Zoo = (() => {
     laternen: LANTERNS.map(([x, y]) => [x, y - 110, 28]), feuer: [[565, 495, 60]], kerzen: [[448, 462, 18], [574, 442, 18], [440, 524, 18], [584, 508, 18]],
     lichter: [], tanne: [[500, 82, 26], [486, 150, 9], [530, 196, 9], [450, 250, 9], [552, 246, 9]], stand: [[782, 250, 30]],
   };
+  // Ab Kapitel 19 (erster Schnee): Schnee auf Zaun, Dächern, Bäumen und am Boden
+  function snowLayer(o, night, r, ground) {
+    const c = night ? "#dfe7f2" : "#ffffff", sh = night ? "#b9c6d8" : "#dbe8f2";
+    let t = "";
+    const at = (k, x, y) => { const [dx, dy] = off(k); return [x + dx, y + dy]; };
+    // Schneewehen am Boden (werden vor allen Teilen gezeichnet)
+    if (ground) { const rr = rnd(19); for (let i = 0; i < 18; i++) { const x = (rr() * W) | 0, y = 290 + ((rr() * 300) | 0), w = 40 + rr() * 80; t += `<ellipse cx="${x}" cy="${y}" rx="${w.toFixed(0)}" ry="${(w / 7).toFixed(1)}" fill="${c}" opacity=".8"/>`; } return t; }
+    // Zaun
+    if (o.has("zaun")) { t += `<rect y="203.5" width="${W}" height="3.5" rx="1.75" fill="${c}" opacity=".95" pointer-events="none"/>`; for (let x = 5; x < W; x += 48) t += `<ellipse cx="${x + 5.5}" cy="196" rx="7.5" ry="3.4" fill="${c}" pointer-events="none"/>`; }
+    // Bäume
+    if (o.has("baeume")) [[262, 1], [840, 0.9], [1250, 1.05], [1585, 0.95], [1900, 1.15]].forEach(([x, k]) => { const cy = 262 - 85 * k - 30 * k; t += `<path d="M${x - 30 * k} ${cy + 10 * k} Q${x} ${cy - 16 * k} ${x + 30 * k} ${cy + 10 * k} Q${x} ${cy + 2 * k} ${x - 30 * k} ${cy + 10 * k}Z" fill="${c}" pointer-events="none"/><ellipse cx="${x - 28 * k}" cy="${262 - 64 * k - 22 * k}" rx="${16 * k}" ry="${5 * k}" fill="${c}" pointer-events="none"/>`; });
+    // Dächer
+    const roof = (k, pts, w = 6) => { if (!o.has(k)) return; const p = pts.map(([x, y]) => at(k, x, y)); t += `<path d="M${p.map((q) => q.join(" ")).join(" L")}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none"/>`; };
+    roof("huette", [[834, 226], [885, 194], [936, 226]], 7);
+    roof("buehne", [[614, 202], [680, 180], [746, 202]], 6);
+    roof("vogelhaus", [[309, 188], [335, 170], [361, 188]], 5);
+    roof("stand", [[746, 213], [818, 213]], 5);
+    roof("kakao", [[652, 507], [728, 507]], 5);
+    roof("karussell", [[172, 328], [235, 294], [298, 328]], 5);
+    roof("iglu", [[830, 540], [874, 513], [918, 540]], 6);
+    return `<g class="snow-layer" style="filter:drop-shadow(0 1px 0 ${sh})">${t}</g>`;
+  }
   function scene(newKey, ownedOverride, plain) {
     const own = ownedOverride || st.owned;
     const o = new Set(own);
@@ -293,6 +315,8 @@ const Zoo = (() => {
     s += `<path d="M0 205 Q180 150 380 195 T760 185 T1140 190 T1520 180 T2000 195 V280 H0Z" fill="${hill}"/><rect y="250" width="${W}" height="350" fill="${ground}"/>`;
     if (!o.has("rasen")) s += [[150, 330, 70], [520, 430, 90], [330, 540, 80], [880, 330, 60], [700, 560, 70]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, 600 - y + 270, w * 0.9]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 5}" fill="#9c8b70"/>`).join("");
     else s += Array.from({ length: 60 }, () => { const x = (r() * W) | 0, y = 270 + ((r() * 320) | 0); return `<path d="M${x} ${y} q2 -9 4 0 q2 -9 4 0" stroke="${night ? "#3f5a4b" : "#8cc477"}" stroke-width="1.6" fill="none"/>`; }).join("");
+    const snowy = ownedOverride == null && typeof App !== "undefined" && App.isSolved(19);
+    if (snowy) s += snowLayer(o, night, r, true);
     if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, y + 20, w]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".8"/>`).join("");
     if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="1400" cy="435" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="1400" cy="433" rx="36" ry="7" fill="#a6b2b6"/>`;
     if (!o.has("baeume")) s += `<rect x="248" y="258" width="28" height="22" fill="#6b5a4a"/><ellipse cx="262" cy="258" rx="14" ry="4" fill="#8a7a66"/>`;
@@ -306,6 +330,7 @@ const Zoo = (() => {
     MID.forEach((k) => (s += k === "teich" && o.has("eisbahn") ? "" : g(k)));
     if (!o.has("rasen")) s += `<circle cx="700" cy="560" r="20" fill="none" stroke="#3a3a40" stroke-width="9"/><rect x="180" y="500" width="44" height="30" fill="#8f7a5f" transform="rotate(-12 202 515)"/><path d="M184 506 l36 18" stroke="#6b5a4a" stroke-width="3"/><circle cx="1560" cy="520" r="18" fill="none" stroke="#3a3a40" stroke-width="8"/><rect x="1180" y="540" width="40" height="28" fill="#8f7a5f" transform="rotate(10 1200 554)"/>`;
     FRONT.forEach((k) => (s += g(k)));
+    if (snowy) s += snowLayer(o, night, r, false);
     if (o.has("schneemann") && !night) s += Array.from({ length: 40 }, () => `<circle cx="${(r() * W) | 0}" cy="${(r() * 560) | 0}" r="${(1.5 + r() * 1.6).toFixed(1)}" fill="#fff" opacity=".7" pointer-events="none"/>`).join("");
     if (night) {
       s += `<rect width="${W}" height="600" fill="#0a1636" opacity="${o.has("feuerwerk") && !dark ? 0.12 : 0.36}" pointer-events="none"/>`;
@@ -525,7 +550,7 @@ const Zoo = (() => {
       H.el("h2", { text: title }),
       (() => { const src = fireworks ? CONFIG.newYearPhoto : CONFIG.christmasPhoto || "fotos/24.jpg"; const cap = fireworks ? CONFIG.newYearCaption : CONFIG.christmasCaption || "Wir zwei."; return src ? H.el("figure", { class: "letter-photo" }, H.el("img", { src, alt: "", onerror: (e) => e.target.parentElement.remove() }), H.el("figcaption", { text: cap || "" })) : null; })(),
       H.el("div", { class: "msg", text: msg }), H.el("p", { class: "sig", text: CONFIG.signature }),
-      H.el("div", { class: "row", style: "margin-top:16px" }, H.el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { H.confetti(); H.sfx.jingle(); } }), H.el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => ov.remove() }))));
+      H.el("div", { class: "row", style: "margin-top:16px" }, H.el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { H.confetti(); H.sfx.jingle(); } }), H.el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => { ov.remove(); if (fireworks && typeof Extras !== "undefined") setTimeout(Extras.credits, 600); } }))));
     document.body.append(ov);
     H.sfx.jingle(); H.confetti();
     setTimeout(() => H.rain(fireworks ? ["🎆", "✨", "⭐", "🎇", "💖"] : ["💖", "🎄", "⭐", "🎁"], 70), 1400);
@@ -681,5 +706,5 @@ const Zoo = (() => {
   function setPos(key, dx, dy) { st.pos[key] = [Math.round(Math.max(-450, Math.min(450, dx))), Math.round(Math.max(-300, Math.min(250, dy)))]; save(); refresh(); }
   const posOf = (key) => off(key);
   const ownedList = () => st.owned.slice();
-  return { startGift, W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  return { LANTERNS, startGift, W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

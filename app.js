@@ -209,7 +209,7 @@ const App = (() => {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
   }
   /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
-  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock";
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits";
   const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
   const notes = [];
   function flushNotes() {
@@ -527,7 +527,7 @@ const App = (() => {
     else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen`; }
     else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> · Kapitel ${t} wartet auf dich`;
     else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖";
-    else c.innerHTML = "Frohes neues Jahr! 🎆";
+    else c.innerHTML = "Frohes neues Jahr! Dein Gehege bleibt für dich geöffnet – schau vorbei, wann immer du magst.";
   }
 
   /* ---------- Start ---------- */

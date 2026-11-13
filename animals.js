@@ -714,6 +714,73 @@ const Animals = (() => {
   let penVisible = true;
   const penAsleep = (field) => document.hidden || (field.id === "zoo-pen" && (!penVisible || !!document.querySelector(".gehege-overlay")));
 
+  /* ---------- Figuren aus der Geschichte ---------- */
+  const savedName = (id, def) => { try { return JSON.parse(localStorage.getItem("mama-namen-" + CONFIG.year) || "{}")[id] || def; } catch (e) { return def; } };
+  // Nachwuchs aus Kapitel 17 – Ute darf ihn taufen
+  const BABIES = [
+    { id: "baby-lamm", sp: "schaf", col: 0, acc: "schleife", accColor: "#e8a0ab", def: "Lämmchen" },
+    { id: "baby-ferkel1", sp: "schwein", col: 0, acc: "", def: "Ferkelchen" },
+    { id: "baby-ferkel2", sp: "schwein", col: 0, acc: "schleife", accColor: "#58b6ff", def: "Ferkelinchen" },
+    { id: "baby-fuchs", sp: "fuchs", col: 0, acc: "", def: "Füchschen" },
+  ].map((b) => ({ ...b, rarity: "haeufig", special: true, name: savedName(b.id, b.def) }));
+  // Rocky – vom Keksdieb zum Wachmann (ab Kapitel 31)
+  const ROCKY = { id: "rocky-wachmann", sp: "waschbaer", col: 0, acc: "postmuetze", accColor: "#2b3a5c", rarity: "haeufig", special: true, name: "Rocky" };
+  const WACH_LINES = ["Wachmann Rocky meldet: Alles in Ordnung!", "Keine Kekse angerührt. Ehrenwort!", "Die Vorräte sind sicher – ich passe auf.", "Früher war ich ein Keksdieb. Heute bin ich Wachmann.", "Ich drehe meine Runde, Ute!", "Die Mütze steht mir, oder?"];
+  const specials = () => {
+    const out = [];
+    if (typeof App !== "undefined" && App.isSolved(17)) BABIES.forEach((b) => out.push([b, { scale: 0.56, label: "Nachwuchs aus Kapitel 17", baby: true }]));
+    if (typeof App !== "undefined" && App.isSolved(31)) out.push([ROCKY, { label: "Gehege-Wachmann – früher Keksdieb", wach: true }]);
+    return out;
+  };
+  // Wintergäste aus Kapitel 16, Nikolaus-Stiefel am 6.12.
+  const pctOf = (x, y) => [(x / (typeof Zoo !== "undefined" ? Zoo.W : 1000)) * 100, (y / 600) * 100];
+  const BAT = `<svg viewBox="0 0 60 30" aria-hidden="true"><path class="bw" d="M30 14 C24 4 14 2 2 8 C8 10 9 14 6 18 C12 15 16 17 18 21 C21 16 26 16 30 18Z" fill="#2b2433"/><path class="bw r" d="M30 14 C36 4 46 2 58 8 C52 10 51 14 54 18 C48 15 44 17 42 21 C39 16 34 16 30 18Z" fill="#2b2433"/><ellipse cx="30" cy="16" rx="4.5" ry="6" fill="#3a3145"/><path d="M27 10 l1 -4 2 3 2 -3 1 4z" fill="#3a3145"/><circle cx="28.5" cy="14" r=".9" fill="#ffd27a"/><circle cx="31.5" cy="14" r=".9" fill="#ffd27a"/></svg>`;
+  const TIT = (flip) => `<svg viewBox="0 0 30 24" aria-hidden="true" style="${flip ? "transform:scaleX(-1)" : ""}"><path d="M4 14 l-3 -2 l1 5z" fill="#4f7fbf"/><ellipse cx="13" cy="14" rx="9" ry="7" fill="#f2d046"/><path d="M6 12 q6 -9 15 -3 q-6 -1 -10 5z" fill="#5c8fd6"/><circle cx="21" cy="9" r="5.5" fill="#fff"/><path d="M17 5 q4 -3 8 1 l-1 2 q-3 -2 -7 -1z" fill="#3f6fb8"/><path d="M19 10.5 h6" stroke="#1d2330" stroke-width="1.6"/><circle cx="22" cy="8.5" r="1.1" fill="#1d2330"/><path d="M26 9 l3 1 -3 1z" fill="#3a2a24"/><path d="M11 20 v3 M15 20 v3" stroke="#8a6a4a" stroke-width="1.2"/></svg>`;
+  const BOOT = `<svg viewBox="0 0 40 44" aria-hidden="true"><path d="M27 6 q4 -6 8 -1 l-2 1 q-3 -3 -5 1z" fill="#e85d75"/><rect x="26" y="5" width="2.5" height="14" rx="1" fill="#fff" transform="rotate(12 27 12)"/><path d="M27 7 l2.4 2 M26.5 11 l2.4 2 M26 15 l2.4 2" stroke="#e85d75" stroke-width="1.4" transform="rotate(12 27 12)"/><path d="M10 12 h17 v18 q0 3 3 4 l6 2 q3 1 3 4 v2 h-29 q-2 0 -2 -2z" fill="#b8324b"/><path d="M10 31 h17" stroke="#8e2d3b" stroke-width="1.2" opacity=".6"/><rect x="7" y="8" width="23" height="7" rx="3.5" fill="#fffaf0"/><circle cx="11" cy="11.5" r="1" fill="#e9e1d2"/><circle cx="18" cy="10.5" r="1" fill="#e9e1d2"/><circle cx="25" cy="11.5" r="1" fill="#e9e1d2"/><path d="M8 42 h31" stroke="#5a1c28" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+  const BOOT_KEY = () => "mama-stiefel-" + CONFIG.year;
+  function storyExtras(field) {
+    if (typeof App === "undefined" || typeof Zoo === "undefined") return;
+    // Fledermäuse nachts, Meisen tagsüber am Vogelhäuschen
+    if (App.isSolved(16)) {
+      if (isNightNow()) {
+        [[0, 18, 26], [1, 9, 34], [2, 24, 30]].forEach(([n, top, dur]) => field.append(H.el("div", { class: "bat", style: `top:${top}%;animation-duration:${dur}s;animation-delay:-${n * 9}s`, html: BAT })));
+      } else if (Zoo.owns("vogelhaus")) {
+        const [hx, hy] = Zoo.anchorOf("vogelhaus");
+        [[-26, 0], [28, 1]].forEach(([dx, flip], n) => { const [lx, ty] = pctOf(hx + dx, hy - 14); field.append(H.el("div", { class: "tit", style: `left:${lx}%;top:${ty}%;animation-delay:-${n * 1.7}s`, html: TIT(flip) })); });
+      }
+    }
+    // Nikolaus: Stiefel der Tiere stehen bereit (nur am 6. Dezember)
+    const d = new Date();
+    if (d.getMonth() === 11 && d.getDate() === 6) {
+      let opened = []; try { opened = JSON.parse(localStorage.getItem(BOOT_KEY()) || "[]"); } catch (e) {}
+      const spots = Zoo.owns("laternen") ? Zoo.LANTERNS.slice(0, 4).map(([x, y]) => [x + 26, y + 4]) : [[900, 560], [960, 575], [1040, 575], [1100, 560]];
+      spots.forEach(([x, y], i) => {
+        const [lx, ty] = pctOf(x, y);
+        const b = H.el("button", { class: "nik-boot" + (opened.includes(i) ? " empty" : ""), "aria-label": "Nikolaus-Stiefel", style: `left:${lx}%;top:${ty}%;z-index:${Math.round(ty)}`, html: BOOT });
+        b.addEventListener("click", (e) => { e.stopPropagation(); openBoot(b, i); });
+        field.append(b);
+      });
+    }
+  }
+  function openBoot(b, i) {
+    let opened = []; try { opened = JSON.parse(localStorage.getItem(BOOT_KEY()) || "[]"); } catch (e) {}
+    b.classList.remove("wiggle"); void b.offsetWidth; b.classList.add("wiggle");
+    if (opened.includes(i)) { H.toast("Dieser Stiefel ist schon leer – aber er riecht noch nach Lebkuchen."); return; }
+    opened.push(i); try { localStorage.setItem(BOOT_KEY(), JSON.stringify(opened)); } catch (e) {}
+    document.querySelectorAll(".nik-boot").forEach((x, k) => { if (opened.includes(k % 4)) x.classList.add("empty"); });
+    const r = b.getBoundingClientRect(), at = { x: r.left + r.width / 2, y: r.top };
+    H.burst(at.x, at.y, ["✨", "⭐", "🎁"], 12, 70); H.sfx.jingle && H.sfx.good();
+    if (i === 0) { Zoo.addCoins(3, at); H.toast("Im Stiefel lagen 3 Taler – vom Nikolaus!"); }
+    else if (i === 1) {
+      const sps = Object.keys(SPECIES).filter((sp) => ownedOf(sp) > 0);
+      const sp = sps.length ? H.pick(sps) : "capy";
+      Zoo.setFood(sp, (Zoo.foodStock()[sp] || 0) + 3); Zoo.refresh();
+      H.toast(`Im Stiefel: 3× ${Zoo.FOOD[sp][0]} für die ${SPECIES[sp].plural}!`);
+    }
+    else if (i === 2) { Zoo.addCoins(2, at); H.toast("Ein Schokotaler – und gleich noch 2 echte dazu!"); }
+    else H.toast("Ein Zettel im Stiefel: „Lieber Nikolaus, bitte bring Ute ganz viel Freude. Deine Tiere“");
+  }
+
   let inlineCtrls = [];
   function mountPen(field, later) {
     if (!field._tap) { field.addEventListener("click", onSceneTap); field._tap = true; }
@@ -731,6 +798,8 @@ const Animals = (() => {
       return;
     }
     mine.forEach((v) => ctrls.push(penAnimal(field, v, later)));
+    specials().forEach(([v, o]) => ctrls.push(penAnimal(field, v, later, o)));
+    storyExtras(field);
     if (field.id === "zoo-pen") mountProps(field);
     (typeof Extras !== "undefined" && Extras.decoratePen(field));
   }
@@ -739,13 +808,13 @@ const Animals = (() => {
     const sp = SPECIES[v.sp];
     const small = innerWidth < 600;
     const k = ((field.clientHeight || 600) / 600) * (small ? 0.9 : 0.78);
-    const w = sp.W * sp.scale * k;
+    const w = sp.W * sp.scale * k * (o.scale || 1);
     const hz = o.guest ? null : homeX(v);
-    const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : " r-" + v.rarity) });
+    const a = H.el("div", { class: "pen-animal" + (o.guest ? " guest" : " r-" + v.rarity) + (o.baby ? " baby" : "") + (o.wach ? " wachmann" : "") });
     const wrap = H.el("div", { class: "pa-in" });
     wrap.innerHTML = svg(v, { width: w });
     a.append(wrap);
-    if (!o.guest) legendFx(wrap, v);
+    if (!o.guest && !v.special) legendFx(wrap, v);
     const c = { v, a, busy: false, guest: !!o.guest, x: o.x ?? (hz ? hz[0] + Math.random() * (hz[1] - hz[0] - 3) : Math.random() * 88), y: o.y ?? 48 + Math.random() * 46 };
     c.setSad = (on) => { a.classList.toggle("sad", on); if (on && !a.querySelector(".tear")) a.append(H.el("div", { class: "tear" })); if (!on) a.querySelector(".tear")?.remove(); };
     if (!o.guest) c.setSad(hungry(v));
@@ -805,10 +874,12 @@ const Animals = (() => {
         tag.innerHTML = ""; tag.append(H.el("b", { text: "Neuer Name:" }), inp, ok); inp.focus(); inp.select();
         clearTimeout(tag._t); tag._t = setTimeout(() => tag.remove(), 20000);
       });
-      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : desc(v) }), o.guest ? null : H.el("span", { html: rarityChip(v) }), o.guest || !hungry(v) ? null : H.el("span", { class: "hungry-note", text: "hat Hunger!" }), feedBtn, renameBtn);
+      const tag = H.el("div", { class: "pen-tag" }, H.el("b", { text: v.name }), H.el("span", { text: o.guest ? "zu Besuch" : o.label || desc(v) }), o.guest || v.special ? null : H.el("span", { html: rarityChip(v) }),
+        o.baby && v.name === v.def ? H.el("span", { class: "baby-hint", text: "Ich hab noch keinen Namen – gib mir einen!" }) : null, o.guest || !hungry(v) ? null : H.el("span", { class: "hungry-note", text: "hat Hunger!" }), feedBtn, renameBtn);
       a.append(tag);
       wrap.animate([{ transform: "translateY(0)" }, { transform: "translateY(-18px)" }, { transform: "translateY(0)" }], { duration: 420, easing: "ease-out" });
       H.sfx.boop(300 + Math.random() * 400);
+      if (o.wach) setTimeout(() => c.say(H.pick(WACH_LINES), 3200), 300);
       tag._t = setTimeout(() => tag.remove(), feedBtn ? 6000 : 2600);
     });
     field.append(a);
@@ -955,6 +1026,7 @@ const Animals = (() => {
     const to = (sx, sy, cb) => { const [px, py] = M.pct(sx, sy); c.goTo(clampN(px - aw / 2, 0, 94), clampN(py, 46, 98), cb); };
     const talk = () => c.say(Math.random() < 0.4 || !USE[key][1] ? USE[key][0] : Texts.say(USE[key][1]), 2800);
     if (kind === "swim") { to(ax - 70, ay - 30, () => { c.a.classList.add("swimming"); talk(); to(ax + 70, ay - 20, () => { c.a.classList.remove("swimming"); done(); }); }); return; }
+    if (kind === "coon" && typeof App !== "undefined" && App.isSolved(21)) { to(ax + 20, ay, () => { c.say(H.pick(["Ich passe auf die Vorräte auf!", "Alles sicher hier.", "Keine Kekse angerührt – wirklich!", "Seit dem Zimtstern-Fall bin ich ein neuer Waschbär."]), 2800); setTimeout(done, 3000); }); return; }
     if (kind === "cross") { to(ax - 90, ay - 30, () => to(ax + 90, ay - 30, () => { talk(); done(); })); return; }
     if (kind === "wood" && Zoo.owns("feuer")) { to(ax, ay, () => { c.say("Holz holen …", 1800); setTimeout(() => { const [fx, fy] = Zoo.anchorOf("feuer"); to(fx + 30, fy, () => { c.say("Fürs Feuer!", 2400); done(); }); }, 1200); }); return; }
     to(ax + (Math.random() - 0.5) * 60, ay + Math.random() * 18, () => {
@@ -1199,6 +1271,7 @@ const Animals = (() => {
       sum.append(H.el("div", { class: "rar-box", html: `<span class="rar r-${k}">${r.label}</span><b>${all.filter((v) => found.has(v.id)).length} / ${all.length}</b>` }));
     });
     const waiting = VARIANTS.filter((v) => !available(v)).length;
+    if (typeof Extras !== "undefined" && Extras.hasXmasPhoto()) wrap.append(H.el("button", { class: "album-xmas", onclick: () => Extras.showXmasPhoto() }, H.el("b", { text: `Weihnachtsfoto ${CONFIG.year}` }), H.el("span", { text: "Alle zusammen vor dem Weihnachtsbaum – antippen zum Ansehen" })));
     wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Die Tiere verstecken sich überall auf der Seite, seltene leuchten ein wenig. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
@@ -1254,6 +1327,8 @@ const Animals = (() => {
     announceWaves();
     setupInline();
     refreshPens();
+    // Nachwuchs einmalig ankündigen
+    try { if (typeof App !== "undefined" && App.isSolved(17) && !localStorage.getItem("mama-nachwuchs-" + CONFIG.year)) { localStorage.setItem("mama-nachwuchs-" + CONFIG.year, "1"); setTimeout(() => H.notify("Der Nachwuchs aus Kapitel 17 ist eingezogen! Tipp die Kleinen im Gehege an und gib ihnen Namen.", 7000), 3000); } } catch (e) {}
     let lastHour = hourNow();
     setInterval(() => { if (hourNow() !== lastHour && !celebrating && !document.querySelector(".gehege-overlay")) { lastHour = hourNow(); refreshPens(); } }, 60000);
     updateHunger(); setInterval(() => { updateHunger(); inlineCtrls.forEach((c) => !c.guest && c.setSad(hungry(c.v))); }, 60000);
@@ -1262,5 +1337,5 @@ const Animals = (() => {
   }
 
   function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
-  return { scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { BABIES, scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();
