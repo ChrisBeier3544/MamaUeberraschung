@@ -501,7 +501,7 @@ const App = (() => {
       const onScroll = () => { if (!pastHero()) return; removeEventListener("scroll", onScroll); setTimeout(() => say(CAPY[0], true), 600); };
       addEventListener("scroll", onScroll, { passive: true });
     }, 1200);
-    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle"), true); }, 22000);
+    setInterval(() => { if (document.hidden || Math.random() < 0.5) return; if (innerWidth < 600 && !(typeof Animals !== "undefined" && Animals.hungryCount())) return; const n = typeof Animals !== "undefined" ? Animals.hungryCount() : 0; say(n ? Texts.say("hunger", { N: n === 1 ? "ein Tier hat" : n + " Tiere haben" }) : Texts.say("kalle"), true); }, 22000);
   }
 
   /* ---------- Hintergrund-Klicks: Pfotenabdrücke ---------- */

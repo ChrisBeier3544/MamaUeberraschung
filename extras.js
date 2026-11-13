@@ -554,8 +554,12 @@ const Extras = (() => {
   /* ================= Das echte Weihnachtsfoto (Kapitel 20/23) ================= */
   const KALLE = { sp: "capy", col: 0, acc: "orange", name: "Kalle" };
   function photoCast(ids) {
+    const guests = [{ id: "g-bello", sp: "hund", col: 0, acc: "schal", accColor: "#4f7fe0", name: "Bello" }, { id: "g-mimi", sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75", name: "Mimi" }, { id: "g-rocky", sp: "waschbaer", col: 0, acc: App.isSolved(21) ? "postmuetze" : "muetze", accColor: "#2b3a5c", name: "Rocky" }, { id: "g-frieda", sp: "fuchs", col: 0, acc: "schal", accColor: "#d93a4a", name: "Frieda" }, { id: "g-pingu", sp: "pinguin", col: 0, acc: "muetze", name: "Pingu" }];
     const all = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
-    let cast = ids ? ids.map((id) => all.find((v) => v.id === id) || Animals.BABIES.find((b) => b.id === id)).filter(Boolean) : H.shuffle(all).slice(0, 12).concat(App.isSolved(17) ? Animals.BABIES.slice(0, 2) : []);
+    let cast = ids ? ids.map((id) => all.find((v) => v.id === id) || Animals.BABIES.find((b) => b.id === id) || guests.find((b) => b.id === id)).filter(Boolean) : H.shuffle(all).slice(0, 12).concat(App.isSolved(17) ? Animals.BABIES.slice(0, 2) : []);
+    if (!ids && cast.length < 6) {
+      cast = cast.concat(guests.slice(0, 6 - cast.length));
+    }
     return cast;
   }
   function photoStage(cast) {

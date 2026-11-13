@@ -2133,3 +2133,16 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 .mk-bigflake { position: absolute; width: 18px; height: 18px; z-index: 9; pointer-events: none; }
 .mk-bigflake svg { width: 100%; height: 100%; display: block; }
 .mk-aurora2 .ab svg path { filter: none; }
+
+/* Leiste oben auf schmalen Handys: Symbole in eine zweite Zeile, nichts außerhalb des Bildes */
+@media (max-width: 520px) {
+  .nav-inner { flex-wrap: wrap; row-gap: 6px; padding-top: 7px; padding-bottom: 7px; }
+  .nav-brand { display: none; }
+  .nav-spacer { display: none; }
+  .nav-actions { margin-left: auto; }
+  .nav-icons { width: 100%; justify-content: space-between; gap: 4px; }
+  .nav-icons .nav-icon, .nav-icons #sound-toggle.nav-icon, .nav-icons #music-toggle.nav-icon { width: 100%; max-width: 54px; height: 34px; }
+}
+/* Mitmach-Hinweise dürfen umbrechen */
+.mk-hint { white-space: normal; text-align: center; max-width: min(92vw, 340px); line-height: 1.3; }
+.mk-bubble { transition: opacity .2s; }
