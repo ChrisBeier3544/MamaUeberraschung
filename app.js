@@ -568,6 +568,15 @@ const App = (() => {
       hand(".lw-sec", sec * 6); hand(".lw-min", m * 6 + sec * 0.1); hand(".lw-hour", (h % 12) * 30 + m * 0.5);
     };
     tickClock(); setInterval(tickClock, 1000);
+    // Der Munkelvogel sitzt oben auf dem Schloss
+    if (typeof Munkel !== "undefined") {
+      const perch = el("div", { class: "lock-perch" });
+      pad.append(perch);
+      const MUNKEL_LOCK = ["Psst … ich darf noch nichts verraten!", "Ich hab da was gemunkelt gehört … über Tiere!", "Noch ein bisschen Geduld, liebe Mama.", "Ich passe gut auf das Schloss auf.", "Tschirp! Bald geht es los.", "Ich glaube, hinter dem Schloss wohnt ein Kapibara …"];
+      let mi = 0;
+      const bird = Munkel.mount(perch, { sit: true, dreamy: true, onTap: (b) => b.say(MUNKEL_LOCK[mi++ % MUNKEL_LOCK.length]) });
+      setTimeout(() => bird.say("Hallo! Ich bin der Munkelvogel."), 1600);
+    }
     lock.append(pad,
       el("div", { class: "lock-copy" },
         el("p", { class: "lock-text", text: "Hier wartet etwas ganz Besonderes auf dich, liebe Mama." }),

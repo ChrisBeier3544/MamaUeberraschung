@@ -1734,3 +1734,61 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 .lock-left span { font: 500 12px "DM Sans", sans-serif; color: #c9b27a; margin-right: 6px; }
 .lock-left span:last-child { margin-right: 0; }
 @media (max-width: 380px) { .lock-clock { gap: 10px; padding: 8px 14px 8px 10px; } .lock-left span { margin-right: 3px; } }
+
+/* ---------- Munkelvogel ---------- */
+.munkel { position: relative; width: 100%; height: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.munkel-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.munkel .mk-body { transform-box: view-box; transform-origin: 70px 122px; animation: mkBreathe 3.2s ease-in-out infinite; }
+.munkel .mk-head { transform-box: view-box; transform-origin: 70px 66px; transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); }
+.munkel .mk-lids { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
+.munkel .mk-tail { transform-box: view-box; transform-origin: 30px 100px; animation: mkTail 4s ease-in-out infinite; }
+.munkel .mk-wing { transform-box: view-box; transform-origin: 100px 76px; }
+.munkel .mk-wing-l { transform-origin: 40px 76px; }
+.munkel .mk-tuft { transform-box: fill-box; transform-origin: 50% 100%; animation: mkTuft 3.2s ease-in-out infinite; }
+.munkel .mk-scarf-end { transform-box: fill-box; transform-origin: 30% 0; animation: mkScarf 3.6s ease-in-out infinite; }
+.munkel.mk-blink .mk-lids { animation: mkBlink .26s ease-in-out; }
+.munkel.mk-tilt .mk-head { animation: mkTilt 1.4s ease-in-out; }
+.munkel.mk-hop .munkel-svg { animation: mkHop .7s cubic-bezier(.3, .7, .4, 1); }
+.munkel.mk-flutter .mk-wing { animation: mkFlutter .15s ease-in-out 6 alternate; }
+.munkel.mk-flutter .mk-wing-l { animation-name: mkFlutterL; }
+@keyframes mkBreathe { 50% { transform: scale(1.025, .975); } }
+@keyframes mkTail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-6deg); } }
+@keyframes mkTuft { 50% { transform: rotate(6deg); } }
+@keyframes mkScarf { 50% { transform: rotate(7deg); } }
+@keyframes mkBlink { 50% { transform: scaleY(1); } }
+@keyframes mkTilt { 30%, 70% { transform: rotate(-12deg) translateY(-1px); } }
+@keyframes mkHop { 35% { transform: translateY(-16%) scale(.96, 1.04); } 70% { transform: translateY(0) scale(1.05, .94); } }
+@keyframes mkFlutter { to { transform: rotate(-24deg); } }
+@keyframes mkFlutterL { to { transform: rotate(24deg); } }
+.mk-bubble { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 6px; width: max-content; max-width: min(240px, 70vw); background: #fffdf6; color: #2b241f; font: 600 14px/1.35 "DM Sans", sans-serif; text-align: center; padding: 8px 12px; border-radius: 14px; box-shadow: 0 8px 20px rgba(0, 0, 0, .25); animation: mkBubble .35s cubic-bezier(.3, 1.5, .5, 1); pointer-events: none; z-index: 5; }
+.mk-bubble::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -7px; border: 7px solid transparent; border-top-color: #fffdf6; border-bottom: 0; }
+@keyframes mkBubble { from { opacity: 0; transform: translate(-50%, 8px) scale(.85); } }
+@media (prefers-reduced-motion: reduce) { .munkel *, .munkel .munkel-svg { animation: none !important; } }
+/* auf dem Schloss */
+.lock-pad { position: relative; }
+/* sitzt auf der rechten oberen Kante des Schlosses, Beinchen baumeln vorn herunter */
+.lock-perch { position: absolute; left: 73%; top: 43.4%; width: 40%; aspect-ratio: 1; transform: translate(-50%, -79%); z-index: 2; }
+
+/* Munkelvogel sitzend und verträumt */
+.munkel.mk-sit .munkel-svg { transform-origin: 50% 80%; animation: mkSway 5.5s ease-in-out infinite; }
+.munkel.mk-sit .mk-body { animation-duration: 4.4s; }
+.munkel .mk-leg { transform-box: view-box; }
+.munkel .mk-leg-l { transform-origin: 60px 112px; animation: mkDangleL 1.5s ease-in-out infinite; }
+.munkel .mk-leg-r { transform-origin: 80px 112px; animation: mkDangleR 1.5s ease-in-out infinite; }
+@keyframes mkSway { 0%, 100% { transform: rotate(-4deg) translateX(-1.5%); } 50% { transform: rotate(4deg) translateX(1.5%); } }
+@keyframes mkDangleL { 0%, 100% { transform: rotate(-22deg); } 50% { transform: rotate(18deg); } }
+@keyframes mkDangleR { 0%, 100% { transform: rotate(18deg); } 50% { transform: rotate(-22deg); } }
+/* verträumt: halb geschlossene Glücksaugen */
+.munkel .mk-happy { opacity: 0; }
+.munkel .mk-eyes { transition: transform .8s ease-in-out; }
+.munkel.mk-dreamy .mk-eyes { transform: translate(1.5px, -2.5px); }
+.munkel.mk-dreamy .mk-lids { transform: scaleY(.12); }
+.munkel.mk-dreamy.mk-blink .mk-lids { animation: mkBlinkD .3s ease-in-out; }
+@keyframes mkBlinkD { 50% { transform: scaleY(1); } }
+.munkel.mk-dreamy .mk-head { animation: mkDreamHead 5.5s ease-in-out infinite; }
+@keyframes mkDreamHead { 0%, 100% { transform: rotate(5deg); } 50% { transform: rotate(-5deg); } }
+.munkel.mk-dreamy.mk-tilt .mk-head { animation: mkTilt 1.4s ease-in-out; }
+.munkel.mk-sigh .mk-eyes, .munkel.mk-sigh .mk-lids { opacity: 0; transition: opacity .25s; }
+.munkel.mk-sigh .mk-happy { opacity: 1; transition: opacity .25s; }
+.munkel.mk-sigh::after { content: "♪"; position: absolute; right: 8%; top: 8%; color: #f3dc93; font-size: 18px; animation: mkNote 2.6s ease-out forwards; pointer-events: none; }
+@keyframes mkNote { from { opacity: 0; transform: translate(0, 6px); } 25% { opacity: 1; } to { opacity: 0; transform: translate(14px, -26px) rotate(15deg); } }
