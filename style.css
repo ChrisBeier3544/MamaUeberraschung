@@ -1569,3 +1569,35 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
   .il-sign { margin: 8px 0 4px; font-size: 23px; }
 }
 .intro-next { white-space: nowrap; }
+
+/* ---------- Aufschließen beim ersten Besuch ---------- */
+.site-lock.unlocking { transition: opacity 2.2s ease, backdrop-filter 2.2s ease; }
+.site-lock.unlocking::before { animation: none; }
+.ul-pad { width: min(58vw, 260px); animation: none; cursor: default; }
+.ul-pad svg { overflow: visible; }
+.ul-key { transform-box: view-box; transform-origin: 100px 250px; transform: translateY(150px); opacity: 0; transition: transform 1.3s cubic-bezier(.3, .8, .3, 1), opacity .6s ease; }
+.key-in .ul-key { transform: translateY(0); opacity: 1; }
+.key-turn .ul-key { transform: translateY(0) scaleX(.18); transition: transform .7s cubic-bezier(.5, 0, .3, 1); }
+.ul-shackle { transform-box: view-box; transform-origin: 148px 112px; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+.open .ul-shackle { transform: translateY(-24px) rotate(-14deg); }
+.open .ul-pad { animation: ulJolt .4s ease-out; }
+@keyframes ulJolt { 30% { transform: translateY(4px) scale(1.02); } }
+.vanish .ul-pad { transform: scale(.55) translateY(-30px); opacity: 0; filter: blur(4px); transition: transform 1s cubic-bezier(.5, 0, .7, .4), opacity 1s ease, filter 1s ease; }
+.site-lock.unlocking.reveal { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .ul-key, .ul-shackle, .vanish .ul-pad { transition-duration: .01s; } }
+
+/* ---------- Startgeschenk ---------- */
+.start-gift { z-index: 300; }
+.start-gift.closing { opacity: 0; transition: opacity .4s; }
+.start-gift .btn { animation: none; }
+.sg-card { background: #fffdf6; border-radius: 24px; padding: 26px 26px 22px; width: min(400px, 92vw); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, .35); animation: sgIn .5s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes sgIn { from { transform: scale(.8) translateY(20px); opacity: 0; } }
+.sg-art { width: 120px; height: 110px; animation: parcelBob 1.6s ease-in-out infinite; }
+.sg-art svg { width: 100%; height: 100%; display: block; }
+.sg-title { font-family: var(--serif, Fraunces, serif); font-size: 24px; color: var(--ink); }
+.sg-text { margin: 0; font-family: Caveat, cursive; font-size: 23px; line-height: 1.3; color: #3a2f26; }
+.sg-sign { margin: 0; align-self: flex-end; font-family: Caveat, cursive; font-size: 24px; font-weight: 700; color: #6f2230; }
+.sg-amount { display: inline-flex; align-items: center; gap: 8px; background: #fff7d6; border: 2px solid #f2d27a; border-radius: 999px; padding: 6px 16px 6px 8px; margin: 4px 0 6px; }
+.sg-amount svg { width: 28px; height: 28px; }
+.sg-amount b { font-size: 20px; color: #7a5300; }
+.sg-card .btn { min-width: 180px; }

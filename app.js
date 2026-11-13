@@ -514,6 +514,43 @@ const App = (() => {
     setInterval(() => { if (!isLocked()) location.reload(); }, 20000);
   }
 
+  // Beim allerersten Besuch nach dem 28.11.: Schlüssel schließt auf, Schloss klackt auf und gibt den Kalender frei
+  const UNLOCK_KEY = "mama-aufgeschlossen-" + CONFIG.year;
+  const PAD = (withKey) => `<svg viewBox="0 0 200 300" aria-hidden="true">
+      <defs><linearGradient id="ulG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
+      <linearGradient id="ulS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient>
+      <linearGradient id="ulK" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9bcc1"/><stop offset=".5" stop-color="#f4f5f7"/><stop offset="1" stop-color="#9a9da2"/></linearGradient>
+      <clipPath id="ulClip" clipPathUnits="userSpaceOnUse"><rect x="0" y="183" width="200" height="140"/></clipPath></defs>
+      <g class="ul-shackle"><path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#ulS)" stroke-width="20" stroke-linecap="round"/></g>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#ulG)"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
+      <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
+      <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/>
+      ${withKey ? `<g clip-path="url(#ulClip)"><g class="ul-key">
+        <rect x="96.5" y="150" width="7" height="98" rx="2" fill="url(#ulK)"/>
+        <path d="M103.5 158 h7 v6 h-4 v6 h5 v7 h-8z" fill="#c9cdd2"/>
+        <path d="M100 292 c-14 -10 -26 -18 -26 -30 a12.5 12.5 0 0 1 26 -6 a12.5 12.5 0 0 1 26 6 c0 12 -12 20 -26 30z" fill="url(#ulK)" stroke="#8c8f94" stroke-width="1.5"/>
+        <path d="M100 280 c-7 -5 -13 -9 -13 -15 a6 6 0 0 1 13 -3 a6 6 0 0 1 13 3 c0 6 -6 10 -13 15z" fill="#8e2d3b" opacity=".85"/>
+      </g></g>` : ""}
+    </svg>`;
+  function playUnlock(done) {
+    let seen = false; try { seen = !!localStorage.getItem(UNLOCK_KEY); } catch (e) {}
+    if (seen) { done(); return; }
+    try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+    document.body.style.overflow = "hidden";
+    const ov = el("div", { class: "site-lock unlocking", "aria-hidden": "true" });
+    const pad = el("div", { class: "lock-pad ul-pad", html: PAD(true) });
+    ov.append(pad);
+    document.body.append(ov);
+    const click = () => { sfx.tone(1900, 0.03, "square", 0.08); sfx.tone(900, 0.05, "square", 0.07, null, 0.03); };
+    setTimeout(() => ov.classList.add("key-in"), 700);           // Schlüssel fährt ins Schloss
+    setTimeout(() => { ov.classList.add("key-turn"); sfx.tone(420, 0.25, "triangle", 0.06, 520); }, 2100); // umdrehen
+    setTimeout(() => { ov.classList.add("open"); click(); }, 2900); // Bügel springt auf
+    setTimeout(() => { ov.classList.add("vanish"); sfx.good(); }, 3900); // Schloss verschwindet
+    setTimeout(() => ov.classList.add("reveal"), 4400);          // Kalender kommt langsam zum Vorschein
+    setTimeout(() => { ov.remove(); document.body.style.overflow = ""; done(); }, 6600);
+  }
+
   function start() {
     if (isLocked()) { showLock(); return; }
     load();
@@ -542,7 +579,7 @@ const App = (() => {
     // Akku schonen: Animationen außerhalb des Bildschirms anhalten
     if ("IntersectionObserver" in window) { const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "80px" }); ["hero", "calendar", "calendar-bonus", "today"].forEach((id) => { const n = document.getElementById(id); if (n) io.observe(n); }); }
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(buildLights, 300); });
-    if (typeof Intro !== "undefined") setTimeout(Intro.maybeShow, 900);
+    playUnlock(() => { if (typeof Intro !== "undefined") setTimeout(Intro.maybeShow, 500); });
     setInterval(() => { updateCountdown(); Object.keys(doors).forEach((d) => { if (!currentDay) refreshDoor(+d); }); }, 60000);
   }
 

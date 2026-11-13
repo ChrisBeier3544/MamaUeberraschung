@@ -450,6 +450,30 @@ const Zoo = (() => {
     setTimeout(() => H.rain(fireworks ? ["🎆", "✨", "⭐", "🎇", "💖"] : ["💖", "🎄", "⭐", "🎁"], 70), 1400);
   }
 
+  /* ---------- Startgeschenk von Chris: 20 Taler ---------- */
+  function startGift() {
+    if (st.startGift || document.querySelector(".start-gift")) return;
+    const wrap = H.el("div", { class: "pola-wrap start-gift", role: "dialog", "aria-label": "Startgeschenk" });
+    const btn = H.el("button", { class: "btn btn-green", text: "Danke, Chris!" });
+    btn.onclick = () => {
+      if (st.startGift) return;
+      st.startGift = true; save();
+      const r = btn.getBoundingClientRect();
+      addCoins(20, { x: r.left + r.width / 2, y: r.top });
+      H.sfx.win(); H.burstAt(btn, ["💛", "✨", "⭐"], 14, 90);
+      setTimeout(() => { wrap.classList.add("closing"); setTimeout(() => wrap.remove(), 400); }, 900);
+    };
+    wrap.append(H.el("div", { class: "sg-card" },
+      H.el("div", { class: "sg-art", html: `<svg viewBox="0 0 120 110" aria-hidden="true"><rect x="18" y="44" width="84" height="60" rx="8" fill="#8e2d3b"/><rect x="12" y="32" width="96" height="20" rx="6" fill="#a63a4b"/><rect x="54" y="32" width="12" height="72" fill="#e8c46b"/><path d="M60 32 C46 10 26 14 32 26 C36 33 50 32 60 32Z M60 32 C74 10 94 14 88 26 C84 33 70 32 60 32Z" fill="#e8c46b"/>${[[30, 78], [86, 70], [74, 92]].map(([x, y]) => `<g transform="translate(${x} ${y})"><circle r="10" fill="#f6c544" stroke="#d49b16" stroke-width="2"/><text y="4" text-anchor="middle" font-size="10" font-weight="700" font-family="DM Sans, Arial" fill="#a8740c">T</text></g>`).join("")}</svg>` }),
+      H.el("b", { class: "sg-title", text: "Ein kleines Startgeschenk" }),
+      H.el("p", { class: "sg-text", text: "Liebe Mama, damit dein Gehege gleich loslegen kann, bekommst du von mir 20 Taler als kleine Starthilfe. Viel Spaß!" }),
+      H.el("p", { class: "sg-sign", text: "Dein Chris ❤️" }),
+      H.el("div", { class: "sg-amount", html: `${coinSvg}<b>+20 Taler</b>` }),
+      btn));
+    document.body.append(wrap);
+    H.sfx.jingle();
+  }
+
   /* ---------- Nikolaus: Die Tiere schenken Mama 100 ersparte Taler ---------- */
   const GIFT = {
     title: "Ein Geschenk von uns allen",
@@ -576,5 +600,5 @@ const Zoo = (() => {
   function setPos(key, dx, dy) { st.pos[key] = [Math.round(Math.max(-450, Math.min(450, dx))), Math.round(Math.max(-300, Math.min(250, dy)))]; save(); refresh(); }
   const posOf = (key) => off(key);
   const ownedList = () => st.owned.slice();
-  return { W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  return { startGift, W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

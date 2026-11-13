@@ -402,7 +402,15 @@ const Animals = (() => {
   let H, btn;
   const onScreen = new Set();
 
+  // Vom 28.11. bis 30.11. nur ein kleiner Vorgeschmack: höchstens 7 Tiere, und die zeigen sich nur selten
+  const PRE_MAX = 7;
+  const preDecember = () => typeof CONFIG !== "undefined" && !App.preview && new Date() < new Date(CONFIG.year, 11, 1);
   function pickVariant() {
+    if (preDecember()) {
+      if (found.size >= PRE_MAX || onScreen.size >= 1 || Math.random() > 0.12) return null;
+      const fresh = VARIANTS.filter((v) => !found.has(v.id) && available(v) && v.rarity !== "legendaer");
+      return fresh.length ? H.pick(fresh) : null;
+    }
     const pool = VARIANTS.filter((v) => !onScreen.has(v.id) && available(v));
     if (!pool.length) return null;
     const wt = (v) => RARITY[v.rarity].w * (found.has(v.id) ? 1 : UNFOUND_BOOST);
@@ -461,6 +469,7 @@ const Animals = (() => {
     if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 3, selten: 8, sehrselten: 20, legendaer: 60 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
     if (isNew) setTimeout(refreshPens, 1300);
     else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
+    if (isNew && preDecember() && found.size === PRE_MAX) setTimeout(() => H.notify("Das waren die ersten Tiere – ein kleiner Vorgeschmack! Ab dem 1. Dezember ziehen viele weitere ein.", 6500), 4000);
     if (isNew && v.rarity === "sehrselten") { H.burst(r.left + r.width / 2, r.top, ["💜", "✨", "⭐"], 18, 140); [784, 988, 1175].forEach((f, i) => s.tone(f, 0.2, "triangle", 0.15, null, 0.5 + i * 0.1)); }
     if (isNew && v.rarity === "legendaer") { setTimeout(() => { H.confetti(["👑", "✨", "⭐", "💛", "🎉"], 80); s.jingle(); }, 700); }
     if (!isNew) H.toast(`${v.name} wohnt schon im Gehege – zurückgebeamt 👋`);

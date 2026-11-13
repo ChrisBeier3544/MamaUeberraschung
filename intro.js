@@ -114,7 +114,7 @@ const Intro = (() => {
       art: `<div class="ia-row">${["katze", "capy", "hund"].map((sp, i) => `<span class="ia-ani">${ani(sp, ["schleife", "orange", "muetze"][i], { accColor: ["#e85d75", null, null][i] })}</span>`).join("")}</div>`,
       title: "Los geht’s!",
       lines: [
-        beforeDec() ? "Das erste Türchen öffnet sich am 1. Dezember. Bis dahin kannst du dich schon umschauen und die ersten Tiere suchen." : "Dein Türchen von heute wartet schon auf dich.",
+        beforeDec() ? "Das erste Türchen öffnet sich am 1. Dezember. Bis dahin kannst du dich in Ruhe umschauen – und mit etwas Glück schon die ersten paar Tiere entdecken. Die meisten ziehen erst im Dezember ein." : "Dein Türchen von heute wartet schon auf dich.",
         "An besonderen Tagen – Nikolaus, Heiligabend und Silvester – passiert noch mehr. Lass dich überraschen!",
         "Viel Freude, Frau Direktorin!",
       ],
@@ -180,6 +180,7 @@ const Intro = (() => {
       document.removeEventListener("keydown", key);
       wrap.classList.add("closing"); setTimeout(() => wrap.remove(), 300);
       document.body.style.overflow = "";
+      if (typeof Zoo !== "undefined") setTimeout(Zoo.startGift, 700);
     }
     document.addEventListener("keydown", key);
     document.body.append(wrap); document.body.style.overflow = "hidden";
@@ -197,6 +198,7 @@ const Intro = (() => {
     }
     let seen = false; try { seen = !!localStorage.getItem(KEY); } catch (e) {}
     if (!seen) open();
+    else if (typeof Zoo !== "undefined") setTimeout(Zoo.startGift, 600);
   }
   return { open, maybeShow };
 })();
