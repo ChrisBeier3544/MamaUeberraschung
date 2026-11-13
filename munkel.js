@@ -17,11 +17,13 @@ const Munkel = (() => {
     <radialGradient id="${id}w" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#fffaf2"/><stop offset="1" stop-color="#f1e3cf"/></radialGradient>
     <radialGradient id="${id}e" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4a3428"/><stop offset=".7" stop-color="#1e140f"/></radialGradient>
   </defs>
-  <ellipse cx="70" cy="128" rx="30" ry="5" fill="rgba(40,25,15,.18)"/>
+  ${o.sit ? "" : `<ellipse cx="70" cy="128" rx="30" ry="5" fill="rgba(40,25,15,.18)"/>`}
   <!-- Schwänzchen -->
   <g class="mk-tail"><path d="M28 92 C14 90 8 98 6 106 C16 104 22 106 30 102Z" fill="#6e4630"/><path d="M30 96 C20 98 16 104 15 110 C23 106 28 106 33 103Z" fill="#7d5338"/></g>
-  <!-- Füßchen -->
-  <g class="mk-feet" stroke="#e59a3c" stroke-width="3" stroke-linecap="round" fill="none"><path d="M60 116 v9 M60 125 l-5 3 M60 125 l5 3"/><path d="M80 116 v9 M80 125 l-5 3 M80 125 l5 3"/></g>
+  ${o.sit ? `<!-- baumelnde Beinchen (sitzend) -->
+  <g class="mk-leg mk-leg-l" stroke="#e59a3c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M60 110 L58 136 M58 136 l-7 3 M58 136 l0 7 M58 136 l7 3"/></g>
+  <g class="mk-leg mk-leg-r" stroke="#e59a3c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M80 110 L82 136 M82 136 l-7 3 M82 136 l0 7 M82 136 l7 3"/></g>` : `<!-- Füßchen -->
+  <g class="mk-feet" stroke="#e59a3c" stroke-width="3" stroke-linecap="round" fill="none"><path d="M60 116 v9 M60 125 l-5 3 M60 125 l5 3"/><path d="M80 116 v9 M80 125 l-5 3 M80 125 l5 3"/></g>`}
   <g class="mk-body">
     <!-- Kugelkörper -->
     <ellipse cx="70" cy="80" rx="46" ry="42" fill="url(#${id}b)"/>
@@ -50,6 +52,8 @@ const Munkel = (() => {
         <circle cx="61.5" cy="41.5" r="2.8" fill="#fff"/><circle cx="85.5" cy="41.5" r="2.8" fill="#fff"/>
         <circle cx="57" cy="48.5" r="1.3" fill="#fff" opacity=".8"/><circle cx="81" cy="48.5" r="1.3" fill="#fff" opacity=".8"/>
       </g>
+      <!-- glücklich geschlossene Augen (für verträumte Momente) -->
+      <g class="mk-happy" stroke="#2b1a10" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M50 46 Q58 37 66 46"/><path d="M76 46 Q84 37 92 46"/></g>
       <g class="mk-lids" fill="#8e6142"><ellipse cx="58" cy="44" rx="9.6" ry="11"/><ellipse cx="84" cy="44" rx="9.6" ry="11"/></g>
       <!-- Schnäbelchen -->
       <path class="mk-beak" d="M66 55 Q71 53 76 55 L71 61Z" fill="#f2b13c" stroke="#d48a22" stroke-width="1" stroke-linejoin="round"/>
@@ -61,7 +65,7 @@ const Munkel = (() => {
   // lebendig machen: blinzeln, ab und zu Köpfchen neigen oder hüpfen
   function mount(host, o = {}) {
     const el = document.createElement("div");
-    el.className = "munkel" + (o.cls ? " " + o.cls : "");
+    el.className = "munkel" + (o.sit ? " mk-sit" : "") + (o.dreamy ? " mk-dreamy" : "") + (o.cls ? " " + o.cls : "");
     el.setAttribute("role", "img");
     el.setAttribute("aria-label", "Der Munkelvogel");
     el.innerHTML = svg(o);
@@ -72,7 +76,8 @@ const Munkel = (() => {
       if (!alive || !el.isConnected) return;
       if (!document.hidden) {
         const r = Math.random();
-        if (r < 0.45) act("mk-blink", 260);
+        if (o.dreamy) { if (r < 0.35) act("mk-blink", 300); else if (r < 0.6) act("mk-sigh", 2600); else if (r < 0.82) act("mk-tilt", 1400); else act("mk-flutter", 900); }
+        else if (r < 0.45) act("mk-blink", 260);
         else if (r < 0.7) act("mk-tilt", 1400);
         else if (r < 0.85) act("mk-hop", 700);
         else act("mk-flutter", 900);
@@ -80,6 +85,7 @@ const Munkel = (() => {
       setTimeout(loop, 1800 + Math.random() * 2600);
     };
     setTimeout(loop, 900);
+    if (o.dreamy) setTimeout(() => act("mk-sigh", 2600), 3200);
     el.addEventListener("click", (e) => {
       e.stopPropagation();
       act("mk-hop", 700); setTimeout(() => act("mk-flutter", 900), 150);

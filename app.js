@@ -574,7 +574,7 @@ const App = (() => {
       pad.append(perch);
       const MUNKEL_LOCK = ["Psst … ich darf noch nichts verraten!", "Ich hab da was gemunkelt gehört … über Tiere!", "Noch ein bisschen Geduld, liebe Mama.", "Ich passe gut auf das Schloss auf.", "Tschirp! Bald geht es los.", "Ich glaube, hinter dem Schloss wohnt ein Kapibara …"];
       let mi = 0;
-      const bird = Munkel.mount(perch, { onTap: (b) => b.say(MUNKEL_LOCK[mi++ % MUNKEL_LOCK.length]) });
+      const bird = Munkel.mount(perch, { sit: true, dreamy: true, onTap: (b) => b.say(MUNKEL_LOCK[mi++ % MUNKEL_LOCK.length]) });
       setTimeout(() => bird.say("Hallo! Ich bin der Munkelvogel."), 1600);
     }
     lock.append(pad,
