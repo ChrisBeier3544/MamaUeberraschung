@@ -12,6 +12,15 @@ const MunkelShow = (() => {
   const KEY = "mama-munkel-" + (typeof CONFIG !== "undefined" ? CONFIG.year : "2026");
   let st = { seen: {}, items: [], hat: null };
   try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+  // Szenen gibt es erst ab dem 14.11. – was davor versehentlich lief, zählt nicht
+  const START = new Date(+(typeof CONFIG !== "undefined" ? CONFIG.year : 2026), 10, 14).getTime();
+  (() => {
+    const early = Object.keys(st.seen).filter((k) => st.seen[k] < START);
+    if (!early.length) return;
+    early.forEach((k) => delete st.seen[k]);
+    if (early.includes("14e")) st.items = st.items.filter((x) => x !== "nest");
+    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+  })();
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
   const H = () => App.h;
   const tone = (...a) => { try { H().sfx.tone(...a); } catch (e) {} };
@@ -22,6 +31,7 @@ const MunkelShow = (() => {
   function currentSlot(d = new Date()) {
     // zwischen 0 und 6 Uhr gehört die Zeit noch zum Abend davor
     if (d.getHours() < 6) { d = new Date(d); d.setDate(d.getDate() - 1); d.setHours(22); }
+    if (d.getTime() < START) return null; // vor dem 14.11. noch keine Szene
     let day = d.getMonth() === 10 ? d.getDate() : d.getMonth() < 10 ? 14 : 27;
     if (d.getMonth() === 10 && d.getDate() >= 28) day = 27;
     day = Math.max(14, Math.min(27, day));
@@ -1082,7 +1092,7 @@ const MunkelShow = (() => {
   function updateAlbumBtn() { if (albumBtn) albumBtn.querySelector("b").textContent = `${Object.keys(st.seen).length} / 28`; }
   function openAlbum() {
     if (document.querySelector(".mk-album")) return;
-    const now = currentSlot(), nowOrder = slotOrder(now);
+    const now = currentSlot(), nowOrder = now ? slotOrder(now) : -1;
     const wrap = document.createElement("div"); wrap.className = "mk-album"; wrap.setAttribute("role", "dialog");
     const close = () => wrap.remove();
     let html = `<div class="mka-card"><button class="mka-close" aria-label="Schließen">✕</button><h2>Munkels Szenen-Album</h2><p>Alle Szenen, die du schon gesehen hast – zum Nochmal-Ansehen.</p><div class="mka-grid">`;
@@ -1113,11 +1123,11 @@ const MunkelShow = (() => {
     lock.append(albumBtn); requestAnimationFrame(() => lock.querySelector(".lock-clock")?.after(albumBtn)); updateAlbumBtn();
     // die Szene des aktuellen Tagesabschnitts einmal von selbst abspielen
     let last = currentSlot();
-    if (!st.seen[last]) { if (sleepTime() && last.endsWith("m")) goSleep(); setTimeout(() => play(last, { auto: true }), 2600); }
+    if (last && !st.seen[last]) { if (sleepTime() && last.endsWith("m")) goSleep(); setTimeout(() => play(last, { auto: true }), 2600); }
     else if (sleepTime()) goSleep();
     setInterval(() => {
       const s = currentSlot();
-      if (s !== last) { last = s; if (!st.seen[s] && !stage) { play(s, { auto: true }); return; } }
+      if (s !== last) { last = s; if (s && !st.seen[s] && !stage) { play(s, { auto: true }); return; } }
       if (!stage && sleepTime() && !sleeping) goSleep();
       if (!stage && !sleepTime() && sleeping) wakeQuiet();
     }, 30000);
