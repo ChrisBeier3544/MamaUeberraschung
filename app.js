@@ -14,8 +14,10 @@ const CONFIG = {
     "Und genauso, wie du aus einem tristen Gehege etwas Wunderschönes zauberst, " +
     "machst du das Leben jedes Menschen schöner, der mit dir in Kontakt kommt!\n\n" +
     "Danke, dass du immer für mich da bist, für deine Umarmungen, dein Lachen und dafür, " +
-    "dass du mich bedingungslos unterstützt, wenn ich es am meisten brauche. Das gilt aber auch andersrum.\n\n" +
+    "dass du mich bedingungslos unterstützt, wenn ich es am meisten brauche. Und das gilt auch andersrum: Ich bin immer für dich da.\n\n" +
     "Ich hab dich unendlich lieb!",
+  christmasPhoto: "fotos/24.jpg",
+  christmasCaption: "Wir zwei.",
 
   // Brief zu Silvester (erscheint, wenn das Feuerwerk gekauft ist)
   newYearTitle: "Frohes neues Jahr, Mama! 🎆",
@@ -23,6 +25,8 @@ const CONFIG = {
     "31 Türchen, ein ganzes Gehege voller glücklicher Tiere – und eine Direktorin, " +
     "die sich das alles mehr als verdient hat.\n\n" +
     "Auf ein wunderbares neues Jahr mit dir!",
+  newYearPhoto: "fotos/neujahr.jpg",
+  newYearCaption: "Wir vier.",
 
   signature: "Dein Chris ❤️",
 

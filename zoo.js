@@ -442,7 +442,7 @@ const Zoo = (() => {
     ov.append(H.el("div", { class: "finale-card" },
       H.el("div", { class: "finale-animals" }, ...parade.map((a) => H.el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.6 }) }))),
       H.el("h2", { text: title }),
-      !fireworks ? H.el("figure", { class: "letter-photo" }, H.el("img", { src: "fotos/24.jpg", alt: "", onerror: (e) => e.target.parentElement.remove() }), H.el("figcaption", { text: "Wir zwei." })) : null,
+      (() => { const src = fireworks ? CONFIG.newYearPhoto : CONFIG.christmasPhoto || "fotos/24.jpg"; const cap = fireworks ? CONFIG.newYearCaption : CONFIG.christmasCaption || "Wir zwei."; return src ? H.el("figure", { class: "letter-photo" }, H.el("img", { src, alt: "", onerror: (e) => e.target.parentElement.remove() }), H.el("figcaption", { text: cap || "" })) : null; })(),
       H.el("div", { class: "msg", text: msg }), H.el("p", { class: "sig", text: CONFIG.signature }),
       H.el("div", { class: "row", style: "margin-top:16px" }, H.el("button", { class: "btn", text: "Nochmal Konfetti!", onclick: () => { H.confetti(); H.sfx.jingle(); } }), H.el("button", { class: "btn btn-soft", text: "Schließen", onclick: () => ov.remove() }))));
     document.body.append(ov);
