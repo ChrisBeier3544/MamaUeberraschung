@@ -35,6 +35,10 @@
 
   if (leer) { clearTest(); location.hash = `test-${datum}-${zeit.replace(":", "")}`; }
 
+  // In der Testzentrale (eingebettet) keine eigene Testleiste – die Steuerung ist außen
+  let embedded = false; try { embedded = window.self !== window.top; } catch (e) { embedded = true; }
+  if (embedded) { window.TEST.embedded = true; window.TEST.clear = clearTest; return; }
+
   addEventListener("DOMContentLoaded", () => {
     const st = document.createElement("style");
     st.textContent = `
