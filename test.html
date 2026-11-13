@@ -7,361 +7,311 @@
   <title>Testzentrale Adventskalender</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #f4efe4; --card: #fffdf7; --ink: #23302a; --soft: #6b6457; --line: #e4dccb; --pine: #1f3d33; --pine-2: #2d5545; --gold: #c9a04a; --wine: #8e2d3b; --sel: #1f3d33; }
+    :root { --bg: #f4efe4; --card: #fffdf7; --ink: #23302a; --soft: #6b6457; --line: #e4dccb; --pine: #1f3d33; --gold: #c9a04a; --wine: #8e2d3b; --night: #22324a; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "DM Sans", Arial, sans-serif; }
-    button, input, select { font: inherit; }
-    .app { display: grid; grid-template-columns: minmax(330px, 440px) 1fr; height: 100vh; height: 100dvh; }
-    /* ---------- Steuerung ---------- */
-    .panel { overflow-y: auto; padding: 18px 18px 30px; border-right: 1px solid var(--line); background: var(--card); display: flex; flex-direction: column; gap: 18px; }
-    h1 { margin: 0; font: 600 24px/1.1 Fraunces, Georgia, serif; color: var(--pine); }
-    .sub { margin: 4px 0 0; color: var(--soft); font-size: 13.5px; }
-    .sec { display: flex; flex-direction: column; gap: 10px; }
-    .sec > h2 { margin: 0; font: 700 11.5px "DM Sans", sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
-    /* Datum groß */
-    .now { display: flex; align-items: center; gap: 8px; }
-    .now .arrow { width: 44px; height: 44px; flex: none; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; color: var(--pine); }
-    .now .arrow:hover { border-color: var(--gold); }
-    .now .big { flex: 1; text-align: center; background: var(--pine); color: #fff6e0; border-radius: 14px; padding: 8px 10px; }
-    .now .big b { display: block; font: 600 21px/1.15 Fraunces, Georgia, serif; }
-    .now .big span { font-size: 13px; color: #e8d8b0; }
-    .kbd { color: var(--soft); font-size: 12px; text-align: center; }
-    .kbd kbd { background: #fff; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font: 600 11px "DM Sans", sans-serif; }
-    /* Zeitleiste */
-    .months { display: flex; flex-direction: column; gap: 10px; }
-    .month small { display: block; font-weight: 700; color: var(--soft); font-size: 12px; margin-bottom: 4px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 "DM Sans", Arial, sans-serif; }
+    button, input { font: inherit; }
+    .app { display: grid; grid-template-columns: 420px 1fr; height: 100vh; height: 100dvh; }
+    .panel { display: flex; flex-direction: column; min-height: 0; background: var(--card); border-right: 1px solid var(--line); }
+    header { padding: 14px 16px 0; }
+    h1 { margin: 0 0 10px; font: 600 22px Fraunces, Georgia, serif; color: var(--pine); }
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+    .tab { flex: 1; border: none; background: none; padding: 10px 4px 9px; font-weight: 700; font-size: 14px; color: var(--soft); border-bottom: 3px solid transparent; cursor: pointer; }
+    .tab.on { color: var(--pine); border-color: var(--gold); }
+    .body { flex: 1; overflow-y: auto; padding: 14px 16px 24px; }
+    .page { display: none; flex-direction: column; gap: 12px; }
+    .page.on { display: flex; }
+    .note { margin: 0; font-size: 12.5px; color: var(--soft); }
+    .opt { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+    .opt input { width: 18px; height: 18px; accent-color: var(--pine); }
+    /* Szenen-Liste */
+    .scenes { display: flex; flex-direction: column; gap: 6px; }
+    .row { display: grid; grid-template-columns: 46px 1fr 1fr; gap: 6px; align-items: stretch; }
+    .row .d { display: grid; place-items: center; font: 600 15px Fraunces, Georgia, serif; color: var(--pine); background: #f2ede0; border-radius: 10px; }
+    .sc { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 7px 9px; cursor: pointer; display: flex; gap: 7px; align-items: center; min-height: 46px; color: var(--ink); }
+    .sc:hover { border-color: var(--gold); }
+    .sc i { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; }
+    .sc.m i { background: #fff3cf; color: #b07a12; }
+    .sc.e i { background: var(--night); color: #f3dc93; }
+    .sc b { font-size: 13px; line-height: 1.2; font-weight: 600; }
+    .sc.on { background: var(--pine); border-color: var(--pine); color: #fff6e0; }
+    .sc.on.m i { background: #f3dc93; } .sc.on.e i { background: #0f1b2b; }
+    .sc.done:not(.on) { box-shadow: inset 3px 0 0 var(--gold); }
+    /* Tage */
     .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
     .days .wd { text-align: center; font-size: 10.5px; color: #a49b88; font-weight: 700; }
-    .day { position: relative; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: var(--ink); padding: 0; }
+    .day { height: 40px; border-radius: 9px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 700; position: relative; padding: 0; }
     .day:hover { border-color: var(--gold); }
-    .day.special::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--wine); }
-    .day.munkel { background: #f2f6ef; }
-    .day.bonus { background: #eef0f8; }
-    .day.today { box-shadow: inset 0 0 0 2px var(--gold); }
-    .day.sel { background: var(--sel); color: #fff6e0; border-color: var(--sel); }
-    .day.empty { visibility: hidden; }
-    .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--soft); }
-    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
-    /* Chips */
+    .day.sp::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--wine); }
+    .day.on { background: var(--pine); color: #fff6e0; border-color: var(--pine); }
+    .day.x { visibility: hidden; }
+    .month { font-weight: 700; font-size: 12.5px; color: var(--soft); margin: 6px 0 2px; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--ink); }
-    .chip:hover { border-color: var(--gold); }
+    .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 11px; cursor: pointer; font-weight: 600; font-size: 13px; }
     .chip.on { background: var(--pine); color: #fff6e0; border-color: var(--pine); }
-    .chip.warn { color: var(--wine); }
-    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    input[type=time], input[type=date], select { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: #fff; color: var(--ink); }
-    .btn { border: none; border-radius: 10px; padding: 9px 12px; background: var(--pine); color: #fff6e0; font-weight: 600; cursor: pointer; font-size: 13.5px; }
-    .btn.soft { background: #fff; color: var(--ink); border: 1px solid var(--line); }
-    .btn.soft:hover { border-color: var(--gold); }
-    .btn.warn { background: var(--wine); }
+    .ev { display: grid; grid-template-columns: 1fr; gap: 5px; }
+    .ev button { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 13.5px; }
+    .ev button small { color: var(--soft); margin-right: 6px; font-weight: 700; }
+    .ev button:hover { border-color: var(--gold); }
+    h3 { margin: 4px 0 0; font: 700 11.5px "DM Sans"; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+    /* Spielstand */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .stats div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 6px; text-align: center; }
+    .stats b { display: block; font: 600 18px Fraunces, Georgia, serif; color: var(--pine); }
+    .stats span { font-size: 11px; color: var(--soft); }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .grid2 .btn { width: 100%; }
-    .status { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-    .status div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 6px; text-align: center; }
-    .status b { display: block; font: 600 18px Fraunces, Georgia, serif; color: var(--pine); }
-    .status span { font-size: 11px; color: var(--soft); }
-    .events { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
-    .events li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
-    .events li button { flex: none; }
-    .events li span { color: var(--soft); }
-    .scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
-    .scenes button { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 5px 8px; cursor: pointer; font-size: 12.5px; }
-    .scenes button:hover { border-color: var(--gold); }
-    .scenes small { color: var(--soft); }
-    .note { font-size: 12.5px; color: var(--soft); margin: 0; }
-    /* ---------- Vorschau ---------- */
-    .stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: radial-gradient(circle at 50% 30%, #e9e2d2, #d9cfba); }
-    .stagebar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: rgba(255, 253, 247, .85); flex-wrap: wrap; }
-    .stagebar .grow { flex: 1; }
-    .stagebar a { color: var(--pine); font-weight: 600; font-size: 13.5px; }
-    .viewport { flex: 1; min-height: 0; display: grid; place-items: center; padding: 16px; overflow: hidden; }
-    .device { position: relative; background: #111; border-radius: 44px; padding: 12px; box-shadow: 0 30px 60px rgba(0, 0, 0, .3); transform-origin: center center; flex: none; }
-    .device.desk { border-radius: 14px; padding: 26px 8px 8px; background: #2b2b2e; }
-    .device.desk::before { content: "● ● ●"; position: absolute; top: 5px; left: 14px; color: #6d6d72; font-size: 10px; letter-spacing: 2px; }
-    .device iframe { display: block; border: 0; border-radius: 34px; background: #fff; }
+    .btn { border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; background: #fff; font-weight: 600; cursor: pointer; font-size: 13.5px; color: var(--ink); }
+    .btn:hover { border-color: var(--gold); }
+    .btn.warn { background: var(--wine); color: #fff; border-color: var(--wine); }
+    /* Vorschau */
+    .stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: radial-gradient(circle at 50% 30%, #e9e2d2, #d9cfba); }
+    .bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: rgba(255, 253, 247, .9); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .now { font: 600 16px Fraunces, Georgia, serif; color: var(--pine); white-space: nowrap; }
+    .bar .grow { flex: 1; }
+    .bar .big { background: var(--pine); color: #fff6e0; border-color: var(--pine); }
+    .bar a { color: var(--pine); font-weight: 600; font-size: 13px; }
+    .viewport { flex: 1; min-height: 0; display: grid; place-items: center; padding: 14px; overflow: hidden; }
+    .device { position: relative; background: #111; border-radius: 40px; padding: 11px; box-shadow: 0 30px 60px rgba(0, 0, 0, .3); flex: none; }
+    .device.desk { border-radius: 14px; padding: 22px 8px 8px; background: #2b2b2e; }
+    .device iframe { display: block; border: 0; border-radius: 30px; background: #fff; }
     .device.desk iframe { border-radius: 6px; }
-    .loading { position: absolute; inset: 12px; border-radius: 34px; background: rgba(31, 61, 51, .55); color: #fff6e0; display: grid; place-items: center; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .loading { position: absolute; inset: 11px; border-radius: 30px; background: rgba(31, 61, 51, .55); color: #fff6e0; display: grid; place-items: center; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; }
     .device.busy .loading { opacity: 1; }
-    .mininav { display: none; align-items: center; gap: 6px; }
-    .mininav b { font: 600 15px Fraunces, Georgia, serif; color: var(--pine); white-space: nowrap; }
-    .mininav .btn { padding: 6px 10px; }
-    @media (max-width: 860px) {
-      .app { grid-template-columns: 1fr; height: auto; }
-      .stage { order: -1; height: 78vh; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+      .stage { order: -1; height: 72vh; }
       .panel { border-right: none; }
-      .mininav { display: flex; }
-      #devices { display: none; }
+      .body { overflow: visible; }
+      #devices, #openTab { display: none; }
+      .tab { font-size: 13px; }
     }
   </style>
 </head>
 <body>
 <div class="app">
   <aside class="panel">
-    <div>
+    <header>
       <h1>Testzentrale</h1>
-      <p class="sub">Jeden Tag und jede Uhrzeit ausprobieren. Der Testspielstand ist getrennt – Mamas echter Spielstand bleibt unberührt.</p>
+      <div class="tabs">
+        <button class="tab on" data-p="scenes">Munkel-Szenen</button>
+        <button class="tab" data-p="days">Tage</button>
+        <button class="tab" data-p="state">Spielstand</button>
+      </div>
+    </header>
+    <div class="body">
+      <!-- Szenen -->
+      <section class="page on" id="p-scenes">
+        <p class="note">Eine Szene antippen – sie startet sofort. Das Schloss hat dabei die Sammelstücke, die Mama bis zu diesem Tag hätte.</p>
+        <label class="opt"><input type="checkbox" id="late"> Nach 21 Uhr testen (Abendszenen enden mit Einschlafen)</label>
+        <div class="scenes" id="scenes"></div>
+      </section>
+      <!-- Tage -->
+      <section class="page" id="p-days">
+        <h3>Uhrzeit</h3>
+        <div class="chips" id="times"></div>
+        <h3>Tag</h3>
+        <div id="cal"></div>
+        <h3>Besondere Momente</h3>
+        <div class="ev" id="events"></div>
+      </section>
+      <!-- Spielstand -->
+      <section class="page" id="p-state">
+        <div class="stats" id="stats"><div><b>–</b><span>Taler</span></div><div><b>–</b><span>Rätsel</span></div><div><b>–</b><span>Tiere</span></div><div><b>–</b><span>Szenen</span></div></div>
+        <div class="grid2">
+          <button class="btn" data-act="coins">+100 Taler</button>
+          <button class="btn" data-act="solve">Rätsel bis gestern lösen</button>
+          <button class="btn" data-act="animals">+10 Tiere finden</button>
+          <button class="btn" data-act="buyall">Alles im Shop kaufen</button>
+          <button class="btn" data-act="intro">Erster Besuch nochmal</button>
+          <button class="btn warn" data-act="reset">Spielstand löschen</button>
+        </div>
+        <p class="note">Der Testspielstand ist getrennt – Mamas echter Spielstand bleibt unberührt.</p>
+      </section>
     </div>
-
-    <section class="sec">
-      <div class="now">
-        <button class="arrow" id="prev" title="Einen Tag zurück">◀</button>
-        <div class="big"><b id="nowDate">–</b><span id="nowInfo">–</span></div>
-        <button class="arrow" id="next" title="Einen Tag weiter">▶</button>
-      </div>
-      <div class="kbd"><kbd>←</kbd> <kbd>→</kbd> Tag · <kbd>↑</kbd> <kbd>↓</kbd> Uhrzeit · <kbd>R</kbd> neu laden</div>
-    </section>
-
-    <section class="sec">
-      <h2>Uhrzeit</h2>
-      <div class="chips" id="times"></div>
-      <div class="row"><label>Eigene Uhrzeit <input type="time" id="timeIn"></label></div>
-    </section>
-
-    <section class="sec">
-      <h2>Tag wählen</h2>
-      <div class="months" id="months"></div>
-      <div class="legend"><span><i style="background:#f2f6ef"></i>Munkelvogel (Schloss)</span><span><i style="background:#fff"></i>Kalender</span><span><i style="background:#eef0f8"></i>Bonus 25.–31.</span><span><i style="background:var(--wine);border-radius:50%"></i>Besonderer Tag</span></div>
-    </section>
-
-    <section class="sec">
-      <h2>Besondere Momente – direkt hinspringen</h2>
-      <ul class="events" id="events"></ul>
-    </section>
-
-    <section class="sec">
-      <h2>Spielstand im Test</h2>
-      <div class="status" id="status"><div><b>–</b><span>Taler</span></div><div><b>–</b><span>Rätsel</span></div><div><b>–</b><span>Tiere</span></div><div><b>–</b><span>Szenen</span></div></div>
-      <div class="grid2">
-        <button class="btn soft" data-act="coins">+100 Taler</button>
-        <button class="btn soft" data-act="solve">Rätsel bis gestern lösen</button>
-        <button class="btn soft" data-act="animals">+10 Tiere finden</button>
-        <button class="btn soft" data-act="buyall">Alles im Shop kaufen</button>
-        <button class="btn soft" data-act="intro">Erster Besuch nochmal</button>
-        <button class="btn warn" data-act="reset">Spielstand löschen</button>
-      </div>
-      <p class="note">„Erster Besuch nochmal“ zeigt Aufschließen, Brief, Kalles Erklärung und Startgeschenk erneut – der Rest bleibt erhalten.</p>
-    </section>
-
-    <section class="sec">
-      <h2>Munkelvogel-Szenen (14.–27.11.)</h2>
-      <div class="scenes" id="scenes"></div>
-      <p class="note">Springt zum passenden Tag und spielt die Szene ab.</p>
-    </section>
   </aside>
 
   <main class="stage">
-    <div class="stagebar">
-      <div class="chips" id="devices"></div>
-      <div class="mininav"><button class="btn soft" id="mPrev">◀</button><b id="mDate">–</b><button class="btn soft" id="mNext">▶</button></div>
+    <div class="bar">
+      <button class="btn" id="prev" title="Zurück (←)">◀</button>
+      <span class="now" id="now">–</span>
+      <button class="btn" id="next" title="Weiter (→)">▶</button>
+      <button class="btn big" id="replay" title="Szene nochmal (R)">↻ Nochmal</button>
       <span class="grow"></span>
-      <a id="openTab" href="#" target="_blank" rel="noopener">In neuem Tab öffnen ↗</a>
+      <span class="chips" id="devices"></span>
+      <a id="openTab" href="#" target="_blank" rel="noopener">Neuer Tab ↗</a>
     </div>
-    <div class="viewport" id="viewport">
-      <div class="device" id="device"><iframe id="frame" title="Vorschau"></iframe><div class="loading">Lädt …</div></div>
-    </div>
+    <div class="viewport" id="vp"><div class="device" id="device"><iframe id="frame" title="Vorschau"></iframe><div class="loading">Lädt …</div></div></div>
   </main>
 </div>
 
 <script>
 (() => {
-  const YEAR = 2026;
   const $ = (id) => document.getElementById(id);
-  const pad2 = (n) => String(n).padStart(2, "0");
-  const iso = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-  const parse = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d, 12); };
-  const SAVE = "testzentrale";
-  let cfg = { date: "2026-11-28", time: "09:30", device: "phone" };
-  try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem(SAVE) || "{}")); } catch (e) {}
-  const store = () => { try { localStorage.setItem(SAVE, JSON.stringify(cfg)); } catch (e) {} };
-
-  const SPECIAL = {
-    "2026-11-27": "Schloss zu (Countdown)", "2026-11-28": "Schloss öffnet um 9 Uhr", "2026-11-29": "1. Advent",
-    "2026-12-01": "Erstes Türchen", "2026-12-06": "Nikolaus", "2026-12-13": "Neue Tiere (Geweih)", "2026-12-17": "Nachwuchs",
-    "2026-12-18": "Bonus-Paket", "2026-12-19": "Erster Schnee", "2026-12-20": "Neue Tiere (Krone)", "2026-12-23": "Weihnachtsfoto",
-    "2026-12-24": "Heiligabend", "2026-12-31": "Silvester", "2027-01-01": "Neujahr",
-  };
-  const EVENTS = [
-    ["2026-11-20", "10:00", "Schloss mit Munkelvogel (Morgen)"],
-    ["2026-11-20", "20:00", "Schloss mit Munkelvogel (Abend)"],
-    ["2026-11-28", "08:59", "Eine Minute vor dem Öffnen"],
-    ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", "fresh"],
-    ["2026-11-29", "10:00", "Vorgeschmack: höchstens 7 Tiere"],
-    ["2026-12-01", "09:00", "Erstes Türchen"],
-    ["2026-12-06", "10:00", "Nikolaus: Postbote & Stiefel"],
-    ["2026-12-18", "10:00", "Bonus-Paket (Türchen 25–31)"],
-    ["2026-12-23", "11:00", "Weihnachtsfoto (Kapitel 23 lösen)"],
-    ["2026-12-24", "18:00", "Heiligabend: Weihnachtsmann & Brief"],
-    ["2026-12-31", "22:00", "Silvester: Feuerwerk & Abspann"],
-    ["2027-01-02", "11:00", "Nach Silvester: Gehege bleibt offen"],
+  const p2 = (n) => String(n).padStart(2, "0");
+  const T = "test:";
+  const SCENES = [
+    ["14m", "Aufwachen"], ["14e", "Einnicken im Nest"], ["15m", "Postflug"], ["15e", "Sterne anknipsen"], ["16m", "Frühstück"], ["16e", "Gute-Nacht-Lied"],
+    ["17m", "Durchs Schlüsselloch"], ["17e", "Schneeflocken fangen"], ["18m", "Morgensport"], ["18e", "Schal stricken"], ["19m", "Schlüssel knacken"], ["19e", "Laterne & Glühwürmchen"],
+    ["20m", "Seifenblasen"], ["20e", "Sternschnuppe"], ["21m", "Mützen-Anprobe"], ["21e", "Besuch der Eule"], ["22m", "Mini-Schneemann"], ["22e", "Kerze anzünden"],
+    ["23m", "Wurm-Tauziehen"], ["23e", "Polarlicht"], ["24m", "Federputz-Show"], ["24e", "Mond-Schaukel"], ["25m", "Looping-Ausflug"], ["25e", "Lichterkette"],
+    ["26m", "Schloss polieren"], ["26e", "Schattenspiel"], ["27m", "Aufregung"], ["27e", "Schäfchen zählen"],
   ];
-  const TIMES = [["08:00", "Früh"], ["09:30", "Morgen"], ["13:00", "Mittag"], ["18:00", "Abend"], ["22:00", "Nacht"]];
-  const SCENES = { m: ["Aufwachen", "Postflug", "Frühstück", "Durchs Schlüsselloch", "Morgensport", "Schlüssel knacken", "Seifenblasen", "Mützen-Anprobe", "Mini-Schneemann", "Wurm-Tauziehen", "Federputz-Show", "Looping-Ausflug", "Schloss polieren", "Aufregung"], e: ["Einnicken", "Sterne anknipsen", "Gute-Nacht-Lied", "Schneeflocken fangen", "Schal stricken", "Laterne & Glühwürmchen", "Sternschnuppe", "Besuch der Eule", "Kerze anzünden", "Polarlicht", "Mond-Schaukel", "Lichterkette", "Schattenspiel", "Schäfchen zählen"] };
-  const DEVICES = { phone: ["iPhone", 390, 844], tablet: ["iPad", 820, 1180], desk: ["Computer", 1366, 860] };
+  // was nach welcher Szene am Schloss liegt
+  const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
+  const SPECIAL = { "2026-11-27": "Schloss zu", "2026-11-28": "Schloss öffnet", "2026-11-29": "1. Advent", "2026-12-01": "Erstes Türchen", "2026-12-06": "Nikolaus", "2026-12-13": "Neue Tiere", "2026-12-17": "Nachwuchs", "2026-12-18": "Bonus-Paket", "2026-12-19": "Erster Schnee", "2026-12-20": "Neue Tiere", "2026-12-23": "Weihnachtsfoto", "2026-12-24": "Heiligabend", "2026-12-31": "Silvester" };
+  const EVENTS = [
+    ["2026-11-28", "08:59", "Eine Minute vor dem Öffnen"], ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", 1],
+    ["2026-11-29", "10:00", "Vorgeschmack: höchstens 7 Tiere"], ["2026-12-01", "09:00", "Erstes Türchen"], ["2026-12-06", "10:00", "Nikolaus"],
+    ["2026-12-18", "10:00", "Bonus-Paket"], ["2026-12-23", "11:00", "Weihnachtsfoto"], ["2026-12-24", "18:00", "Heiligabend"],
+    ["2026-12-31", "22:00", "Silvester & Abspann"], ["2027-01-02", "11:00", "Nach Silvester"],
+  ];
+  const TIMES = [["08:00", "Früh"], ["09:30", "Morgen"], ["13:00", "Mittag"], ["18:00", "Abend"], ["21:30", "Nacht"]];
+  const DEVICES = { phone: ["Samsung", 360, 780], iphone: ["iPhone", 390, 844], desk: ["Computer", 1366, 860] };
 
-  const frame = $("frame"), device = $("device"), viewport = $("viewport");
-  const W = () => frame.contentWindow;
-  // Bausteine der Seite (Zoo, App, Animals, MunkelShow) sind Skript-Konstanten – über eval der Vorschau erreichbar
-  const G = (name) => { try { return W().eval(`typeof ${name} !== "undefined" ? ${name} : null`); } catch (e) { return null; } };
+  let cfg = { date: "2026-11-14", time: "09:30", device: "phone", scene: null, late: false };
+  try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem("testzentrale2") || "{}")); } catch (e) {}
+  const store = () => { try { localStorage.setItem("testzentrale2", JSON.stringify(cfg)); } catch (e) {} };
 
-  /* ---------- Laden ---------- */
+  const frame = $("frame"), device = $("device"), vp = $("vp");
+  const G = (name) => { try { return frame.contentWindow.eval(`typeof ${name} !== "undefined" ? ${name} : null`); } catch (e) { return null; } };
   let afterLoad = null;
-  function url(fresh) { return `index.html?t=${Date.now()}#test-${cfg.date}-${cfg.time.replace(":", "")}${fresh ? "-leer" : ""}`; }
-  function load(fresh, then) {
-    store(); render();
-    afterLoad = then || null;
-    device.classList.add("busy");
-    frame.src = url(fresh);
-    $("openTab").href = `index.html#test-${cfg.date}-${cfg.time.replace(":", "")}`;
-  }
   frame.addEventListener("load", () => {
     device.classList.remove("busy");
-    try { W().document.addEventListener("keydown", onKey); } catch (e) {}
-    setTimeout(status, 1200);
-    if (afterLoad) { const f = afterLoad; afterLoad = null; setTimeout(() => { try { f(W()); } catch (e) { console.error(e); } }, 900); }
+    try { frame.contentWindow.document.addEventListener("keydown", onKey); } catch (e) {}
+    setTimeout(stats, 1000);
+    if (afterLoad) { const f = afterLoad; afterLoad = null; setTimeout(f, 700); }
   });
-  const setDate = (d, fresh, then) => { cfg.date = d; load(fresh, then); };
-  const setTime = (t) => { cfg.time = t; load(); };
-  const shiftDay = (n) => { const d = parse(cfg.date); d.setDate(d.getDate() + n); setDate(iso(d)); };
-  const shiftTime = (n) => { const list = TIMES.map((t) => t[0]); let i = list.indexOf(cfg.time); i = i < 0 ? 1 : (i + n + list.length) % list.length; setTime(list[i]); };
+  function load(fresh, then) {
+    store(); render();
+    afterLoad = then || null; device.classList.add("busy");
+    frame.src = `index.html?t=${Date.now()}#test-${cfg.date}-${cfg.time.replace(":", "")}${fresh ? "-leer" : ""}`;
+    $("openTab").href = `index.html#test-${cfg.date}-${cfg.time.replace(":", "")}`;
+  }
 
-  /* ---------- Anzeige ---------- */
-  function info(d) {
-    const dt = parse(d);
-    if (dt.getMonth() === 10 && dt.getDate() < 28) return "Schloss zu · Munkelvogel-Szene";
-    if (d === "2026-11-28") return cfg.time < "09:00" ? "Schloss zu (öffnet 9 Uhr)" : "Kalender offen · Vorgeschmack";
-    if (dt.getMonth() === 10) return "Kalender offen · Vorgeschmack";
-    if (dt.getFullYear() === YEAR && dt.getMonth() === 11) return `Kapitel ${dt.getDate()}${SPECIAL[d] ? " · " + SPECIAL[d] : ""}`;
-    return "Nach Silvester";
-  }
-  function render() {
-    const dt = parse(cfg.date);
-    $("nowDate").textContent = dt.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long" }) + ` · ${cfg.time}`;
-    $("nowInfo").textContent = info(cfg.date);
-    $("mDate").textContent = dt.toLocaleDateString("de-DE", { day: "numeric", month: "numeric" }) + ` · ${cfg.time}`;
-    $("timeIn").value = cfg.time;
-    document.querySelectorAll("#times .chip").forEach((b) => b.classList.toggle("on", b.dataset.t === cfg.time));
-    document.querySelectorAll(".day").forEach((b) => b.classList.toggle("sel", b.dataset.d === cfg.date));
-    document.querySelectorAll("#devices .chip").forEach((b) => b.classList.toggle("on", b.dataset.k === cfg.device));
-    sizeDevice();
-  }
-  function buildCalendar() {
-    const box = $("months");
-    const real = iso(new Date());
-    [[2026, 10, 13], [2026, 11, 1], [2027, 0, 1]].forEach(([y, m, from]) => {
-      const last = m === 0 ? 3 : new Date(y, m + 1, 0).getDate();
-      const mon = document.createElement("div"); mon.className = "month";
-      mon.innerHTML = `<small>${new Date(y, m, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" })}</small>`;
-      const g = document.createElement("div"); g.className = "days";
-      ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach((w) => g.insertAdjacentHTML("beforeend", `<div class="wd">${w}</div>`));
-      const lead = (new Date(y, m, from).getDay() + 6) % 7;
-      for (let i = 0; i < lead; i++) g.insertAdjacentHTML("beforeend", `<button class="day empty" tabindex="-1"></button>`);
-      for (let d = from; d <= last; d++) {
-        const k = `${y}-${pad2(m + 1)}-${pad2(d)}`;
-        const b = document.createElement("button");
-        b.className = "day" + (SPECIAL[k] ? " special" : "") + (m === 10 && d < 28 ? " munkel" : "") + (m === 11 && d > 24 ? " bonus" : "") + (k === real ? " today" : "");
-        b.dataset.d = k; b.textContent = d; b.title = SPECIAL[k] || "";
-        b.onclick = () => setDate(k);
-        g.append(b);
-      }
-      mon.append(g); box.append(mon);
-    });
-  }
-  function buildTimes() {
-    const box = $("times");
-    TIMES.forEach(([t, n]) => { const b = document.createElement("button"); b.className = "chip"; b.dataset.t = t; b.textContent = `${n} ${t}`; b.onclick = () => setTime(t); box.append(b); });
-    $("timeIn").addEventListener("change", (e) => e.target.value && setTime(e.target.value));
-  }
-  function buildEvents() {
-    const ul = $("events");
-    EVENTS.forEach(([d, t, label, fresh]) => {
-      const li = document.createElement("li");
-      const b = document.createElement("button"); b.className = "btn soft"; b.textContent = parse(d).toLocaleDateString("de-DE", { day: "numeric", month: "numeric" }) + ` ${t}`;
-      b.onclick = () => { cfg.time = t; if (fresh) clearFirstVisit(); setDate(d); };
-      li.append(b, Object.assign(document.createElement("span"), { textContent: label }));
-      ul.append(li);
-    });
+  /* ---------- Szenen ---------- */
+  function playScene(id) {
+    const i = SCENES.findIndex((s) => s[0] === id); if (i < 0) return;
+    cfg.scene = id; cfg.date = `2026-11-${id.slice(0, 2)}`;
+    cfg.time = id.endsWith("m") ? "09:30" : cfg.late ? "21:30" : "19:30";
+    // Stand wie an diesem Tag: alles, was vor dieser Szene passiert ist
+    const items = [], seen = {}; let slim = false, hat = null;
+    SCENES.forEach(([s], k) => { seen[s] = 1; if (k < i) (GAINS[s] || []).forEach((g) => { if (g === "slim") slim = true; else if (g === "hat") hat = "bommel"; else items.push(g); }); });
+    try { localStorage.setItem(T + "mama-munkel-2026", JSON.stringify({ seen, items, hat, slim, sky: null })); } catch (e) {}
+    load(false, () => { const M = G("MunkelShow"); if (M) M.play(id); });
   }
   function buildScenes() {
     const box = $("scenes");
-    for (let d = 14; d <= 27; d++) for (const p of ["m", "e"]) {
-      const b = document.createElement("button");
-      b.innerHTML = `${p === "m" ? "☀" : "☾"} ${SCENES[p][d - 14]}<br><small>${d}.11. ${p === "m" ? "morgens" : "abends"}</small>`;
-      b.onclick = () => { cfg.time = p === "m" ? "10:00" : "20:00"; setDate(`2026-11-${d}`, false, () => { const M = G("MunkelShow"); if (M) M.play(`${d}${p}`); }); };
-      box.append(b);
+    for (let d = 14; d <= 27; d++) {
+      const row = document.createElement("div"); row.className = "row";
+      row.innerHTML = `<div class="d">${d}.</div>`;
+      ["m", "e"].forEach((p) => {
+        const id = `${d}${p}`, t = SCENES.find((s) => s[0] === id)[1];
+        const b = document.createElement("button"); b.className = `sc ${p}`; b.dataset.id = id;
+        b.innerHTML = `<i>${p === "m" ? "☀" : "☾"}</i><b>${t}</b>`;
+        b.onclick = () => playScene(id);
+        row.append(b);
+      });
+      box.append(row);
     }
+    $("late").checked = cfg.late;
+    $("late").onchange = (e) => { cfg.late = e.target.checked; store(); if (cfg.scene && cfg.scene.endsWith("e")) playScene(cfg.scene); };
   }
-  function buildDevices() {
-    const box = $("devices");
-    Object.entries(DEVICES).forEach(([k, [n]]) => { const b = document.createElement("button"); b.className = "chip"; b.dataset.k = k; b.textContent = n; b.onclick = () => { cfg.device = k; store(); render(); }; box.append(b); });
-    addEventListener("resize", sizeDevice);
-  }
-  function sizeDevice() {
-    const [, w, h] = DEVICES[cfg.device];
-    frame.style.width = w + "px"; frame.style.height = h + "px";
-    device.classList.toggle("desk", cfg.device === "desk");
-    const pw = cfg.device === "desk" ? 16 : 24, ph = cfg.device === "desk" ? 34 : 24;
-    const avW = viewport.clientWidth - 32, avH = viewport.clientHeight - 32;
-    const sc = Math.min(1, avW / (w + pw), avH / (h + ph));
-    device.style.transform = `scale(${sc})`;
-    device.style.margin = `${(-(h + ph) * (1 - sc)) / 2}px ${(-(w + pw) * (1 - sc)) / 2}px`;
+
+  /* ---------- Tage ---------- */
+  function buildDays() {
+    const t = $("times");
+    TIMES.forEach(([v, n]) => { const b = document.createElement("button"); b.className = "chip"; b.dataset.t = v; b.textContent = `${n} ${v}`; b.onclick = () => { cfg.time = v; cfg.scene = null; load(); }; t.append(b); });
+    const cal = $("cal");
+    [[2026, 10, 13], [2026, 11, 1], [2027, 0, 1]].forEach(([y, m, from]) => {
+      const last = m === 0 ? 3 : new Date(y, m + 1, 0).getDate();
+      cal.insertAdjacentHTML("beforeend", `<div class="month">${new Date(y, m, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" })}</div>`);
+      const g = document.createElement("div"); g.className = "days";
+      ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach((w) => g.insertAdjacentHTML("beforeend", `<div class="wd">${w}</div>`));
+      for (let i = 0; i < (new Date(y, m, from).getDay() + 6) % 7; i++) g.insertAdjacentHTML("beforeend", `<button class="day x"></button>`);
+      for (let d = from; d <= last; d++) {
+        const k = `${y}-${p2(m + 1)}-${p2(d)}`;
+        const b = document.createElement("button"); b.className = "day" + (SPECIAL[k] ? " sp" : ""); b.dataset.d = k; b.textContent = d; b.title = SPECIAL[k] || "";
+        b.onclick = () => { cfg.date = k; cfg.scene = null; load(); };
+        g.append(b);
+      }
+      cal.append(g);
+    });
+    const ev = $("events");
+    EVENTS.forEach(([d, t2, label, fresh]) => {
+      const b = document.createElement("button");
+      b.innerHTML = `<small>${new Date(d + "T12:00").toLocaleDateString("de-DE", { day: "numeric", month: "numeric" })} ${t2}</small>${label}`;
+      b.onclick = () => { cfg.date = d; cfg.time = t2; cfg.scene = null; if (fresh) clearFirst(); load(); };
+      ev.append(b);
+    });
   }
 
   /* ---------- Spielstand ---------- */
-  const TK = (k) => "test:" + k;
-  function clearFirstVisit() { ["mama-intro-2026", "mama-aufgeschlossen-2026", "mama-nachwuchs-2026"].forEach((k) => localStorage.removeItem(TK(k))); try { const z = JSON.parse(localStorage.getItem(TK("mama-zoo-2026")) || "{}"); delete z.startGift; localStorage.setItem(TK("mama-zoo-2026"), JSON.stringify(z)); } catch (e) {} }
-  function status() {
-    const cells = $("status").querySelectorAll("b");
-    const j = (k, d) => { try { return JSON.parse(localStorage.getItem(TK(k)) || d); } catch (e) { return JSON.parse(d); } };
-    cells[0].textContent = j("mama-zoo-2026", "{}").coins || 0;
-    cells[1].textContent = Object.keys(j("mama-advent-2026", "{}").solved || {}).length;
-    cells[2].textContent = j("mama-gehege-2026", "[]").length;
-    cells[3].textContent = Object.keys(j("mama-munkel-2026", "{}").seen || {}).length;
+  function clearFirst() { ["mama-intro-2026", "mama-aufgeschlossen-2026"].forEach((k) => localStorage.removeItem(T + k)); try { const z = JSON.parse(localStorage.getItem(T + "mama-zoo-2026") || "{}"); delete z.startGift; localStorage.setItem(T + "mama-zoo-2026", JSON.stringify(z)); } catch (e) {} }
+  function stats() {
+    const j = (k, d) => { try { return JSON.parse(localStorage.getItem(T + k) || d); } catch (e) { return JSON.parse(d); } };
+    const c = $("stats").querySelectorAll("b");
+    c[0].textContent = j("mama-zoo-2026", "{}").coins || 0;
+    c[1].textContent = Object.keys(j("mama-advent-2026", "{}").solved || {}).length;
+    c[2].textContent = j("mama-gehege-2026", "[]").length;
+    c[3].textContent = Object.keys(j("mama-munkel-2026", "{}").seen || {}).length;
   }
-  setInterval(status, 3000);
   document.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => {
-    const a = b.dataset.act, w = W(), Zoo = G("Zoo"), App = G("App"), Animals = G("Animals");
+    const a = b.dataset.act, w = frame.contentWindow, Zoo = G("Zoo"), App = G("App"), Animals = G("Animals");
     try {
-      if (a === "coins") { if (!Zoo) throw 0; Zoo.addCoins(100); setTimeout(status, 300); }
-      if (a === "solve") {
-        if (!App) throw 0;
-        const today = new w.Date(); let n = 0;
-        for (let d = 1; d <= 31; d++) if (new w.Date(YEAR, 11, d) < new w.Date(today.getFullYear(), today.getMonth(), today.getDate()) && !App.isSolved(d)) { App.markSolved(d); if (Zoo) Zoo.addCoins(Zoo.earn(d)); n++; }
-        load();
-      }
-      if (a === "animals") {
-        if (!Animals) throw 0;
-        const k = TK("mama-gehege-2026"); const have = new Set(JSON.parse(localStorage.getItem(k) || "[]"));
-        Animals.VARIANTS.filter((v) => !have.has(v.id)).slice(0, 10).forEach((v) => have.add(v.id));
-        localStorage.setItem(k, JSON.stringify([...have])); load();
-      }
-      if (a === "buyall") {
-        if (!Zoo) throw 0;
-        const k = TK("mama-zoo-2026"); const z = JSON.parse(localStorage.getItem(k) || "{}");
-        z.owned = [...Zoo.ITEMS, ...Zoo.SMALL, ...Zoo.EXTRAS].map((i) => i[0]).filter((x) => x !== "feuerwerk" || cfg.date >= "2026-12-31");
-        localStorage.setItem(k, JSON.stringify(z)); load();
-      }
-      if (a === "intro") { clearFirstVisit(); load(); }
+      if (a === "coins") { if (!Zoo) throw 0; Zoo.addCoins(100); setTimeout(stats, 300); }
+      if (a === "solve") { if (!App) throw 0; const td = new w.Date(); for (let d = 1; d <= 31; d++) if (new w.Date(2026, 11, d) < new w.Date(td.getFullYear(), td.getMonth(), td.getDate()) && !App.isSolved(d)) { App.markSolved(d); if (Zoo) Zoo.addCoins(Zoo.earn(d)); } load(); }
+      if (a === "animals") { if (!Animals) throw 0; const k = T + "mama-gehege-2026"; const have = new Set(JSON.parse(localStorage.getItem(k) || "[]")); Animals.VARIANTS.filter((v) => !have.has(v.id)).slice(0, 10).forEach((v) => have.add(v.id)); localStorage.setItem(k, JSON.stringify([...have])); load(); }
+      if (a === "buyall") { if (!Zoo) throw 0; const k = T + "mama-zoo-2026"; const z = JSON.parse(localStorage.getItem(k) || "{}"); z.owned = [...Zoo.ITEMS, ...Zoo.SMALL, ...Zoo.EXTRAS].map((i) => i[0]).filter((x) => x !== "feuerwerk" || cfg.date >= "2026-12-31"); localStorage.setItem(k, JSON.stringify(z)); load(); }
+      if (a === "intro") { clearFirst(); load(); }
       if (a === "reset" && confirm("Den kompletten Testspielstand löschen?")) load(true);
     } catch (e) { alert("Das geht an diesem Tag nicht – vor dem 28.11. um 9 Uhr ist die Seite noch verschlossen."); }
   }));
 
-  /* ---------- Tastatur ---------- */
+  /* ---------- Anzeige & Steuerung ---------- */
+  function render() {
+    const dt = new Date(cfg.date + "T12:00");
+    const sc = cfg.scene && SCENES.find((s) => s[0] === cfg.scene);
+    $("now").textContent = (sc ? `${sc[1]} · ` : "") + dt.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric" }) + ` ${cfg.time}`;
+    document.querySelectorAll(".sc").forEach((b) => b.classList.toggle("on", b.dataset.id === cfg.scene));
+    document.querySelectorAll(".day").forEach((b) => b.classList.toggle("on", !cfg.scene && b.dataset.d === cfg.date));
+    document.querySelectorAll("#times .chip").forEach((b) => b.classList.toggle("on", !cfg.scene && b.dataset.t === cfg.time));
+    document.querySelectorAll("#devices .chip").forEach((b) => b.classList.toggle("on", b.dataset.k === cfg.device));
+    $("replay").style.display = cfg.scene ? "" : "none";
+    size();
+  }
+  function size() {
+    const [, w, h] = DEVICES[cfg.device];
+    frame.style.width = w + "px"; frame.style.height = h + "px";
+    device.classList.toggle("desk", cfg.device === "desk");
+    const pw = cfg.device === "desk" ? 16 : 22, ph = cfg.device === "desk" ? 30 : 22;
+    const sc = Math.min(1, (vp.clientWidth - 28) / (w + pw), (vp.clientHeight - 28) / (h + ph));
+    device.style.transform = `scale(${sc})`;
+    device.style.margin = `${(-(h + ph) * (1 - sc)) / 2}px ${(-(w + pw) * (1 - sc)) / 2}px`;
+  }
+  function step(n) {
+    if (cfg.scene) { const i = SCENES.findIndex((s) => s[0] === cfg.scene); const nx = SCENES[Math.max(0, Math.min(SCENES.length - 1, i + n))]; playScene(nx[0]); return; }
+    const d = new Date(cfg.date + "T12:00"); d.setDate(d.getDate() + n); cfg.date = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; load();
+  }
   function onKey(e) {
-    if (e.target.closest && e.target.closest("input, textarea, select")) return;
-    if (e.key === "ArrowLeft") { e.preventDefault(); shiftDay(-1); }
-    if (e.key === "ArrowRight") { e.preventDefault(); shiftDay(1); }
-    if (e.key === "ArrowUp") { e.preventDefault(); shiftTime(-1); }
-    if (e.key === "ArrowDown") { e.preventDefault(); shiftTime(1); }
-    if (e.key === "r" || e.key === "R") load();
+    if (e.target.closest && e.target.closest("input, textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    if (e.key === "r" || e.key === "R") { cfg.scene ? playScene(cfg.scene) : load(); }
   }
   document.addEventListener("keydown", onKey);
-  $("prev").onclick = () => shiftDay(-1);
-  $("mPrev").onclick = () => shiftDay(-1); $("mNext").onclick = () => shiftDay(1);
-  $("next").onclick = () => shiftDay(1);
+  $("prev").onclick = () => step(-1); $("next").onclick = () => step(1);
+  $("replay").onclick = () => cfg.scene && playScene(cfg.scene);
+  document.querySelectorAll(".tab").forEach((t) => t.onclick = () => {
+    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
+    document.querySelectorAll(".page").forEach((p) => p.classList.toggle("on", p.id === "p-" + t.dataset.p));
+    if (t.dataset.p === "state") stats();
+  });
+  Object.entries(DEVICES).forEach(([k, [n]]) => { const b = document.createElement("button"); b.className = "chip"; b.dataset.k = k; b.textContent = n; b.onclick = () => { cfg.device = k; store(); render(); }; $("devices").append(b); });
+  addEventListener("resize", size);
 
-  buildCalendar(); buildTimes(); buildEvents(); buildScenes(); buildDevices();
-  load();
+  buildScenes(); buildDays();
+  if (cfg.scene) playScene(cfg.scene); else load();
 })();
 </script>
 </body>
