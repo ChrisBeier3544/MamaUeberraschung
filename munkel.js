@@ -56,7 +56,11 @@ const Munkel = (() => {
       <g class="mk-happy" stroke="#2b1a10" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M50 46 Q58 37 66 46"/><path d="M76 46 Q84 37 92 46"/></g>
       <g class="mk-lids" fill="#8e6142"><ellipse cx="58" cy="44" rx="9.6" ry="11"/><ellipse cx="84" cy="44" rx="9.6" ry="11"/></g>
       <!-- Schnäbelchen -->
+      <path class="mk-beak-low" d="M67 57 Q71 64 75 57Z" fill="#d48a22"/>
       <path class="mk-beak" d="M66 55 Q71 53 76 55 L71 61Z" fill="#f2b13c" stroke="#d48a22" stroke-width="1" stroke-linejoin="round"/>
+      <!-- Plätze für Mütze und Dinge im Schnabel -->
+      <g class="mk-hat"></g>
+      <g class="mk-carry" transform="translate(71 60)"></g>
     </g>
   </g>
 </svg>`;
@@ -74,7 +78,7 @@ const Munkel = (() => {
     const act = (cls, ms) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), ms); };
     const loop = () => {
       if (!alive || !el.isConnected) return;
-      if (!document.hidden) {
+      if (!document.hidden && !el.busy) {
         const r = Math.random();
         if (o.dreamy) { if (r < 0.35) act("mk-blink", 300); else if (r < 0.6) act("mk-sigh", 2600); else if (r < 0.82) act("mk-tilt", 1400); else act("mk-flutter", 900); }
         else if (r < 0.45) act("mk-blink", 260);
@@ -88,9 +92,13 @@ const Munkel = (() => {
     if (o.dreamy) setTimeout(() => act("mk-sigh", 2600), 3200);
     el.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (el.busy) { if (typeof el.onSceneTap === "function") el.onSceneTap(e); return; }
       act("mk-hop", 700); setTimeout(() => act("mk-flutter", 900), 150);
       if (typeof o.onTap === "function") o.onTap(el);
     });
+    el.act = act;
+    el.setHat = (inner) => { el.querySelector(".mk-hat").innerHTML = inner || ""; };
+    el.carry = (inner) => { el.querySelector(".mk-carry").innerHTML = inner || ""; };
     el.say = (text, ms = 3600) => {
       el.querySelector(".mk-bubble")?.remove();
       const b = document.createElement("div"); b.className = "mk-bubble"; b.textContent = text;
