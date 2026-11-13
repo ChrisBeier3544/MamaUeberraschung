@@ -11,8 +11,10 @@ const CONFIG = {
   christmasTitle: "Frohe Weihnachten, Mama! 🎄",
   christmasMessage:
     "Schau dir an, was aus dem tristen Gehege geworden ist – das warst alles du!\n\n" +
-    "Danke, dass du immer für mich da bist, für deine Umarmungen, " +
-    "dein Lachen und dafür, dass du jedes Tier dieser Welt streicheln willst.\n\n" +
+    "Und genauso, wie du aus einem tristen Gehege etwas Wunderschönes zauberst, " +
+    "machst du das Leben jedes Menschen schöner, der mit dir in Kontakt kommt!\n\n" +
+    "Danke, dass du immer für mich da bist, für deine Umarmungen, dein Lachen und dafür, " +
+    "dass du mich bedingungslos unterstützt, wenn ich es am meisten brauche. Das gilt aber auch andersrum.\n\n" +
     "Ich hab dich unendlich lieb!",
 
   // Brief zu Silvester (erscheint, wenn das Feuerwerk gekauft ist)
@@ -22,7 +24,7 @@ const CONFIG = {
     "die sich das alles mehr als verdient hat.\n\n" +
     "Auf ein wunderbares neues Jahr mit dir!",
 
-  signature: "In Liebe ❤️",
+  signature: "Dein Chris ❤️",
 
   // Persönliche Seite ganz am Anfang der Begrüßung (vor Kalles Erklärung)
   welcomeTitle: "Liebe Mama,",
