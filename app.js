@@ -23,6 +23,14 @@ const CONFIG = {
     "Auf ein wunderbares neues Jahr mit dir!",
 
   signature: "In Liebe ❤️",
+
+  // Persönliche Seite ganz am Anfang der Begrüßung (vor Kalles Erklärung)
+  welcomeTitle: "Liebe Mama,",
+  welcomeMessage:
+    "es freut mich sehr, dir hiermit deinen diesjährigen Adventskalender zu übergeben.\n\n" +
+    "Und du wirst dringend gebraucht: Die Tiere warten schon sehnsüchtig auf dich – sie brauchen deine Hilfe.\n\n" +
+    "In diesem Sinne wünsche ich dir eine wunderschöne, besinnliche Adventszeit und übergebe jetzt an Kalle.",
+  welcomeSignature: "In Liebe ❤️",
 };
 
 /* ========================================================= */
@@ -261,7 +269,7 @@ const App = (() => {
 
   const T = (n) => `${n} ${n === 1 ? "Tag" : "Tage"}`;
   const LOCKED_MSGS = [
-    (n) => `Nicht schummeln, Mama! Noch ${T(n)}.`,
+    (n) => `Nicht schummeln, Ute! Noch ${T(n)}.`,
     (n) => `Die Katze sitzt noch auf diesem Türchen. Noch ${T(n)}.`,
     (n) => `Der Waschbär hat abgeschlossen. Noch ${T(n)}.`,
     (n) => `Gut Ding will Weile haben – noch ${T(n)}.`,
@@ -283,7 +291,7 @@ const App = (() => {
   }
 
   /* ---------- Modal ---------- */
-  const PRAISE = ["Bravo, Mama!", "Glänzend kombiniert!", "Messerscharf gelöst!", "Respekt!", "Elegant gemacht!", "Klasse!", "Sauber gelöst!", "Tierisch gut!", "Ganz große Klasse!", "Wie immer souverän!"];
+  const PRAISE = ["Bravo, Ute!", "Glänzend kombiniert!", "Messerscharf gelöst!", "Respekt!", "Elegant gemacht!", "Klasse!", "Sauber gelöst!", "Tierisch gut!", "Ganz große Klasse!", "Wie immer souverän!"];
   let currentDay = null;
 
   function openPuzzle(day) {
@@ -421,7 +429,7 @@ const App = (() => {
   }
 
   /* ---------- Deko: Kapibara ---------- */
-  const CAPY = ["Hallo Mama! 🍊", "Ich bin Kalle, das Kapibara 🥰", "Ganz entspannt bleiben… 🧘", "Hast du heute schon ein Türchen geöffnet?", "Streichelst du mich? 🥺", "Kapibaras sind mit allen befreundet 💕", "Orange auf dem Kopf = Stil 🍊", "Ich mag Badewannen 🛁", "Rätseln macht hungrig 🍉", "Du schaffst das! 💪", "*kuschel* 🤎"];
+  const CAPY = ["Hallo Ute! 🍊", "Ich bin Kalle, das Kapibara 🥰", "Ganz entspannt bleiben… 🧘", "Hast du heute schon ein Türchen geöffnet?", "Streichelst du mich? 🥺", "Kapibaras sind mit allen befreundet 💕", "Orange auf dem Kopf = Stil 🍊", "Ich mag Badewannen 🛁", "Rätseln macht hungrig 🍉", "Du schaffst das! 💪", "*kuschel* 🤎"];
   function setupCapy() {
     const wrap = document.getElementById("capy-wrap"), capy = document.getElementById("capy"), bubble = document.getElementById("capy-bubble"), orange = document.getElementById("capy-orange");
     let t;

@@ -723,7 +723,7 @@
     render(root, { solve }) {
       solve = once(solve);
       const sus = [
-        [A("hund", 0), "Bello", "„Um drei war ich mit Mama im Park. Ehrenwort.“", "Mama bestätigt: Bello war im Park."],
+        [A("hund", 0), "Bello", "„Um drei war ich mit Ute im Park. Ehrenwort.“", "Ute bestätigt: Bello war im Park."],
         [A("katze", 1), "Mimi", "„Ich lag auf dem Sofa.“", "Mimis Schwanz ist lang, aber glatt und dünn."],
         [A("waschbaer"), "Rocky", "„Ich war in der Speisekammer. Ganz woanders!“", "Die Speisekammer liegt direkt neben der Küche."],
         [A("capy"), "Kalle", "„Ich lag in der Badewanne. Wie immer.“", "Kalle hat nur einen winzigen Stummelschwanz."],

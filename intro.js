@@ -23,11 +23,12 @@ const Intro = (() => {
   const beforeDec = () => { const n = new Date(); return n.getMonth() === 10; };
 
   const STEPS = () => [
+    { letter: true },
     {
       art: `<div class="ia-one">${ani("capy", "orange")}</div>`,
       title: "Willkommen, Frau Direktorin!",
       lines: [
-        "Hallo Mama, ich bin Kalle! Ab heute leitest du unser Tiergehege.",
+        "Hallo Ute, ich bin Kalle! Ab heute leitest du unser Tiergehege.",
         "Ehrlich gesagt ist es gerade ziemlich trostlos: kaputter Zaun, Matsch und keine einzige Pfütze zum Baden. Bis Silvester machst du daraus Schritt für Schritt ein Winterparadies.",
         "Ich zeig dir kurz, wie alles funktioniert.",
       ],
@@ -85,7 +86,7 @@ const Intro = (() => {
       art: `<div class="ia-checks">${["Rätsel", "Füttern", "Spendenbox", "Aufgabe"].map((t, i) => `<span class="${i < 2 ? "ok" : ""}">${i < 2 ? check : "<i></i>"}${t}</span>`).join("")}</div>`,
       title: "Jeden Tag neu: „Heute“",
       lines: [
-        "Unter dem Gehege findest du jeden Tag ein Tier des Tages mit einem Tierfakt, Kalles Tagebuch über deinen Tag, eine Aufgabe des Tages mit Taler-Belohnung und eine Erinnerung des Tages – ein Foto von uns. Tipp es an, dann wird es groß.",
+        "Unter dem Gehege findest du jeden Tag ein Tier des Tages mit einem Tierfakt, Kalles Tagebuch über deinen Tag, eine Aufgabe des Tages mit Taler-Belohnung und eine Erinnerung des Tages – ein schönes Foto aus deinem Jahr. Tipp es an, dann wird es groß.",
         "Die kleinen Häkchen neben „Heute“ zeigen dir, was du heute schon erledigt hast.",
       ],
     },
@@ -138,9 +139,24 @@ const Intro = (() => {
     const render = (dir) => {
       const s = steps[i];
       body.innerHTML = "";
+      card.classList.toggle("is-letter", !!s.letter);
+      if (s.letter) {
+        const C = typeof CONFIG !== "undefined" ? CONFIG : {};
+        body.append(H.el("div", { class: "intro-page intro-letter" + (dir ? (dir > 0 ? " from-right" : " from-left") : "") },
+          H.el("div", { class: "il-seal", "aria-hidden": "true", html: `<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#8e2d3b"/><circle cx="30" cy="30" r="21" fill="none" stroke="#b5485a" stroke-width="1.5"/><path d="M30 41 c-9 -7 -14 -11 -14 -17 a6.5 6.5 0 0 1 14 -3 a6.5 6.5 0 0 1 14 3 c0 6 -5 10 -14 17z" fill="#f3dc93"/></svg>` }),
+          H.el("h2", { class: "il-title", text: C.welcomeTitle || "Liebe Mama," }),
+          ...String(C.welcomeMessage || "").split(/\n\n+/).map((t) => H.el("p", { class: "il-text", text: t })),
+          H.el("p", { class: "il-sign", text: C.welcomeSignature || C.signature || "" })));
+        body.scrollTop = 0;
+        back.style.visibility = "hidden";
+        next.textContent = "Weiter zu Kalle";
+        skip.style.visibility = "hidden";
+        [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+        return;
+      }
       const content = H.el("div", { class: "intro-page" + (dir ? (dir > 0 ? " from-right" : " from-left") : "") },
         H.el("div", { class: "intro-art", html: s.art }),
-        H.el("small", { class: "intro-step", text: `${i + 1} von ${steps.length}` }),
+        H.el("small", { class: "intro-step", text: `${i} von ${steps.length - 1}` }),
         H.el("h2", { text: s.title }),
         s.lines ? H.el("div", { class: "intro-text" }, ...s.lines.map((t) => H.el("p", { text: t }))) : null,
         s.list ? H.el("ul", { class: "intro-list" }, ...s.list.map(([ic, t]) => H.el("li", { html: ic }, H.el("span", { text: t })))) : null,

@@ -79,7 +79,7 @@ const Backup = (() => {
     const status = H.el("p", { class: "bk-status", text: last ? `Letzte Sicherung: ${fmtDate(last)}` : "Du hast noch keine Sicherung gemacht." });
     const done = (msg) => { markSaved(); status.textContent = `Gesichert am ${fmtDate(Date.now())} – ${msg}`; status.classList.add("ok"); H.sfx.good(); };
     const share = navigator.share ? H.el("button", { class: "btn btn-green", text: "Sicherung an mich schicken", onclick: async () => {
-      try { await navigator.share({ title: "Mamas Gehege – Sicherung", text: `Meine Sicherung vom ${fmtDate(Date.now())}. Zum Wiederherstellen einfach öffnen:`, url: link }); done("verschickt."); } catch (e) {}
+      try { await navigator.share({ title: "Adventskalender – Sicherung", text: `Meine Sicherung vom ${fmtDate(Date.now())}. Zum Wiederherstellen einfach öffnen:`, url: link }); done("verschickt."); } catch (e) {}
     } }) : null;
     const copy = H.el("button", { class: "btn" + (share ? " btn-soft" : " btn-green"), text: "Sicherungslink kopieren", onclick: async () => {
       try { await navigator.clipboard.writeText(link); done("der Link ist kopiert. Schick ihn dir am besten selbst, z. B. per WhatsApp oder Mail."); }

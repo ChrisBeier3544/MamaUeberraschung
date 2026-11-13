@@ -223,14 +223,14 @@ const Extras = (() => {
     wolkig: ["Heute war es grau und gemütlich.", "Dicke Wolken, aber gute Laune.", "Ein ruhiger, wolkiger Tag im Gehege."],
     nebel: ["Heute Morgen war alles in Nebel gehüllt.", "Im Nebel haben wir Verstecken gespielt.", "So neblig, dass Rocky sich zweimal verlaufen hat."],
   };
-  const CLOSE = ["Ich bin gespannt auf morgen.", "Jetzt kuschle ich mich ein. Gute Nacht!", "Danke, Mama. Für alles.", "Was für ein schöner Tag.", "Morgen wird bestimmt wieder wunderbar.", "Ich träume heute sicher von Mandarinen."];
+  const CLOSE = ["Ich bin gespannt auf morgen.", "Jetzt kuschle ich mich ein. Gute Nacht!", "Danke, Ute. Für alles.", "Was für ein schöner Tag.", "Morgen wird bestimmt wieder wunderbar.", "Ich träume heute sicher von Mandarinen."];
   function diaryEntry(k) {
     const lg = st.log[k] || { bought: [], fed: 0, found: 0, games: 0, door: 0 };
     const [y, m, d] = k.split("-").map(Number);
     const r = rnd(seedOf(k));
     const w = (() => { const x = rnd(seedOf(k))(); return x < 0.4 ? "schnee" : x < 0.65 ? "sonne" : x < 0.85 ? "wolkig" : "nebel"; })();
     const lines = [OPEN[w][Math.floor(r() * 3)]];
-    if (lg.door) lines.push("Mama hat das Rätsel des Tages gelöst – ganz schön clever!");
+    if (lg.door) lines.push("Ute hat das Rätsel des Tages gelöst – ganz schön clever!");
     if (lg.bought.length) lines.push(`Neu bei uns: ${lg.bought.join(", ")}. Alle sind begeistert.`);
     if (lg.found) lines.push(lg.found === 1 ? "Ein neues Tier ist bei uns eingezogen." : `${lg.found} neue Tiere sind bei uns eingezogen.`);
     if (lg.fed) lines.push(lg.fed === 1 ? "Ein Tier hat leckeres Futter bekommen." : `${lg.fed} Mal gab es leckeres Futter.`);
@@ -473,7 +473,7 @@ const Extras = (() => {
       g.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${tx}px, ${ty}px) rotate(${Math.random() * 360}deg)` }], { duration: 1600, easing: "cubic-bezier(.5,0,.8,.6)", fill: "forwards" }).onfinish = () => { H.burst(r.left + r.width * 0.6 + tx, r.top + r.height * 0.6 + ty, ["✨", "⭐"], 6, 40); g.remove(); };
     }, 2000 + i * 650);
     setTimeout(() => {
-      if (owned.length) { owned.forEach((sp) => Zoo.setFood(sp, (Zoo.foodStock()[sp] || 0) + 3)); Zoo.refresh(); H.toast("Der Weihnachtsmann hat für jede Tierart 3 Leckerlis dagelassen!", 5000); Animals.sayRandom("Ein Geschenk vom Weihnachtsmann!"); setTimeout(() => Animals.sayRandom("Frohe Weihnachten, Mama!"), 3200); }
+      if (owned.length) { owned.forEach((sp) => Zoo.setFood(sp, (Zoo.foodStock()[sp] || 0) + 3)); Zoo.refresh(); H.toast("Der Weihnachtsmann hat für jede Tierart 3 Leckerlis dagelassen!", 5000); Animals.sayRandom("Ein Geschenk vom Weihnachtsmann!"); setTimeout(() => Animals.sayRandom("Frohe Weihnachten, Ute!"), 3200); }
       else { Zoo.addCoins(30); H.toast("Der Weihnachtsmann hat 30 Taler für dich dagelassen!", 5000); }
     }, 8200);
   }
@@ -506,7 +506,7 @@ const Extras = (() => {
       const step = ms / LINES.length;
       LINES.forEach((l, i) => setTimeout(() => { const a = actors[i % actors.length]; const b = H.el("div", { class: "pen-say", text: l }); a.append(b); setTimeout(() => b.remove(), step * 1.4); }, i * step));
       setTimeout(() => {
-        ov.querySelector(".xs-caption").textContent = "Frohe Weihnachten, Mama!";
+        ov.querySelector(".xs-caption").textContent = "Frohe Weihnachten, Ute!";
         for (let i = 0; i < 6; i++) setTimeout(() => { const s = H.el("div", { class: "xs-shoot" }); stage.append(s); setTimeout(() => s.remove(), 1600); }, i * 500);
         H.rain(["✨", "⭐", "💖"], 50);
         ov.append(H.el("button", { class: "btn btn-green xs-btn", text: "Den Brief unter dem Baum öffnen", onclick: () => { ov.remove(); after && after(); } }));
@@ -517,7 +517,7 @@ const Extras = (() => {
 
   /* ================= Jahresrückblick + Abschiedsbrief (31.12.) ================= */
   const FAREWELL =
-    "Liebe Mama,\n\n" +
+    "Liebe Ute,\n\n" +
     "erinnerst du dich an den 1. Dezember? Matsch, ein kaputter Zaun, kein einziger Baum – und wir mittendrin, ganz schön traurig. " +
     "Dann bist du gekommen. Kapitel für Kapitel hast du unser Gehege in ein Winterparadies verwandelt.\n\n" +
     "Du hast uns gefüttert, getröstet, gesucht und gefunden. Du hast Rätsel gelöst, Türme gebaut und Waschbären verjagt. " +
@@ -525,7 +525,7 @@ const Extras = (() => {
     "Wir wünschen dir ein wunderbares neues Jahr – mit genauso viel Wärme, wie du sie uns geschenkt hast. " +
     "Wir sind so froh, dass es dich gibt.";
   function review() {
-    const { area } = overlay("Mamas Dezember", "Ein Rückblick auf 31 Kapitel im Tiergehege", "review-overlay");
+    const { area } = overlay("Dein Dezember", "Ein Rückblick auf 31 Kapitel im Tiergehege", "review-overlay");
     const found = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
     const favs = found.length ? found.slice().sort((a, b) => Zoo.fedAt(b.id) - Zoo.fedAt(a.id))[0] : null;
     const tile = (n, l) => H.el("div", { class: "rv-tile" }, H.el("b", { text: n }), H.el("span", { text: l }));

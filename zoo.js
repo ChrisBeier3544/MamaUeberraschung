@@ -6,7 +6,7 @@ const Zoo = (() => {
   /* ---------- Die Geschichte: ein Kapitel pro Türchen ---------- */
   // item = was an diesem Tag im Shop freigeschaltet wird, coins = Belohnung fürs Rätsel
   const STORY = {
-    1: { item: "rasen", coins: 100, story: "Liebe Mama, ich bin Kalle, das Kapibara. Wir Tiere wohnen in einem kleinen Gehege am Stadtrand – und ehrlich gesagt ist es furchtbar: matschiger Boden, ein kaputter Zaun, kein einziger Baum. Unser alter Pfleger ist in Rente gegangen, und jetzt hoffen wir alle auf dich. Wirst du unsere neue Gehege-Direktorin? Fangen wir klein an: Unsere Pfoten versinken im Matsch. Frischer Rasen wäre ein Traum.", outro: "Deine ersten Taler! Im Shop wartet frischer Rasen auf dich." },
+    1: { item: "rasen", coins: 100, story: "Liebe Ute, ich bin Kalle, das Kapibara. Wir Tiere wohnen in einem kleinen Gehege am Stadtrand – und ehrlich gesagt ist es furchtbar: matschiger Boden, ein kaputter Zaun, kein einziger Baum. Unser alter Pfleger ist in Rente gegangen, und jetzt hoffen wir alle auf dich. Wirst du unsere neue Gehege-Direktorin? Fangen wir klein an: Unsere Pfoten versinken im Matsch. Frischer Rasen wäre ein Traum.", outro: "Deine ersten Taler! Im Shop wartet frischer Rasen auf dich." },
     2: { item: "zaun", coins: 100, story: "Heute Nacht hat der Wind den alten Zaun endgültig umgeweht. Rocky, der Waschbär, war schon zweimal draußen und hat die Mülltonnen der Nachbarn „inspiziert“. Es wird Zeit für einen neuen Zaun!", outro: "Mit diesen Talern reicht es für einen stabilen Holzzaun. Rocky ist enttäuscht." },
     3: { item: "baeume", coins: 100, story: "Die Katzen beschweren sich: kein Baum zum Klettern, kein Ast zum Draufliegen. Mimi hat versucht, stattdessen auf Kalle zu klettern. Kalle fand das nur mäßig entspannend. Zwei Bäume müssen her.", outro: "Zwei Bäume liegen jetzt im Shop bereit. Die Katzen sitzen schon in den Startlöchern." },
     4: { item: "teich", coins: 100, story: "Kapibaras ohne Wasser sind wie Weihnachten ohne Plätzchen. Kalle sitzt seit Tagen in einer Pfütze und tut so, als wäre es ein See. Kaufen wir ihm einen richtigen Teich?", outro: "Ein echter Teich! Kalle hat schon sein Handtuch geholt." },
@@ -16,7 +16,7 @@ const Zoo = (() => {
     8: { item: "huette", coins: 100, story: "Skandal: Rocky hat die Keksvorräte geplündert. Schon wieder. Wir brauchen eine Vorratshütte mit einem Code-Schloss, das selbst ein Waschbär nicht knackt.", outro: "Eine Vorratshütte mit Schloss. Rocky hat sich schon Notizen gemacht." },
     9: { item: "blumen", coins: 100, story: "Ein grauer Dezember braucht Farbe! Die Hasen wünschen sich Blumenbeete – Christrosen und Winterlinge blühen sogar im Schnee.", outro: "Blumenbeete für die Hasen. Sie versprechen, nur ein bisschen davon zu essen." },
     10: { item: "hoehle", coins: 100, story: "Die Nächte werden kalt. Die Kleinen frieren und kuscheln sich nachts an den Elefanten, der dadurch kaum schlafen kann. Eine warme Kuschelhöhle muss her.", outro: "Eine Kuschelhöhle! Der Elefant bedankt sich mit einem langen, zufriedenen Seufzer." },
-    11: { item: "schild", coins: 100, story: "Spaziergänger fragen ständig, was das hier eigentlich für ein Gehege ist. Zeit für ein ordentliches Schild am Eingang – mit deinem Namen darauf!", outro: "Ab sofort steht es schwarz auf weiß: Das ist Mamas Tiergehege." },
+    11: { item: "schild", coins: 100, story: "Spaziergänger fragen ständig, was das hier eigentlich für ein Gehege ist. Zeit für ein ordentliches Schild am Eingang – mit deinem Namen darauf!", outro: "Ab sofort steht es schwarz auf weiß: Das ist Utes Tiergehege." },
     12: { item: "bank", coins: 100, story: "Die Nachbarinnen vom Lindenweg kommen jetzt regelmäßig zu Besuch. Damit sie nicht im Stehen plaudern müssen, braucht es eine gemütliche Parkbank.", outro: "Eine Bank für Besuch. Die Katzen haben sie natürlich schon reserviert." },
     13: { item: "weg", coins: 100, story: "Nach dem Regen ist der Eingang eine einzige Matschbahn. Der Igel hat sich gestern verlaufen und ist erst nach Stunden wieder aufgetaucht. Ein Kiesweg würde allen helfen.", outro: "Ein richtiger Weg – nie wieder verlorene Igel." },
     14: { item: "onsen", coins: 100, story: "Kalle hat einen Wunsch und trägt ihn sehr höflich vor: eine heiße Badewanne. In Japan haben Kapibaras so etwas. Er sagt, er sei nicht neidisch. Er ist es aber ein bisschen.", outro: "Kalles Badewanne ist im Shop. Er hat schon eine Mandarine bereitgelegt." },
@@ -52,7 +52,7 @@ const Zoo = (() => {
     ["huette", "Vorratshütte", 90, "Mit waschbärsicherem Schloss.", [825, 190, 120, 110]],
     ["blumen", "Blumenbeete", 70, "Christrosen und Winterlinge.", [240, 530, 260, 80]],
     ["hoehle", "Kuschelhöhle", 130, "Warm, weich und gemütlich.", [20, 320, 150, 100]],
-    ["schild", "Eingangsschild", 60, "„Mamas Tiergehege“", [10, 510, 150, 100]],
+    ["schild", "Eingangsschild", 60, "„Utes Tiergehege“", [10, 510, 150, 100]],
     ["bank", "Parkbank", 80, "Für Besuch und Katzen.", [545, 245, 90, 50]],
     ["weg", "Kiesweg", 110, "Nie wieder verlaufene Igel.", [400, 280, 220, 320]],
     ["onsen", "Kalles Badewanne", 170, "Heißes Bad mit Mandarinen.", [550, 330, 130, 90]],
@@ -164,7 +164,7 @@ const Zoo = (() => {
     huette: () => `<rect x="840" y="226" width="90" height="62" fill="#9c6b45"/><path d="M830 228 L885 192 L940 228z" fill="#5a3b2e"/><rect x="872" y="250" width="26" height="38" fill="#6b4a35"/><rect x="890" y="264" width="10" height="10" rx="2" fill="#ffd84d"/><path d="M850 240 h18 M850 252 h18" stroke="#7a5537" stroke-width="3"/>`,
     blumen: () => [[300, 572], [430, 586]].map(([x, y], k) => `<ellipse cx="${x}" cy="${y}" rx="62" ry="16" fill="#8a5a3b"/>` + [-44, -26, -8, 10, 28, 46].map((dx, i) => `<path d="M${x + dx} ${y} v-16" stroke="#4f9e5c" stroke-width="3"/><circle cx="${x + dx}" cy="${y - 18}" r="7" fill="${["#e85d75", "#fff", "#ffd84d", "#c77dff", "#ff8fa3", "#fff"][(i + k) % 6]}"/><circle cx="${x + dx}" cy="${y - 18}" r="2.5" fill="#f39c32"/>`).join("")).join(""),
     hoehle: () => `<path d="M24 410 Q24 330 95 326 Q166 330 166 410z" fill="#8f8577"/><path d="M60 410 Q60 368 95 366 Q130 368 130 410z" fill="#3e352d"/><path d="M68 410 q27 -16 54 0" fill="#d9a05c"/><circle cx="60" cy="340" r="5" fill="#7a7065"/>`,
-    schild: () => `<rect x="38" y="540" width="8" height="60" fill="#7a5537"/><rect x="122" y="540" width="8" height="60" fill="#7a5537"/><rect x="18" y="512" width="132" height="44" rx="8" fill="#b9824f" stroke="#7a5537" stroke-width="4"/><text x="84" y="531" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">Mamas</text><text x="84" y="549" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">Tiergehege</text>`,
+    schild: () => `<rect x="38" y="540" width="8" height="60" fill="#7a5537"/><rect x="122" y="540" width="8" height="60" fill="#7a5537"/><rect x="18" y="512" width="132" height="44" rx="8" fill="#b9824f" stroke="#7a5537" stroke-width="4"/><text x="84" y="531" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">Utes</text><text x="84" y="549" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">Tiergehege</text>`,
     bank: () => `<rect x="550" y="262" width="80" height="8" rx="3" fill="#b9824f"/><rect x="550" y="248" width="80" height="7" rx="3" fill="#b9824f"/><rect x="556" y="270" width="6" height="18" fill="#3f3f46"/><rect x="618" y="270" width="6" height="18" fill="#3f3f46"/>`,
     weg: () => `<path d="M440 600 Q470 470 500 400 Q530 330 505 290 L525 290 Q560 340 540 410 Q520 480 560 600z" fill="#e3d3b3"/>` + Array.from({ length: 26 }, (_, i) => { const t = i / 26; return `<circle cx="${470 + Math.sin(t * 7) * 18 + (i % 3) * 14}" cy="${590 - t * 290}" r="3" fill="#cdb998"/>`; }).join(""),
     onsen: () => `<path d="M560 400 q0 -10 10 -10 h100 q10 0 10 10 v-6" fill="none"/><rect x="560" y="370" width="120" height="36" rx="10" fill="#a0703f"/><ellipse cx="620" cy="372" rx="58" ry="10" fill="#9fd8f0"/><path d="M590 360 q-6 -10 0 -20 M620 356 q-6 -10 0 -20 M650 360 q-6 -10 0 -20" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="600" cy="372" r="6" fill="#ff9f1c"/><circle cx="642" cy="374" r="6" fill="#ff9f1c"/><path d="M566 382 h108 M566 394 h108" stroke="#8a5a33" stroke-width="2"/>`,
@@ -454,7 +454,7 @@ const Zoo = (() => {
   const GIFT = {
     title: "Ein Geschenk von uns allen",
     text:
-      "Liebe Mama,\n\n" +
+      "Liebe Ute,\n\n" +
       "wir haben ganz heimlich jeden Taler zur Seite gelegt, den wir unter Kissen, im Stroh und hinter dem Futternapf gefunden haben. " +
       "Sogar Rocky hat (fast) nichts davon für Kekse ausgegeben!\n\n" +
       "Wir sind so unendlich froh, dass wir dich haben. Du bist ein ganz toller, herzensguter und liebenswerter Mensch – " +
@@ -471,7 +471,7 @@ const Zoo = (() => {
 </g>
     <g class="p-tag"><path d="M66 50 q6 4 8 12" stroke="#7a1f33" stroke-width="1.6" fill="none"/>
       <g transform="rotate(-8 88 74)"><path d="M70 62 h46 a4 4 0 0 1 4 4 v16 a4 4 0 0 1 -4 4 h-46 l-8 -12z" fill="#fffaf0" stroke="#7a1f33" stroke-width="1.8"/>
-      <circle cx="70" cy="74" r="2" fill="#7a1f33"/><text x="95" y="78" text-anchor="middle" font-size="10" font-weight="700" font-family="DM Sans, Arial, sans-serif" fill="#7a1f33">Für Mama</text></g></g>
+      <circle cx="70" cy="74" r="2" fill="#7a1f33"/><text x="95" y="78" text-anchor="middle" font-size="10" font-weight="700" font-family="DM Sans, Arial, sans-serif" fill="#7a1f33">Für Ute</text></g></g>
   </svg>`;
   const CART = `<svg viewBox="0 0 230 120" class="cart-svg" aria-hidden="true">
     <path d="M196 70 L232 58" stroke="#5a3b2e" stroke-width="5" stroke-linecap="round"/>
@@ -490,7 +490,7 @@ const Zoo = (() => {
     run.innerHTML = `<div class="post-cart" style="width:${cartW}px">${CART.replace("${PARCEL_INNER}", parcelInner)}</div><div class="post-dog"><div class="pd-in">${Animals.svg({ sp: "hund", col: 0, acc: "postmuetze" }, { walk: true, width: dogW })}</div></div>`;
     document.body.append(run);
     const runW = run.offsetWidth, mid = innerWidth / 2 - runW / 2;
-    const bubble = H.el("div", { class: "bubble post-bubble", text: "Post für Mama!" });
+    const bubble = H.el("div", { class: "bubble post-bubble", text: "Post für Ute!" });
     run.querySelector(".post-dog").append(bubble);
     run.classList.add("rolling");
     H.sfx.tone(660, 0.12, "triangle", 0.12); H.sfx.tone(880, 0.12, "triangle", 0.12, null, 0.15);

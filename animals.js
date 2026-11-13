@@ -582,7 +582,7 @@ const Animals = (() => {
     const tabStall = H.el("button", { class: "g-tab", text: "Stall" });
     const area = H.el("div", { class: "g-area" });
     ov.append(H.el("div", { class: "g-head" },
-      H.el("div", {}, H.el("h2", { text: "Mamas Tiergehege" }), H.el("div", { class: "g-sub", text: `${found.size} von 100 Tieren gefunden` })),
+      H.el("div", {}, H.el("h2", { text: "Utes Tiergehege" }), H.el("div", { class: "g-sub", text: `${found.size} von 100 Tieren gefunden` })),
       H.el("div", { class: "g-tabs" }, tabPen, resting() > 0 ? tabStall : null, tabAlbum, typeof Extras !== "undefined" ? tabBadges : null),
       H.el("button", { class: "modal-close", "aria-label": "Schließen", text: "✖", onclick: close })), area);
     const show = (which) => {
@@ -807,7 +807,7 @@ const Animals = (() => {
   }
 
   /* ---------- Füttern ---------- */
-  const YUM = ["Danke, Mama!", "Du bist die Beste!", "Mein Lieblingsessen!", "Mehr davon, bitte!", "Jetzt geht's mir wieder gut!", "Lecker, lecker!"];
+  const YUM = ["Danke, Ute!", "Du bist die Beste!", "Mein Lieblingsessen!", "Mehr davon, bitte!", "Jetzt geht's mir wieder gut!", "Lecker, lecker!"];
   function feed(c, field) {
     const v = c.v;
     if (!Zoo.useFood(v.sp, v.id)) return;
@@ -829,9 +829,9 @@ const Animals = (() => {
 
   /* ---------- Nach einem Kauf: drei Tiere schauen sich das Neue an – nacheinander ---------- */
   const PRAISE = [
-    "Hier fühle ich mich gleich viel wohler.", "Genau das hat uns gefehlt!", "Danke, Mama – das ist wunderbar!", "Jetzt ist es richtig gemütlich hier.",
+    "Hier fühle ich mich gleich viel wohler.", "Genau das hat uns gefehlt!", "Danke, Ute – das ist wunderbar!", "Jetzt ist es richtig gemütlich hier.",
     "Wie hübsch! Das muss ich sofort Kalle zeigen.", "Ich glaube, das wird mein neuer Lieblingsplatz.", "So ein schönes Zuhause hatte ich noch nie.",
-    "Ich bin ganz gerührt.", "Unser Gehege wird immer schöner!", "Mama hat wirklich Geschmack.",
+    "Ich bin ganz gerührt.", "Unser Gehege wird immer schöner!", "Ute hat wirklich Geschmack.",
   ];
   const GUESTS = [{ sp: "capy", col: 0, acc: "orange", name: "Kalle" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75", name: "Mimi" }, { sp: "hund", col: 0, acc: "schal", accColor: "#4f7fe0", name: "Bello" }];
   let celebrating = false;
