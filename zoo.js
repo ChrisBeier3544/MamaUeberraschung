@@ -413,15 +413,36 @@ const Zoo = (() => {
     refresh(key);
     if (typeof Animals !== "undefined") { Animals.refreshPens(); const [ax, ay] = anchorOf(key); setTimeout(() => Animals.celebrate(ax, ay, it[1]), 1300); }
     document.getElementById("zoo")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    // Funkeln genau dort, wo das neue Teil im Gehege steht
+    // Goldener Ring und Funkeln genau am neuen Teil – der Ring sitzt im Gehege selbst und passt sich der Größe an
     setTimeout(() => {
-      const g = document.querySelector(`#zoo-pen g.zi[data-k="${key}"]`) || document.getElementById("zoo-pen");
+      const pen = document.getElementById("zoo-pen");
+      const g = pen && (pen.querySelector(`g.zi[data-k="${key}"]`) || pen.querySelector(`.prop-${key}`));
       if (!g) return;
-      const r = g.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-      H.burstAt(g, ["✨", "⭐", "✦"], 18, Math.min(160, 50 + r.width / 2));
-      const ring = H.el("div", { class: "buy-ring", style: `left:${r.left + r.width / 2}px;top:${r.top + r.height * 0.8}px;width:${Math.max(60, r.width * 1.1)}px` });
-      document.getElementById("fx").append(ring); setTimeout(() => ring.remove(), 1200);
-    }, 1500);
+      const pr = pen.getBoundingClientRect(), r = g.getBoundingClientRect();
+      // Teile, die über das ganze Gehege verteilt sind: kleiner Ring an jedem einzelnen Stück
+      const MULTI = { laternen: LANTERNS.map(([x, y]) => [x, y, 46]), baeume: [262, 840, 1250, 1585, 1900].map((x) => [x, 262, 110]) };
+      if (MULTI[key]) {
+        const sc = pr.width / W;
+        MULTI[key].forEach(([x, y, w0], n) => {
+          const w = w0 * sc * 1.3, h = Math.max(12, w * 0.3);
+          const ring = H.el("div", { class: "buy-ring", style: `left:${(x / W) * 100}%;top:${((y - 4) / 600) * 100}%;width:${w}px;height:${h}px;animation-delay:${n * 0.12}s;z-index:${Math.round((y / 600) * 100)}` });
+          pen.append(ring); setTimeout(() => ring.remove(), 2600);
+        });
+      } else if (r.width && r.width < pr.width * 0.45) {
+        const flat = r.height < r.width * 0.55; // Teich, Eisbahn, Beete …: Ring rundherum; hohe Teile: Ring am Fuß
+        const w = Math.max(48, r.width * (flat ? 1.18 : 1.25));
+        const h = flat ? Math.max(18, r.height * 1.3) : Math.max(16, Math.min(w * 0.32, r.height * 0.45));
+        const cx = r.left - pr.left + r.width / 2, by = flat ? r.top - pr.top + r.height / 2 : r.bottom - pr.top - h * 0.3;
+        const ring = H.el("div", { class: "buy-ring", style: `left:${(cx / pr.width) * 100}%;top:${(by / pr.height) * 100}%;width:${w}px;height:${h}px;z-index:${Math.round((by / pr.height) * 100)}` });
+        pen.append(ring); setTimeout(() => ring.remove(), 2200);
+      }
+      // Funkeln erst, wenn das Gehege fertig zum Teil gescrollt ist
+      setTimeout(() => {
+        const rr = g.getBoundingClientRect();
+        if (rr.bottom < 0 || rr.top > innerHeight || rr.right < 0 || rr.left > innerWidth) return;
+        H.burst(rr.left + rr.width / 2, rr.top + rr.height / 2, ["✨", "⭐", "✦"], 16, Math.min(150, 40 + rr.width / 2));
+      }, 650);
+    }, 1450);
     H.toast(`Neu im Gehege: ${it[1]}!`, 3500);
     if (key === "feuerwerk") setTimeout(() => letter(CONFIG.newYearTitle, CONFIG.newYearMessage, true), 3200);
     return true;
