@@ -520,17 +520,23 @@ const App = (() => {
       <defs><linearGradient id="ulG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
       <linearGradient id="ulS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient>
       <linearGradient id="ulK" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9bcc1"/><stop offset=".5" stop-color="#f4f5f7"/><stop offset="1" stop-color="#9a9da2"/></linearGradient>
+      <linearGradient id="ulE" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7d8086"/><stop offset=".35" stop-color="#e9ebee"/><stop offset=".7" stop-color="#b4b7bc"/><stop offset="1" stop-color="#6f7278"/></linearGradient>
       <clipPath id="ulClip" clipPathUnits="userSpaceOnUse"><rect x="0" y="183" width="200" height="140"/></clipPath></defs>
       <g class="ul-shackle"><path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#ulS)" stroke-width="20" stroke-linecap="round"/></g>
       <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#ulG)"/>
       <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
       <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
-      <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/>
+      <rect x="93" y="168" width="14" height="30" rx="6" fill="#6f2230"/>
       ${withKey ? `<g clip-path="url(#ulClip)"><g class="ul-key">
-        <rect x="96.5" y="150" width="7" height="98" rx="2" fill="url(#ulK)"/>
-        <path d="M103.5 158 h7 v6 h-4 v6 h5 v7 h-8z" fill="#c9cdd2"/>
-        <path d="M100 292 c-14 -10 -26 -18 -26 -30 a12.5 12.5 0 0 1 26 -6 a12.5 12.5 0 0 1 26 6 c0 12 -12 20 -26 30z" fill="url(#ulK)" stroke="#8c8f94" stroke-width="1.5"/>
-        <path d="M100 280 c-7 -5 -13 -9 -13 -15 a6 6 0 0 1 13 -3 a6 6 0 0 1 13 3 c0 6 -6 10 -13 15z" fill="#8e2d3b" opacity=".85"/>
+        <rect class="k-shaft" x="94" y="150" width="12" height="104" rx="3" fill="url(#ulK)" stroke="#8c8f94" stroke-width="1"/>
+        <path d="M106 157 h9 v7 h-5 v7 h6 v8 h-10z" fill="#c9cdd2" stroke="#8c8f94" stroke-width="1"/>
+        <g class="k-bow">
+          ${[6, 5, 4, 3, 2, 1].map((n) => `<path class="k-depth" style="--d:${n * 3}px" d="M100 296 c-17 -12 -31 -21 -31 -35 a15 15 0 0 1 31 -7 a15 15 0 0 1 31 7 c0 14 -14 23 -31 35z" fill="${n === 6 ? "#7d8086" : "#a3a6ab"}" stroke="#7d8086" stroke-width="${n === 6 ? 2 : 0}"/>`).join("")}
+          <g class="k-face">
+            <path d="M100 296 c-17 -12 -31 -21 -31 -35 a15 15 0 0 1 31 -7 a15 15 0 0 1 31 7 c0 14 -14 23 -31 35z" fill="url(#ulK)" stroke="#7d8086" stroke-width="2"/>
+            <path d="M100 282 c-8 -6 -15 -10 -15 -17 a7 7 0 0 1 15 -3 a7 7 0 0 1 15 3 c0 7 -7 11 -15 17z" fill="#8e2d3b"/>
+          </g>
+        </g>
       </g></g>` : ""}
     </svg>`;
   function playUnlock(done) {

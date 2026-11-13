@@ -1577,7 +1577,12 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 .ul-pad svg { overflow: visible; }
 .ul-key { transform-box: view-box; transform-origin: 100px 250px; transform: translateY(150px); opacity: 0; transition: transform 1.3s cubic-bezier(.3, .8, .3, 1), opacity .6s ease; }
 .key-in .ul-key { transform: translateY(0); opacity: 1; }
-.key-turn .ul-key { transform: translateY(0) scaleX(.18); transition: transform .7s cubic-bezier(.5, 0, .3, 1); }
+.ul-pad { perspective: 900px; }
+.ul-pad svg { transition: transform .9s cubic-bezier(.4, 0, .2, 1); transform-origin: 50% 60%; }
+.key-turn .ul-pad svg, .open .ul-pad svg { transform: rotateY(-34deg) rotateX(5deg); }
+.ul-key .k-bow, .ul-key .k-face, .ul-key .k-depth { transform-box: view-box; transform-origin: 100px 270px; transition: transform .8s cubic-bezier(.5, 0, .3, 1); }
+.key-turn .ul-key .k-bow { transform: scaleX(.5); }
+.key-turn .ul-key .k-depth { transform: translateX(var(--d)); }
 .ul-shackle { transform-box: view-box; transform-origin: 148px 112px; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
 .open .ul-shackle { transform: translateY(-24px) rotate(-14deg); }
 .open .ul-pad { animation: ulJolt .4s ease-out; }
