@@ -51,6 +51,21 @@ const MunkelShow = (() => {
     twigBeak: `<g transform="translate(-6 -6) scale(.55)"><path d="M2 30 Q24 22 58 8" stroke="#6b4a35" stroke-width="3" fill="none"/><circle cx="16" cy="30" r="4" fill="#d93a4a"/><circle cx="30" cy="26" r="4" fill="#d93a4a"/><circle cx="44" cy="20" r="4" fill="#d93a4a"/><path d="M38 17 q2 -10 12 -8 q-4 8 -12 8z" fill="#4f9e5c"/></g>`,
     bulbBeak: `<path d="M-30 -2 Q-10 10 10 0 Q26 -8 40 2" stroke="#3f6b4f" stroke-width="1.6" fill="none"/>${[-24, -10, 6, 22, 34].map((x, i) => `<circle cx="${x}" cy="${[2, 5, 1, -3, 1][i]}" r="2.8" fill="${["#ff5a7a", "#ffcf3f", "#4fd18b", "#58b6ff", "#c77dff"][i]}"/>`).join("")}`,
   };
+
+  ART.moss = S("0 0 30 18", `<path d="M2 14 C2 6 10 2 15 6 C20 1 28 5 28 12 C28 17 4 18 2 14Z" fill="#6f9a52"/><path d="M6 12 q3 -4 6 -1 M15 9 q3 -3 7 0" stroke="#4f7a3a" stroke-width="1.4" fill="none"/>`);
+  ART.mossBeak = `<g transform="translate(-9 -2) scale(.6)"><path d="M2 14 C2 6 10 2 15 6 C20 1 28 5 28 12 C28 17 4 18 2 14Z" fill="#6f9a52"/></g>`;
+  ART.twigBeak2 = `<path d="M-18 2 L20 -3" stroke="#7a5537" stroke-width="2.6" stroke-linecap="round"/><path d="M8 -2 l6 -6 M-6 1 l-5 -6" stroke="#7a5537" stroke-width="1.8" stroke-linecap="round"/>`;
+  ART.featherBeak = `<g transform="rotate(-70) translate(-4 -12)"><path d="M6 1 C11 7 11 16 6 23 C1 16 1 7 6 1Z" fill="#fff6e8" stroke="#e6d6b4" stroke-width=".8"/><path d="M6 3 V22" stroke="#d9c7a3" stroke-width=".8"/></g>`;
+  // Nest: nur der vordere Rand – so sitzt der Vogel sichtbar „drin“
+  const NEST = (stage) => S("0 0 100 44", stage < 1 ? `<ellipse cx="50" cy="30" rx="30" ry="5" fill="rgba(0,0,0,.15)"/>` :
+    `<path d="M4 14 C4 40 96 40 96 14 C80 24 20 24 4 14Z" fill="${stage >= 2 ? "#8a5a3b" : "#6f9a52"}"/>` +
+    `<path d="M4 14 C20 24 80 24 96 14" stroke="#6f9a52" stroke-width="7" fill="none" stroke-linecap="round"/>` +
+    (stage >= 2 ? `<path d="M8 22 C26 32 74 32 92 22 M16 30 C32 37 68 37 84 30" stroke="#a8784f" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M0 12 l14 8 M100 12 l-14 8 M34 34 l-8 8 M66 34 l8 8 M48 36 l2 8" stroke="#7a5537" stroke-width="2.6" stroke-linecap="round"/>` : "") +
+    (stage >= 3 ? `<g transform="translate(78 4) rotate(35)"><path d="M6 1 C11 7 11 16 6 23 C1 16 1 7 6 1Z" fill="#fff6e8" stroke="#e6d6b4"/><path d="M6 3 V22" stroke="#d9c7a3"/></g>` : ""));
+  ART.nest = NEST(3);
+  ART.dumbbell = `<g transform="scale(1.5)"><path d="M-16 -2 H16" stroke="#7a5537" stroke-width="2.6" stroke-linecap="round"/><circle cx="-18" cy="-2" r="6.5" fill="#d93a4a"/><circle cx="-20" cy="-4" r="2" fill="#fff" opacity=".6"/><circle cx="18" cy="-2" r="6.5" fill="#d93a4a"/><circle cx="16" cy="-4" r="2" fill="#fff" opacity=".6"/></g>`;
+  ART.scale = S("0 0 60 26", `<rect x="2" y="6" width="56" height="18" rx="6" fill="#e8f1f4" stroke="#b9c9cf" stroke-width="1.5"/><rect x="2" y="20" width="56" height="4" rx="2" fill="#c8d6db"/><circle cx="30" cy="13" r="6.5" fill="#fff" stroke="#9fb0b6"/><g class="sc-needle"><path d="M30 13 L30 7.6" stroke="#d93a4a" stroke-width="1.4" stroke-linecap="round"/></g><circle cx="30" cy="13" r="1.2" fill="#2b241f"/>`);
+  ART.yarn = "";
   const HATS = {
     zylinder: `<rect x="56" y="-6" width="28" height="22" rx="2" fill="#2b241f"/><rect x="50" y="14" width="40" height="5" rx="2.5" fill="#2b241f"/><rect x="56" y="8" width="28" height="5" fill="#8e2d3b"/>`,
     weihnachten: `<path d="M48 18 Q62 -12 90 2 Q78 2 86 16Z" fill="#c9302c"/><rect x="46" y="14" width="44" height="7" rx="3.5" fill="#fff"/><circle cx="91" cy="3" r="5" fill="#fff"/>`,
@@ -64,14 +79,27 @@ const MunkelShow = (() => {
   const pct = (x, y) => [(x / 200) * 100, (y / 240) * 100];
   function place(el, x, y) { const [l, t] = pct(x, y); el.style.left = l + "%"; el.style.top = t + "%"; }
 
+  // Sitzplätze (Fußpunkt in Schloss-Koordinaten) und Beinhaltung
+  const SEATS = {
+    home: [146, 104, "dangle"], edgeL: [58, 104, "dangle"], top: [100, 5, "stand"], ground: [34, 226, "stand"], groundR: [168, 226, "stand"],
+    keyhole: [100, 178, "stand"], nest: [150, 109, "tuck"], letter: [42, 214, "stand"],
+  };
+  const FACE_MAP = { "mk-wow": "wow", "mk-sleep": "sleep", "mk-sad": "sad" };
   function makeCtx() {
     const token = { dead: false };
     const made = [];
-    let cur = HOME.slice();
+    let cur = HOME.slice(), legs = "dangle";
     const check = () => { if (token.dead) throw new Error("abgebrochen"); };
     const wait = (ms) => new Promise((res, rej) => setTimeout(() => (token.dead ? rej(new Error("abgebrochen")) : res()), ms));
     const say = (t, ms = 3000) => { check(); bird.say(t, ms); };
-    const pose = (cls, on = true) => bird.classList.toggle(cls, on);
+    const face = (f) => bird.face(f);
+    // ältere Posen-Namen weiter unterstützen
+    const pose = (cls, on = true) => {
+      if (FACE_MAP[cls]) { bird.face(on ? FACE_MAP[cls] : undefined); return; }
+      const m = { "mk-open": "mouth", "mk-sing": "sing", "mk-stretch": "wings-up", "mk-fluff": "fluff", "mk-wrapped": "mk-wrapped" }[cls];
+      if (cls === "mk-fly") { bird.fly(on); if (!on) bird.legs(legs); return; }
+      bird.classList.toggle(m || cls, on);
+    };
     const prop = (html, x, y, w, o = {}) => {
       const d = document.createElement("div");
       d.className = "mk-prop" + (o.cls ? " " + o.cls : "");
@@ -96,31 +124,70 @@ const MunkelShow = (() => {
       return d;
     };
     const anim = (el, frames, ms, opt = {}) => el.animate(frames, { duration: ms, easing: "ease-in-out", fill: "forwards", ...opt });
-    // Vogel bewegen (Sitzpunkt in Schloss-Koordinaten), optional im Bogen und fliegend
+    // kleine Federn, die herabschweben
+    const feathers = (n = 3, x = cur[0], y = cur[1] - 30) => {
+      for (let i = 0; i < n; i++) {
+        const f = prop(`<svg viewBox="0 0 12 24"><path d="M6 1 C11 7 11 16 6 23 C1 16 1 7 6 1Z" fill="#8e6142"/><path d="M6 3 V22" stroke="#6e4630" stroke-width=".8"/></svg>`, x + (Math.random() - 0.5) * 30, y, 5, { cls: "mk-feather" });
+        const dx = (Math.random() - 0.5) * 60;
+        anim(f, [{ transform: "translate(-50%,-100%) rotate(0)", opacity: 1 }, { transform: `translate(calc(-50% + ${dx * 0.5}px), -40%) rotate(${dx}deg)`, opacity: 1, offset: 0.5 }, { transform: `translate(calc(-50% + ${dx}px), 40%) rotate(${-dx}deg)`, opacity: 0 }], 2200 + Math.random() * 800, { easing: "ease-in-out" }).onfinish = () => f.remove();
+      }
+    };
+    // Fliegen: Abheben → Bogen mit Kurvenlage (und Gleiten auf langen Strecken) → Abbremsen → Landung
     const moveTo = async (x, y, ms, o = {}) => {
       check();
-      const fly = o.fly !== false, arc = o.arc ?? 30, from = cur.slice();
-      if (fly) pose("mk-fly");
-      const frames = [];
-      for (let i = 0; i <= 10; i++) { const t = i / 10, e = t * t * (3 - 2 * t); const px = from[0] + (x - from[0]) * e, py = from[1] + (y - from[1]) * e - Math.sin(Math.PI * t) * arc; const [l, tp] = pct(px, py); frames.push({ left: l + "%", top: tp + "%" }); }
+      const fly = o.fly !== false, from = cur.slice();
+      const land = o.land || (o.keepFlying ? null : legs);
+      const dist = Math.hypot(x - from[0], y - from[1]);
+      if (fly && !bird.classList.contains("flying")) {
+        bird.classList.add("crouch"); await wait(170); bird.classList.remove("crouch");
+        bird.fly(true); tone(260, 0.12, "sine", 0.05, 420);
+      }
+      bird.classList.toggle("flip", fly && x < from[0] - 4);
+      const arc = o.arc ?? Math.min(40, dist * 0.25);
+      const cx = (from[0] + x) / 2 + (o.curve || 0), cy = (from[1] + y) / 2 - arc;
+      const P = (t) => { const u = 1 - t; return [u * u * from[0] + 2 * u * t * cx + t * t * x, u * u * from[1] + 2 * u * t * cy + t * t * y]; };
+      const N = 28, frames = [];
+      for (let i = 0; i <= N; i++) {
+        const t = i / N, e = 0.5 - Math.cos(Math.PI * t) / 2;
+        const [px, py] = P(e), [qx, qy] = P(Math.min(1, e + 0.04));
+        const bob = fly ? Math.sin(t * Math.PI * Math.max(2, ms / 160)) * 1.6 * Math.sin(Math.PI * t) : 0;
+        const bank = fly ? Math.max(-20, Math.min(20, (qx - px) * 2.2)) : 0;
+        const [l, tp] = pct(px, py + bob);
+        frames.push({ left: l + "%", top: tp + "%", rotate: bank + "deg" });
+      }
       const a = perch.animate(frames, { duration: ms, easing: "linear", fill: "forwards" });
+      const timers = [];
+      if (fly && dist > 110 && ms > 1100) { timers.push(setTimeout(() => bird.glide(true), ms * 0.3), setTimeout(() => bird.glide(false), ms * 0.72)); }
+      if (fly && land) timers.push(setTimeout(() => bird.classList.add("flare"), ms * 0.82));
       await new Promise((r) => (a.onfinish = r));
+      timers.forEach(clearTimeout);
       place(perch, x, y); a.cancel(); cur = [x, y];
-      if (fly && !o.keepFlying) pose("mk-fly", false);
+      bird.glide(false); bird.classList.remove("flare");
+      if (fly && land) {
+        bird.fly(false); bird.classList.remove("flip"); legs = land; bird.legs(land);
+        bird.act("squash", 450); tone(180, 0.08, "triangle", 0.05);
+        if (o.feathers) feathers(o.feathers);
+      }
       check();
     };
-    const home = (ms = 1100) => moveTo(HOME[0], HOME[1], ms, { arc: 26 });
+    const jump = (x, y) => { place(perch, x, y); cur = [x, y]; };
+    const seat = (name, ms = 1100, o = {}) => { const [x, y, l] = SEATS[name]; return moveTo(x, y, ms, { ...o, land: l }); };
+    const home = (ms = 1200) => seat("home", ms);
     const waitTap = (el, ms) => new Promise((res) => {
       let done = false; const fin = (v) => { if (!done) { done = true; res(v); } };
       const h = (e) => { e.stopPropagation(); el.removeEventListener("click", h); fin(true); };
       el.addEventListener("click", h); el.classList.add("tappable");
       setTimeout(() => { el.removeEventListener("click", h); fin(false); }, ms);
     });
-    const hint = (t, ms = 5000) => { const h = document.createElement("div"); h.className = "mk-hint"; h.textContent = t; lock.append(h); made.push(h); setTimeout(() => h.remove(), ms); };
+    const hint = (t, ms = 5000) => { lock.querySelectorAll(".mk-hint").forEach((h) => h.remove()); const h = document.createElement("div"); h.className = "mk-hint"; h.textContent = t; lock.append(h); made.push(h); setTimeout(() => { h.classList.add("out"); setTimeout(() => h.remove(), 300); }, ms); };
     const burstAt = (el, sym, n = 8, spread = 50) => { try { H().burstAt(el, sym, n, spread); } catch (e) {} };
     const burstPt = (x, y, sym, n = 8, spread = 50) => { const r = pad.getBoundingClientRect(); try { H().burst(r.left + (x / 200) * r.width, r.top + (y / 240) * r.height, sym, n, spread); } catch (e) {} };
-    const cleanup = () => { token.dead = true; made.forEach((d) => d.remove()); bird.carry(""); ["mk-fly", "mk-sleep", "mk-wow", "mk-open", "mk-stretch", "mk-sad", "mk-sing"].forEach((c) => bird.classList.remove(c)); perch.getAnimations().forEach((a) => a.cancel()); perch.style.transform = ""; place(perch, HOME[0], HOME[1]); bird.onSceneTap = null; };
-    return { token, wait, say, pose, prop, sky, anim, moveTo, home, waitTap, hint, burstAt, burstPt, cleanup, made, get cur() { return cur; } };
+    const cleanup = () => {
+      token.dead = true; made.forEach((d) => d.remove()); bird.carry(""); bird._bubble?.remove();
+      ["flying", "gliding", "flare", "flip", "mouth", "sing", "wings-up", "fluff", "crouch", "mk-wrapped", "preen-r", "preen-l"].forEach((c) => bird.classList.remove(c));
+      bird.face(); bird.legs("dangle"); perch.getAnimations().forEach((a) => a.cancel()); perch.style.rotate = ""; place(perch, HOME[0], HOME[1]); bird.onSceneTap = null;
+    };
+    return { token, jump, wait, say, face, pose, prop, sky, anim, moveTo, seat, home, feathers, waitTap, hint, burstAt, burstPt, cleanup, made, get cur() { return cur; }, set legsNow(l) { legs = l; bird.legs(l); } };
   }
 
   /* ---------- Sammelstücke am Schloss ---------- */
@@ -131,7 +198,7 @@ const MunkelShow = (() => {
     const put = (html, x, y, w, extra = "", title = "") => { const d = document.createElement("div"); d.className = "mk-prop mk-item" + extra; d.innerHTML = html; place(d, x, y); d.style.width = (w / 200) * 100 + "%"; if (title) d.title = title; d.addEventListener("click", (e) => { e.stopPropagation(); d.classList.remove("wiggle"); void d.offsetWidth; d.classList.add("wiggle"); tone(900 + Math.random() * 300, 0.08, "sine", 0.06); }); pad.append(d); return d; };
     if (st.items.includes("brief")) put(ART.letter, 40, 236, 36, " lean", "Brief für Ute – erst am 28. öffnen!");
     if (st.items.includes("schneemann")) put(ART.snowman, 74, 106, 22, "", "Mini-Schneemann");
-    if (st.items.includes("kerze")) put(ART.candle, 120, 106, 12, " lit candle", "Adventskerze");
+    if (st.items.includes("kerze")) put(ART.candle, 108, 106, 12, " lit candle", "Adventskerze");
     if (st.items.includes("laterne")) put(ART.lantern, 34, 106, 14, " lit lantern-item", "Laterne");
     if (st.items.includes("lichter")) {
       const d = document.createElement("div"); d.className = "mk-prop mk-item mk-lights"; d.style.left = "0"; d.style.top = "0"; d.style.width = "100%"; d.style.height = "100%"; d.style.transform = "none";
@@ -141,6 +208,8 @@ const MunkelShow = (() => {
       pad.append(d);
     }
     if (st.hat && bird) bird.setHat(HATS[st.hat]);
+    if (st.items.includes("nest")) { const d = put(ART.nest, 148, 122, 66, " nest-item", "Munkels Nest"); d.style.zIndex = 3; }
+    if (bird) bird.slim(!!st.slim);
   }
 
   /* ---------- Himmel nach Uhrzeit ---------- */
@@ -166,32 +235,60 @@ const MunkelShow = (() => {
       bird.classList.add("mk-fluff"); c.burstAt(bird, ["·"], 10, 40); await c.wait(900); bird.classList.remove("mk-fluff");
       bird.act("mk-flutter", 900); c.say("So. Jetzt bin ich wach. Fast.", 2600); await c.wait(2400);
     } },
-    "14e": { title: "Einnicken", async run(c) {
-      c.say("Ich bin gar nicht müde …", 2200); await c.wait(2300);
-      for (let i = 0; i < 2; i++) {
-        c.pose("mk-sleep"); await c.wait(1300); c.pose("mk-sleep", false); c.pose("mk-wow"); tone(900, 0.08, "square", 0.04); await c.wait(500); c.pose("mk-wow", false);
+    "14e": { title: "Einnicken im Nest", async run(c) {
+      c.face("sleepy"); await c.wait(900);
+      c.pose("mk-open"); bird.classList.add("wings-up"); tone(320, 0.7, "sine", 0.05, 200); await c.wait(1100);
+      c.pose("mk-open", false); bird.classList.remove("wings-up"); c.say("Uaaah … Zeit für ein gemütliches Bett.", 2600); await c.wait(2700);
+      const nest = c.prop(NEST(0), 148, 122, 66, { cls: "mk-nest" });
+      const trips = [[ART.mossBeak, 1, "Erst weiches Moos …"], [ART.twigBeak2, 2, "… ein paar Zweige …"], [ART.featherBeak, 3, "… und eine Daunenfeder!"]];
+      for (const [beak, stage, txt] of trips) {
+        await c.moveTo(250, 40, 900, { keepFlying: true, arc: 30 });
+        await c.wait(500); bird.carry(beak);
+        await c.moveTo(150, 96, 1000, { arc: -20, land: "stand" });
+        bird.carry(""); nest.innerHTML = NEST(stage); nest.classList.remove("plop"); void nest.offsetWidth; nest.classList.add("plop");
+        tone(500 + stage * 120, 0.1, "triangle", 0.06); c.say(txt, 1500); await c.wait(1300);
+        if (stage === 2) c.hint("Tipp aufs Nest – dann klopft er es kuschelig!", 5200);
       }
-      c.hint("Pssst … tipp ihn an, wenn du ihn noch mal wecken willst.");
-      c.pose("mk-sleep"); const z = c.prop(`<span>z</span><span>Z</span><span>z</span>`, 166, 70, 20, { cls: "mk-zzz" });
-      if (await c.waitTap(bird, 5000)) { z.remove(); c.pose("mk-sleep", false); c.pose("mk-wow"); c.say("Hä? Ich hab nicht geschlafen!", 2400); await c.wait(2300); c.pose("mk-wow", false); c.pose("mk-sleep"); c.prop(`<span>z</span><span>Z</span><span>z</span>`, 166, 70, 20, { cls: "mk-zzz" }); }
-      await c.wait(3500);
-    }, end: (c) => c.pose("mk-sleep", false) },
-
+      let fluffed = 0; nest.classList.add("tappable"); nest.onclick = (e) => { e.stopPropagation(); fluffed++; nest.classList.remove("plop"); void nest.offsetWidth; nest.classList.add("plop"); tone(700 + fluffed * 60, 0.08, "sine", 0.06); c.burstAt(nest, ["·"], 4, 20); };
+      await c.moveTo(148, 114, 400, { fly: false, arc: 6 }); c.legsNow = "tuck"; bird.act("squash", 450); bird.act("mk-flutter", 900); await c.wait(1300);
+      c.say(fluffed ? "So weich! Danke fürs Aufschütteln." : "Perfekt. Genau richtig weich.", 2400); await c.wait(2500);
+      c.face("sleepy");
+      for (let i = 0; i < 2; i++) {
+        bird.classList.add("nod"); await c.wait(1300); bird.classList.remove("nod");
+        c.face("wow"); tone(900, 0.06, "square", 0.04); await c.wait(450); c.face("sleepy"); await c.wait(700);
+      }
+      c.hint("Pssst … tipp ihn an, wenn du ihn wecken willst.", 6000);
+      c.face("sleep"); const z = c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" });
+      if (await c.waitTap(bird, 5500)) {
+        z.remove(); c.face("wow"); tone(1200, 0.1, "triangle", 0.07); await c.wait(500);
+        c.face("shy"); c.say("Ich hab gar nicht geschlafen! Ehrlich.", 2600); await c.wait(2700);
+        c.face("sleepy"); await c.wait(900); c.face("sleep"); c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" });
+      }
+      await c.wait(3500); nest.remove(); addItem("nest");
+    }, end: (c) => c.face() },
     /* ---------------- 15.11. ---------------- */
     "15m": { title: "Postflug", async run(c) {
-      c.say("Moment, ich hab Post für dich!", 2000); await c.wait(1600);
-      await c.moveTo(260, 20, 1300, { arc: 50 }); await c.wait(900);
-      bird.carry(ART.letterBeak); await c.moveTo(150, 60, 1400, { arc: -20, keepFlying: true }); await c.moveTo(108, 168, 900, { arc: 10, keepFlying: true });
-      c.say("Passt der … ins Schlüsselloch?", 2200);
-      for (let i = 0; i < 3; i++) { await c.moveTo(102, 166, 220, { arc: 0, keepFlying: true }); await c.moveTo(110, 168, 220, { arc: 0, keepFlying: true }); }
-      c.say("Nö. Ich leg ihn ordentlich hin.", 2200);
-      await c.moveTo(48, 214, 900, { arc: 20 }); bird.carry(""); addItem("brief");
-      c.burstPt(40, 220, ["✨"], 8, 30); tone(880, 0.1, "sine", 0.08);
+      c.face("normal"); bird.act("mk-look", 2400); await c.wait(2400);
+      c.face("wow"); await c.wait(500); c.face("happy"); await c.wait(500);
+      await c.moveTo(260, -30, 1300, { keepFlying: true, arc: 40 });
+      c.feathers(2, 160, 80); c.face(); await c.wait(1400);
+      bird.carry(ART.letterBeak); c.jump(-70, 40);
+      await c.moveTo(60, 0, 1100, { keepFlying: true, arc: -10 });
+      await c.moveTo(150, 20, 900, { keepFlying: true, arc: 25 });
+      await c.seat("top", 900);
+      c.say("Post für Ute!", 1800); bird.act("mk-hop", 700); await c.wait(1900);
+      c.face("focus"); await c.seat("keyhole", 1000);
+      c.say("Passt der … ins Schlüsselloch?", 2000);
+      for (let i = 0; i < 4; i++) { c.anim(perch, [{ translate: "0 0" }, { translate: "0 -6%" }, { translate: "0 0" }], 320); tone(1600 + i * 80, 0.03, "square", 0.03); await c.wait(380); }
+      c.face("shy"); c.say("Nö. Viel zu groß.", 1800); await c.wait(1900);
+      await c.seat("letter", 1000);
+      bird.carry(""); addItem("brief"); tone(880, 0.12, "sine", 0.08); c.burstPt(40, 220, ["✨"], 8, 30);
+      c.face("happy"); c.say("Ich leg ihn ordentlich hin.", 2000); await c.wait(1800);
       c.hint("Tipp den Brief an!");
       const b = pad.querySelector(".mk-item.lean");
       const tapped = b ? await c.waitTap(b, 5000) : false;
-      c.say(tapped ? "Nicht aufmachen! Erst am 28.!" : "Für Ute. Erst am 28. öffnen!", 2600);
-      await c.wait(1400); await c.home();
+      c.face("wink"); c.say(tapped ? "Nicht aufmachen! Erst am 28.!" : "Für Ute. Erst am 28. öffnen!", 2600); await c.wait(2700);
+      c.face(); await c.home(1300);
     } },
     "15e": { title: "Sterne anknipsen", async run(c) {
       c.say("Es ist so dunkel … ich mach mal Licht.", 2400); await c.wait(1800);
@@ -272,14 +369,27 @@ const MunkelShow = (() => {
 
     /* ---------------- 18.11. ---------------- */
     "18m": { title: "Morgensport", async run(c) {
-      c.say("Morgensport! Machst du mit?", 2200); await c.wait(1800);
-      c.hint("Feuere ihn an – tipp ihn an!");
-      let cheers = 0; bird.onSceneTap = () => { cheers++; c.burstAt(bird, ["⭐", "✨"], 6, 40); tone(1000 + cheers * 60, 0.08, "triangle", 0.08); };
-      for (let i = 1; i <= 5; i++) { bird.act("mk-squat", 700); c.say(String(i), 600); tone(400 + i * 60, 0.08, "triangle", 0.06); await c.wait(800); }
-      for (let i = 0; i < 4; i++) { c.pose("mk-stretch", i % 2 === 0); bird.act("mk-hop", 500); await c.wait(550); }
-      c.pose("mk-stretch", false);
-      const cl = c.prop(`<div class="mk-sweat">💧</div>`, 160, 72, 8); await c.wait(500); cl.remove();
-      bird.act("mk-tilt", 1400); c.say(cheers ? `Mit ${cheers}× Anfeuern ging's viel leichter!` : "Puh! Geschafft.", 2600); await c.wait(2600);
+      c.say("Morgensport! Machst du mit?", 2200); await c.wait(2000);
+      await c.seat("ground", 1300);
+      c.hint("Feuere ihn an – tipp ihn an!", 6000);
+      let cheers = 0; bird.onSceneTap = () => { cheers++; c.burstAt(bird, ["⭐", "✨"], 6, 40); tone(1000 + cheers * 60, 0.08, "triangle", 0.08); bird.act("mk-hop", 600); };
+      c.face("focus");
+      for (let i = 1; i <= 4; i++) { bird.classList.add("jj"); tone(500 + i * 50, 0.07, "triangle", 0.05); c.say(`Hampelmann ${i}!`, 700); await c.wait(450); bird.classList.remove("jj"); await c.wait(400); }
+      bird.carry(ART.dumbbell); c.say("Beeren-Hanteln!", 1200); await c.wait(1100);
+      for (let i = 1; i <= 3; i++) { bird.classList.add("lift"); tone(300 + i * 60, 0.12, "sawtooth", 0.03); await c.wait(600); bird.classList.remove("lift"); await c.wait(450); }
+      bird.carry("");
+      for (let i = 0; i < 3; i++) { bird.classList.add("pushup"); await c.wait(450); bird.classList.remove("pushup"); await c.wait(350); }
+      c.face("happy"); c.prop(`<div class="mk-sweat">💧</div>`, 50, 170, 8); await c.wait(900);
+      const sc = c.prop(ART.scale, 40, 236, 46, { cls: "mk-scaleprop" });
+      c.face("normal"); c.say("Und jetzt … die Waage.", 1800); await c.wait(1300);
+      await c.moveTo(40, 226, 600, { arc: 18, land: "stand" });
+      const nd = sc.querySelector(".sc-needle"); nd.style.transformOrigin = "30px 13px"; nd.style.transformBox = "view-box";
+      await c.anim(nd, [{ transform: "rotate(0)" }, { transform: "rotate(70deg)" }, { transform: "rotate(30deg)" }, { transform: "rotate(48deg)" }, { transform: "rotate(40deg)" }], 1500, { easing: "ease-out" }).finished;
+      c.face("wow"); tone(1200, 0.2, "triangle", 0.08, 1600); await c.wait(500);
+      bird.slim(true); st.slim = true; save(); c.burstAt(bird, ["✨", "⭐"], 12, 50);
+      c.prop(`<div class="mk-tag">−1 Gramm!</div>`, 116, 212, 30);
+      c.face("happy"); bird.act("mk-hop", 700); c.say(cheers ? `Danke fürs Anfeuern! Ich fühl mich so leicht!` : "Ein Gramm weniger! Ich fühl mich so leicht!", 2800); await c.wait(3000);
+      c.face(); await c.home(1300); bird.act("mk-flutter", 900); await c.wait(900);
     } },
     "18e": { title: "Schal stricken", async run(c) {
       bird.carry(ART.needles); c.say("Ich stricke mir einen längeren Schal.", 2400); await c.wait(1500);
@@ -591,7 +701,7 @@ const MunkelShow = (() => {
     albumBtn = document.createElement("button"); albumBtn.className = "mk-album-btn";
     albumBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5z M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Munkels Szenen</span><b></b>`;
     albumBtn.addEventListener("click", (e) => { e.stopPropagation(); openAlbum(); });
-    lock.append(albumBtn); updateAlbumBtn();
+    (lock.querySelector(".lock-clock") || lock.lastChild).after(albumBtn); updateAlbumBtn();
     // die Szene des aktuellen Tagesabschnitts einmal von selbst abspielen
     let last = currentSlot();
     if (!st.seen[last]) setTimeout(() => play(last, { auto: true }), 2600);
