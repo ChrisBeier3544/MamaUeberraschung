@@ -99,9 +99,9 @@ const Munkel = (() => {
       if (!el.isConnected) { b.remove(); return; }
       const r = el.querySelector(".mk-head")?.getBoundingClientRect() || el.getBoundingClientRect();
       const bw = b.offsetWidth, bh = b.offsetHeight, m = 10;
-      let x = r.left + r.width / 2, y = r.top - 10 - bh;
+      let x = r.left + r.width / 2, y = r.top - 6 - bh;
       let below = false;
-      if (y < 64) { y = r.bottom + 12; below = true; } // oben ist kein Platz (Hinweisleiste) → darunter
+      if (y < 44) { y = r.bottom + 10; below = true; } // oben ist kein Platz (Hinweisleiste) → darunter
       const cx = Math.max(m + bw / 2, Math.min(innerWidth - m - bw / 2, x));
       b.style.left = cx - bw / 2 + "px";
       b.style.top = y + "px";
