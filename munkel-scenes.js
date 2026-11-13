@@ -39,7 +39,7 @@ const MunkelShow = (() => {
     mirror: S("0 0 40 60", `<ellipse cx="20" cy="22" rx="16" ry="20" fill="#c9a04a"/><ellipse cx="20" cy="22" rx="12.5" ry="16.5" fill="#dff3fb"/><path d="M12 14 q4 -6 10 -6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><rect x="17" y="40" width="6" height="18" rx="3" fill="#8f6a24"/>`),
     snowman: S("0 0 40 56", `<circle cx="20" cy="40" r="14" fill="#fff" stroke="#dbe8f2" stroke-width="1.5"/><circle cx="20" cy="18" r="10" fill="#fff" stroke="#dbe8f2" stroke-width="1.5"/><circle cx="16.5" cy="16" r="1.4" fill="#333"/><circle cx="23.5" cy="16" r="1.4" fill="#333"/><circle cx="20" cy="21" r="2.4" fill="#d93a4a" class="sm-nose"/><circle cx="20" cy="36" r="1.4" fill="#333"/><circle cx="20" cy="42" r="1.4" fill="#333"/><path d="M8 27 q12 6 24 0" stroke="#8e2d3b" stroke-width="3.4" fill="none" stroke-linecap="round"/>`),
     worm: S("0 0 30 60", `<path d="M15 60 C15 46 8 40 12 30 C16 20 22 18 18 8" stroke="#f0a0a8" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M15 54 h1 M12 44 h1 M14 34 h1 M18 24 h1" stroke="#d9808a" stroke-width="9" stroke-linecap="round" opacity=".35"/><circle cx="16" cy="7" r="1.3" fill="#2b1a10"/><circle cx="20.5" cy="8" r="1.3" fill="#2b1a10"/><path d="M16 11 q2 2 4 0" stroke="#2b1a10" stroke-width="1" fill="none"/>`),
-    lantern: S("0 0 30 50", `<path d="M15 0 v6" stroke="#3f3f46" stroke-width="2"/><path d="M8 8 h14 l-2 -3 h-10z" fill="#3f3f46"/><rect x="7" y="8" width="16" height="26" rx="3" fill="#ffe7a3" stroke="#3f3f46" stroke-width="2.4"/><path d="M15 16 q-3 5 0 10 q3 -5 0 -10z" fill="#f39c32"/><rect x="6" y="33" width="18" height="4" rx="1.5" fill="#3f3f46"/>`),
+    lantern: S("0 0 30 38", `<path d="M15 0 v6" stroke="#3f3f46" stroke-width="2"/><path d="M8 8 h14 l-2 -3 h-10z" fill="#3f3f46"/><rect x="7" y="8" width="16" height="26" rx="3" fill="#ffe7a3" stroke="#3f3f46" stroke-width="2.4"/><path d="M15 16 q-3 5 0 10 q3 -5 0 -10z" fill="#f39c32"/><rect x="6" y="33" width="18" height="4" rx="1.5" fill="#3f3f46"/>`),
     owl: S("0 0 60 64", `<ellipse cx="30" cy="40" rx="20" ry="22" fill="#9c7a5b"/><ellipse cx="30" cy="46" rx="13" ry="14" fill="#e9d8bd"/><path d="M14 22 l-4 -12 l12 8z M46 22 l4 -12 l-12 8z" fill="#7d5f45"/><circle cx="22" cy="28" r="8" fill="#fff"/><circle cx="38" cy="28" r="8" fill="#fff"/><circle class="ow-p" cx="23" cy="28" r="4.5" fill="#2b1a10"/><circle class="ow-p" cx="37" cy="28" r="4.5" fill="#2b1a10"/><circle cx="24.5" cy="26.5" r="1.4" fill="#fff"/><circle cx="38.5" cy="26.5" r="1.4" fill="#fff"/><path d="M27 34 l3 5 l3 -5z" fill="#e5a13c"/><path d="M22 50 l2 2 l2 -2 M30 52 l2 2 l2 -2 M36 49 l2 2 l2 -2" stroke="#b39673" stroke-width="1.2" fill="none"/>`),
     candle: S("0 0 20 46", `<ellipse class="cd-glow" cx="10" cy="12" rx="10" ry="12" fill="#ffd27a" opacity=".45"/><path class="cd-flame" d="M10 4 q-4 7 0 12 q4 -5 0 -12z" fill="#f39c32"/><path d="M10 9 q-1.6 3 0 6 q1.6 -3 0 -6z" fill="#fff3c4"/><rect x="5" y="17" width="10" height="24" rx="2" fill="#fffaf0" stroke="#e6d6b4"/><path d="M5 21 q5 3 10 0" stroke="#e6d6b4" fill="none"/><ellipse cx="10" cy="42" rx="8" ry="3" fill="#c9a04a"/>`),
     moon: S("0 0 80 80", `<path d="M58 10 A34 34 0 1 0 70 58 A28 28 0 1 1 58 10Z" fill="#fff3c4" stroke="#f3dc93" stroke-width="2"/>`),
@@ -66,6 +66,78 @@ const MunkelShow = (() => {
   ART.dumbbell = `<g transform="scale(1.5)"><path d="M-16 -2 H16" stroke="#7a5537" stroke-width="2.6" stroke-linecap="round"/><circle cx="-18" cy="-2" r="6.5" fill="#d93a4a"/><circle cx="-20" cy="-4" r="2" fill="#fff" opacity=".6"/><circle cx="18" cy="-2" r="6.5" fill="#d93a4a"/><circle cx="16" cy="-4" r="2" fill="#fff" opacity=".6"/></g>`;
   ART.scale = S("0 0 60 26", `<rect x="2" y="6" width="56" height="18" rx="6" fill="#e8f1f4" stroke="#b9c9cf" stroke-width="1.5"/><rect x="2" y="20" width="56" height="4" rx="2" fill="#c8d6db"/><circle cx="30" cy="13" r="6.5" fill="#fff" stroke="#9fb0b6"/><g class="sc-needle"><path d="M30 13 L30 7.6" stroke="#d93a4a" stroke-width="1.4" stroke-linecap="round"/></g><circle cx="30" cy="13" r="1.2" fill="#2b241f"/>`);
   ART.yarn = "";
+  /* ---------- Mond in der echten Mondphase ---------- */
+  function moonPhase(d = new Date()) { const syn = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14); return ((((d.getTime() - ref) / 86400000) % syn) + syn) % syn / syn; }
+  function moonSVG(p = moonPhase(), size = 60) {
+    const r = 26, c = 30, k = Math.cos(2 * Math.PI * p), waxing = p < 0.5;
+    const rx = Math.abs(k) * r;
+    // beleuchteter Teil: Halbkreis + Terminator-Ellipse
+    const outer = waxing ? 1 : 0, crescent = k > 0;
+    const inner = waxing ? (crescent ? 0 : 1) : (crescent ? 1 : 0);
+    const lit = p < 0.02 || p > 0.98 ? "" : `<path d="M${c} ${c - r} A${r} ${r} 0 0 ${outer} ${c} ${c + r} A${rx.toFixed(2)} ${r} 0 0 ${inner} ${c} ${c - r}Z" fill="url(#mnL)"/>`;
+    return `<svg viewBox="0 0 60 60" width="${size}" height="${size}" aria-hidden="true"><defs><radialGradient id="mnL" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#fffbe6"/><stop offset=".7" stop-color="#fbeec0"/><stop offset="1" stop-color="#e8d79e"/></radialGradient></defs>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="#34463f" stroke="#cdbf8f" stroke-opacity=".45" stroke-width="1.2"/>${lit}
+      <g opacity="${p < 0.06 || p > 0.94 ? 0.15 : 0.35}" fill="#c9b67a"><circle cx="22" cy="24" r="3.4"/><circle cx="36" cy="38" r="4.2"/><circle cx="38" cy="20" r="2.2"/><circle cx="24" cy="40" r="2"/></g></svg>`;
+  }
+  const moonName = (p = moonPhase()) => p < 0.03 || p > 0.97 ? "Neumond" : p < 0.22 ? "zunehmende Mondsichel" : p < 0.28 ? "Halbmond" : p < 0.47 ? "zunehmender Mond" : p < 0.53 ? "Vollmond" : p < 0.72 ? "abnehmender Mond" : p < 0.78 ? "Halbmond" : "abnehmende Mondsichel";
+
+  /* ---------- gemütliches Nest (Rückseite hinter, Vorderseite vor dem Vogel) ---------- */
+  const NEST_BACK = S("0 0 120 60", `<ellipse cx="60" cy="24" rx="52" ry="13" fill="#5a3b26"/><ellipse cx="60" cy="25" rx="44" ry="9" fill="#3d281a"/><path d="M14 22 C20 12 34 10 40 14 M80 12 C92 10 104 14 108 22" stroke="#7a5537" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+  const NEST_FRONT = (stage = 3) => S("0 0 120 60",
+    `<path d="M6 24 C6 52 114 52 114 24 C98 34 22 34 6 24Z" fill="#8a5a3b"/>` +
+    `<path d="M6 24 C26 36 94 36 114 24" stroke="#a8784f" stroke-width="5" fill="none" stroke-linecap="round"/>` +
+    (stage >= 2 ? [[10, 30, 110, 30], [12, 37, 108, 37], [20, 44, 100, 44], [4, 26, 60, 46], [116, 26, 60, 46], [30, 48, 112, 28], [90, 48, 8, 28]].map(([a, b, c2, d]) => `<path d="M${a} ${b} Q60 ${Math.max(b, d) + 8} ${c2} ${d}" stroke="${["#7a5537", "#9c6b45", "#6b4a35"][(a + b) % 3]}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`).join("") +
+      `<path d="M0 20 l16 8 M120 20 l-16 8 M2 32 l12 -2 M118 32 l-12 -2 M36 50 l-6 8 M84 50 l6 8 M58 52 l-2 7" stroke="#6b4a35" stroke-width="2.6" stroke-linecap="round"/>` : "") +
+    `<path d="M8 24 C20 18 36 28 48 22 C60 30 74 20 86 26 C96 20 108 26 112 24" stroke="#6f9a52" stroke-width="6" fill="none" stroke-linecap="round"/>` +
+    `<path d="M14 26 q4 -6 9 -1 M46 25 q5 -6 10 0 M84 27 q5 -6 10 0" stroke="#86b366" stroke-width="3" fill="none" stroke-linecap="round"/>` +
+    (stage >= 2 ? `<path d="M100 30 q8 -8 14 -2 q-6 6 -14 2z" fill="#4f9e5c"/><path d="M12 34 q-8 -6 -10 2 q6 4 10 -2z" fill="#4f9e5c"/><circle cx="104" cy="38" r="3.4" fill="#d93a4a"/><circle cx="110" cy="40" r="2.6" fill="#d93a4a"/>` : "") +
+    (stage >= 3 ? `<g transform="translate(22 6) rotate(-35)"><path d="M6 1 C12 8 12 18 6 26 C0 18 0 8 6 1Z" fill="#fff6e8" stroke="#e6d6b4"/><path d="M6 3 V25" stroke="#d9c7a3"/></g><g transform="translate(86 4) rotate(30)"><path d="M6 1 C12 8 12 18 6 26 C0 18 0 8 6 1Z" fill="#f3e3c4" stroke="#e0caa0"/><path d="M6 3 V25" stroke="#cdb48a"/></g><ellipse cx="62" cy="27" rx="7" ry="3" fill="#fff6e8" opacity=".9"/>` : ""));
+  ART.nestFront = NEST_FRONT(3);
+
+  /* ---------- richtige Lämpchen ---------- */
+  const LAMP = (x, y, col, ang, i) => `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${ang.toFixed(0)})" class="lamp" style="animation-delay:-${(i * 0.37).toFixed(2)}s">
+    <circle cy="8" r="8" fill="${col}" class="halo" opacity=".35"/><rect x="-1.8" y="-1" width="3.6" height="3.6" rx="1" fill="#2f4a3a"/>
+    <path class="bulb" d="M0 2 C3.6 4 4.2 8 3.2 11 C2.4 13.6 -2.4 13.6 -3.2 11 C-4.2 8 -3.6 4 0 2Z" fill="${col}" stroke="rgba(0,0,0,.18)" stroke-width=".5"/>
+    <path d="M-1.4 5 q-1.2 2 -.6 5" stroke="#fff" stroke-width=".9" fill="none" opacity=".7" stroke-linecap="round"/></g>`;
+
+  /* ---------- Glühwürmchen ---------- */
+  const FIREFLY = `<svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="19" r="11" fill="#fff3a0" opacity=".28" class="ff-glow"/>
+    <g class="ff-wings"><ellipse cx="10" cy="11" rx="6" ry="3.4" fill="#e9f4ff" opacity=".7" transform="rotate(-30 10 11)"/><ellipse cx="20" cy="11" rx="6" ry="3.4" fill="#e9f4ff" opacity=".7" transform="rotate(30 20 11)"/></g>
+    <ellipse cx="15" cy="13" rx="3" ry="3.6" fill="#3a3140"/><circle cx="15" cy="9" r="2.4" fill="#2b2433"/><path d="M14 7 q-2 -4 -4 -4 M16 7 q2 -4 4 -4" stroke="#2b2433" stroke-width=".8" fill="none"/>
+    <ellipse cx="15" cy="19" rx="3.6" ry="4.6" fill="#ffe86a" class="ff-tail"/><ellipse cx="15" cy="19" rx="2" ry="2.8" fill="#fffbe0"/></svg>`;
+
+  /* ---------- großer Wurm mit Erdloch ---------- */
+  ART.hole = S("0 0 40 12", `<ellipse cx="20" cy="7" rx="18" ry="5" fill="#4a3424"/><ellipse cx="20" cy="6" rx="12" ry="3" fill="#2b1d14"/><circle cx="6" cy="4" r="2" fill="#6b4a35"/><circle cx="33" cy="5" r="2.4" fill="#6b4a35"/>`);
+  ART.bigworm = S("0 0 24 64", `<path d="M12 64 C12 50 7 44 10 34 C13 24 16 18 12 8" stroke="#f0a0a8" stroke-width="11" fill="none" stroke-linecap="round"/>${[56, 48, 40, 32, 24, 16].map((y, i) => `<path d="M${6 + (i % 2) * 2} ${y} h12" stroke="#d9808a" stroke-width="1.4" opacity=".6"/>`).join("")}<circle cx="9.5" cy="7" r="1.6" fill="#2b1a10"/><circle cx="14.5" cy="7" r="1.6" fill="#2b1a10"/><path d="M10 11 q2 1.6 4 0" stroke="#2b1a10" stroke-width="1" fill="none"/><ellipse cx="8" cy="9.5" rx="1.6" ry="1" fill="#ff8fa3" opacity=".7"/><ellipse cx="16" cy="9.5" rx="1.6" ry="1" fill="#ff8fa3" opacity=".7"/>`);
+
+  /* ---------- 20 verschiedene Schafe ---------- */
+  const SHEEP_ACC = {
+    muetze: `<path d="M32 4 Q40 -10 50 2 Q46 2 48 8Z" fill="#c9302c"/><rect x="30" y="4" width="20" height="4" rx="2" fill="#fff"/><circle cx="50" cy="0" r="3" fill="#fff"/>`,
+    schal: `<path d="M30 18 Q38 24 46 18 L46 22 Q38 28 30 22Z" fill="#58b6ff"/><path d="M42 21 l3 10 l-4 1 l-2 -10z" fill="#58b6ff"/>`,
+    bart: `<path d="M38 20 q2 10 6 0 q-2 6 -6 0z" fill="#f4efe6" stroke="#ddd3c2" stroke-width=".6"/>`,
+    brille: `<circle cx="38" cy="12" r="3.2" fill="none" stroke="#2b241f" stroke-width="1.2"/><circle cx="45" cy="12" r="3.2" fill="none" stroke="#2b241f" stroke-width="1.2"/><path d="M41.2 12 h.6" stroke="#2b241f" stroke-width="1.2"/>`,
+    sonnenbrille: `<rect x="34" y="9.5" width="6.4" height="4.6" rx="2" fill="#1d1d24"/><rect x="41.6" y="9.5" width="6.4" height="4.6" rx="2" fill="#1d1d24"/><path d="M40 11 h2" stroke="#1d1d24" stroke-width="1.2"/>`,
+    fliege: `<path d="M36 22 l-4 -3 v6z M40 22 l4 -3 v6z" fill="#8e2d3b"/><circle cx="38" cy="22" r="1.4" fill="#6f2230"/>`,
+    krone: `<path d="M34 4 l1 -6 l3 3 l3 -5 l3 5 l3 -3 l1 6z" fill="#f2c84b" stroke="#c9961f" stroke-width=".6"/>`,
+    schleife: `<path d="M36 2 l-6 -4 v8z M40 2 l6 -4 v8z" fill="#ff8fa3"/><circle cx="38" cy="2" r="1.8" fill="#e85d75"/>`,
+    ohren: `<path d="M33 6 Q41 -4 49 6" stroke="#8e2d3b" stroke-width="1.6" fill="none"/><circle cx="33" cy="9" r="3.4" fill="#fff6e8" stroke="#e8c46b"/><circle cx="49" cy="9" r="3.4" fill="#fff6e8" stroke="#e8c46b"/>`,
+    pudel: `<path d="M32 6 Q40 -4 48 6Z" fill="#4f9e5c"/><path d="M34 2 h12 M33 5 h14" stroke="#fff" stroke-width="1"/><circle cx="40" cy="-3" r="3" fill="#fff"/>`,
+    kopfhoerer: `<path d="M33 10 Q40 -2 48 10" stroke="#2b241f" stroke-width="1.8" fill="none"/><rect x="31" y="9" width="4" height="6" rx="2" fill="#d93a4a"/><rect x="46" y="9" width="4" height="6" rx="2" fill="#d93a4a"/>`,
+    glocke: `<path d="M36 22 h4 v2 q2 1 2 4 h-8 q0 -3 2 -4z" fill="#f2c84b" stroke="#c9961f" stroke-width=".6"/><path d="M33 20 Q38 24 43 20" stroke="#8e2d3b" stroke-width="1.4" fill="none"/>`,
+    zylinder: `<rect x="33" y="-6" width="10" height="9" rx="1" fill="#2b241f"/><rect x="30" y="3" width="16" height="2.4" rx="1.2" fill="#2b241f"/><rect x="33" y="0" width="10" height="2" fill="#8e2d3b"/>`,
+    monokel: `<circle cx="45" cy="12" r="3.4" fill="#dff3fb" fill-opacity=".4" stroke="#c9a04a" stroke-width="1"/><path d="M48 14 q2 6 -2 10" stroke="#c9a04a" stroke-width=".6" fill="none"/>`,
+    blume: `<circle cx="35" cy="3" r="2" fill="#ffd84d"/>${[0, 72, 144, 216, 288].map((a) => `<circle cx="${35 + Math.cos((a * Math.PI) / 180) * 2.6}" cy="${3 + Math.sin((a * Math.PI) / 180) * 2.6}" r="1.6" fill="#ff8fa3"/>`).join("")}`,
+    stirnband: `<path d="M32 7 Q40 3 48 7" stroke="#58b6ff" stroke-width="2.4" fill="none"/>`,
+  };
+  const SHEEP_LIST = [
+    ["#fffaf0", "#3a3a40", ""], ["#fffaf0", "#3a3a40", "muetze"], ["#fffaf0", "#3a3a40", "schal"], ["#fffaf0", "#3a3a40", "brille"], ["#fffaf0", "#3a3a40", "bart"],
+    ["#1f1f24", "#141418", ""], ["#fffaf0", "#3a3a40", "sonnenbrille"], ["#fffaf0", "#3a3a40", "fliege"], ["#ffffff", "#f4f4f4", ""], ["#fffaf0", "#3a3a40", "krone"],
+    ["#fffaf0", "#3a3a40", "schleife"], ["#ffb3cf", "#e8789e", ""], ["#fffaf0", "#3a3a40", "ohren"], ["#fffaf0", "#3a3a40", "pudel"], ["#fffaf0", "#3a3a40", "kopfhoerer"],
+    ["#fffaf0", "#3a3a40", "glocke"], ["#fffaf0", "#3a3a40", "zylinder"], ["#fffaf0", "#3a3a40", "monokel"], ["#fffaf0", "#3a3a40", "blume"], ["#fffaf0", "#3a3a40", "stirnband"],
+  ];
+  const SHEEP = (i) => { const [wool, face, acc] = SHEEP_LIST[i % SHEEP_LIST.length]; const st2 = wool === "#1f1f24" ? "#000" : "#e6dccb";
+    return S("-2 -12 56 54", `<g fill="${wool}" stroke="${st2}" stroke-width="1.2">${[[14, 16], [22, 12], [30, 14], [36, 20], [28, 24], [18, 24], [12, 20]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7"/>`).join("")}</g><ellipse cx="40" cy="14" rx="6" ry="7.4" fill="${face}"/><ellipse cx="34.6" cy="9" rx="3" ry="1.6" fill="${face}" transform="rotate(-20 34.6 9)"/><circle cx="38.6" cy="12" r="1.2" fill="#fff"/><circle cx="43" cy="12" r="1.2" fill="#fff"/><path d="M16 28 v8 M22 28 v8 M30 28 v8 M34 26 v8" stroke="${face === "#f4f4f4" ? "#cfc8bd" : "#3a3a40"}" stroke-width="2.6" stroke-linecap="round"/>${acc ? SHEEP_ACC[acc] : ""}`); };
+
   const HATS = {
     zylinder: `<rect x="56" y="-6" width="28" height="22" rx="2" fill="#2b241f"/><rect x="50" y="14" width="40" height="5" rx="2.5" fill="#2b241f"/><rect x="56" y="8" width="28" height="5" fill="#8e2d3b"/>`,
     weihnachten: `<path d="M48 18 Q62 -12 90 2 Q78 2 86 16Z" fill="#c9302c"/><rect x="46" y="14" width="44" height="7" rx="3.5" fill="#fff"/><circle cx="91" cy="3" r="5" fill="#fff"/>`,
@@ -82,13 +154,15 @@ const MunkelShow = (() => {
   // Sitzplätze (Fußpunkt in Schloss-Koordinaten) und Beinhaltung
   const SEATS = {
     home: [146, 104, "dangle"], edgeL: [58, 104, "dangle"], top: [100, 5, "stand"], ground: [34, 226, "stand"], groundR: [168, 226, "stand"],
-    keyhole: [100, 178, "stand"], nest: [150, 109, "tuck"], letter: [42, 214, "stand"],
+    keyhole: [100, 178, "stand"], nest: [148, 92, "tuck"], letter: [42, 214, "stand"], lampL: [62, 104, "dangle"],
   };
+  // Zuhause: ab dem Nestbau im Nest, vorher auf der Schlosskante
+  function restHome() { if (st.items.includes("nest")) { place(perch, SEATS.nest[0], SEATS.nest[1]); bird.legs("tuck"); } else { place(perch, HOME[0], HOME[1]); bird.legs("dangle"); } }
   const FACE_MAP = { "mk-wow": "wow", "mk-sleep": "sleep", "mk-sad": "sad" };
   function makeCtx() {
     const token = { dead: false };
     const made = [];
-    let cur = HOME.slice(), legs = "dangle";
+    let cur = st.items.includes("nest") ? SEATS.nest.slice(0, 2) : HOME.slice(), legs = st.items.includes("nest") ? "tuck" : "dangle";
     const check = () => { if (token.dead) throw new Error("abgebrochen"); };
     const wait = (ms) => new Promise((res, rej) => setTimeout(() => (token.dead ? rej(new Error("abgebrochen")) : res()), ms));
     const say = (t, ms = 3000) => { check(); bird.say(t, ms); };
@@ -171,8 +245,33 @@ const MunkelShow = (() => {
       check();
     };
     const jump = (x, y) => { place(perch, x, y); cur = [x, y]; };
+    // Bildschirmrand in Schloss-Koordinaten (ganz raus inkl. Vogelbreite)
+    const offX = (side) => { const r = pad.getBoundingClientRect(), bw = perch.getBoundingClientRect().width || r.width * 0.42; return (((side > 0 ? innerWidth + bw : -bw) - r.left) / r.width) * 200; };
+    const offY = () => { const r = pad.getBoundingClientRect(), bh = perch.getBoundingClientRect().height || r.width * 0.42; return ((-bh * 1.1 - r.top) / r.height) * 240; };
+    // etwas holen: ganz aus dem Bild fliegen, kurz weg sein, mit dem Ding zurückkommen
+    const fetch = async (thing, o = {}) => {
+      const side = o.side || (cur[0] < 100 ? -1 : 1), y = o.y ?? Math.max(-40, cur[1] - 80);
+      await moveTo(offX(side), y, o.out || 1400, { keepFlying: true, arc: 30 });
+      perch.style.visibility = "hidden"; await wait(o.away || 1100); perch.style.visibility = "";
+      if (o.hold) bird.hold(thing); else bird.carry(thing);
+      const back = o.from || side;
+      jump(offX(back), o.backY ?? y); bird.classList.toggle("flip", back > 0);
+    };
+    // flüssige Flugbahn durch mehrere Punkte (Catmull-Rom), mit Kurvenlage
+    const path = async (pts, ms, o = {}) => {
+      check(); bird.fly(true);
+      const P = [cur.slice(), ...pts], N = Math.max(40, (P.length - 1) * 16), frames = [];
+      const cr = (p0, p1, p2, p3, t) => { const t2 = t * t, t3 = t2 * t; return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); };
+      const at = (u) => { const seg = Math.min(P.length - 2, Math.floor(u * (P.length - 1))), t = u * (P.length - 1) - seg; const p0 = P[Math.max(0, seg - 1)], p1 = P[seg], p2 = P[seg + 1], p3 = P[Math.min(P.length - 1, seg + 2)]; return [cr(p0[0], p1[0], p2[0], p3[0], t), cr(p0[1], p1[1], p2[1], p3[1], t)]; };
+      for (let i = 0; i <= N; i++) { const u = i / N, [x, y] = at(u), [x2] = at(Math.min(1, u + 0.02)); const [l, t] = pct(x, y); frames.push({ left: l + "%", top: t + "%", rotate: Math.max(-24, Math.min(24, (x2 - x) * 3)) + "deg" }); }
+      const a = perch.animate(frames, { duration: ms, easing: o.easing || "ease-in-out", fill: "forwards" });
+      await new Promise((r) => (a.onfinish = r));
+      const last = pts[pts.length - 1]; place(perch, last[0], last[1]); a.cancel(); cur = last.slice();
+      if (o.land) { bird.fly(false); bird.classList.remove("flip"); legs = o.land; bird.legs(o.land); bird.act("squash", 450); }
+      check();
+    };
     const seat = (name, ms = 1100, o = {}) => { const [x, y, l] = SEATS[name]; return moveTo(x, y, ms, { ...o, land: l }); };
-    const home = (ms = 1200) => seat("home", ms);
+    const home = (ms = 1200) => seat(st.items.includes("nest") ? "nest" : "home", ms);
     const waitTap = (el, ms) => new Promise((res) => {
       let done = false; const fin = (v) => { if (!done) { done = true; res(v); } };
       const h = (e) => { e.stopPropagation(); el.removeEventListener("click", h); fin(true); };
@@ -183,42 +282,59 @@ const MunkelShow = (() => {
     const burstAt = (el, sym, n = 8, spread = 50) => { try { H().burstAt(el, sym, n, spread); } catch (e) {} };
     const burstPt = (x, y, sym, n = 8, spread = 50) => { const r = pad.getBoundingClientRect(); try { H().burst(r.left + (x / 200) * r.width, r.top + (y / 240) * r.height, sym, n, spread); } catch (e) {} };
     const cleanup = () => {
-      token.dead = true; made.forEach((d) => d.remove()); bird.carry(""); bird._bubble?.remove();
-      ["flying", "gliding", "flare", "flip", "mouth", "sing", "wings-up", "fluff", "crouch", "mk-wrapped", "preen-r", "preen-l"].forEach((c) => bird.classList.remove(c));
-      bird.face(); bird.legs("dangle"); perch.getAnimations().forEach((a) => a.cancel()); perch.style.rotate = ""; place(perch, HOME[0], HOME[1]); bird.onSceneTap = null;
+      token.dead = true; made.forEach((d) => d.remove()); bird.carry(""); bird.hold(""); bird._bubble?.remove(); perch.style.visibility = ""; perch.classList.remove("behind"); pad.classList.remove("bird-behind");
+      ["flying", "gliding", "flare", "flip", "mouth", "sing", "wings-up", "fluff", "crouch", "mk-wrapped", "preen-r", "preen-l", "lifting", "peek", "knitting"].forEach((c) => bird.classList.remove(c));
+      bird.face(); perch.getAnimations().forEach((a) => a.cancel()); perch.style.rotate = ""; restHome(); bird.onSceneTap = null;
     };
-    return { token, jump, wait, say, face, pose, prop, sky, anim, moveTo, seat, home, feathers, waitTap, hint, burstAt, burstPt, cleanup, made, get cur() { return cur; }, set legsNow(l) { legs = l; bird.legs(l); } };
+    return { token, jump, fetch, path, offX, offY, wait, say, face, pose, prop, sky, anim, moveTo, seat, home, feathers, waitTap, hint, burstAt, burstPt, cleanup, made, get cur() { return cur; }, set legsNow(l) { legs = l; bird.legs(l); } };
   }
 
   /* ---------- Sammelstücke am Schloss ---------- */
   function addItem(name) { if (!st.items.includes(name)) { st.items.push(name); save(); renderItems(); } }
   function renderItems() {
     if (!pad) return;
-    pad.querySelectorAll(".mk-item").forEach((d) => d.remove());
+    pad.querySelectorAll(".mk-item, .mk-sheen").forEach((d) => d.remove());
     const put = (html, x, y, w, extra = "", title = "") => { const d = document.createElement("div"); d.className = "mk-prop mk-item" + extra; d.innerHTML = html; place(d, x, y); d.style.width = (w / 200) * 100 + "%"; if (title) d.title = title; d.addEventListener("click", (e) => { e.stopPropagation(); d.classList.remove("wiggle"); void d.offsetWidth; d.classList.add("wiggle"); tone(900 + Math.random() * 300, 0.08, "sine", 0.06); }); pad.append(d); return d; };
     if (st.items.includes("brief")) put(ART.letter, 40, 236, 36, " lean", "Brief für Ute – erst am 28. öffnen!");
     if (st.items.includes("schneemann")) put(ART.snowman, 74, 106, 22, "", "Mini-Schneemann");
-    if (st.items.includes("kerze")) put(ART.candle, 108, 106, 12, " lit candle", "Adventskerze");
-    if (st.items.includes("laterne")) put(ART.lantern, 34, 106, 14, " lit lantern-item", "Laterne");
+    if (st.items.includes("kerze")) put(ART.candle, 112, 106, 12, " lit candle", "Adventskerze");
+    if (st.items.includes("laterne")) put(ART.lantern, 36, 108, 13, " lit lantern-item", "Laterne");
+    if (st.items.includes("nest")) { put(NEST_BACK, 148, 110, 84, " nest-back", "Munkels Nest"); put(ART.nestFront, 148, 110, 84, " nest-front", "Munkels Nest"); }
+    if (st.items.includes("glanz")) { const g = document.createElement("div"); g.className = "mk-sheen"; pad.append(g); }
     if (st.items.includes("lichter")) {
       const d = document.createElement("div"); d.className = "mk-prop mk-item mk-lights"; d.style.left = "0"; d.style.top = "0"; d.style.width = "100%"; d.style.height = "100%"; d.style.transform = "none";
-      const pts = []; for (let i = 0; i <= 12; i++) { const a = Math.PI - (i / 12) * Math.PI; pts.push([100 + Math.cos(a) * 48, 74 - Math.sin(a) * 48]); }
-      [[52, 108], [52, 92]].reverse().forEach((p) => pts.unshift(p)); [[148, 92], [148, 108]].forEach((p) => pts.push(p));
-      d.innerHTML = `<svg viewBox="0 0 200 240">${pts.map(([x, y], i) => `<circle class="bulb" style="animation-delay:-${(i * 0.23).toFixed(2)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.3" fill="${["#ff5a7a", "#ffcf3f", "#4fd18b", "#58b6ff", "#c77dff"][i % 5]}"/>`).join("")}</svg>`;
+      const pts = []; for (let i = 0; i <= 14; i++) { const a = Math.PI - (i / 14) * Math.PI; pts.push([100 + Math.cos(a) * 52, 76 - Math.sin(a) * 52 + 3, (a * 180) / Math.PI - 90]); }
+      const wire = `M44 106 L44 78 ` + pts.map(([x, y]) => `L${x.toFixed(1)} ${(y - 2).toFixed(1)}`).join(" ") + ` L156 78 L156 106`;
+      const cols = ["#ffcf6a", "#ff7a6a", "#7fd6a0", "#7fbfff", "#ffd98a", "#e7a1ff"];
+      d.innerHTML = `<svg viewBox="0 0 200 240"><path d="${wire}" stroke="#2f4a3a" stroke-width="1.4" fill="none"/>${[[44, 96, 180], [44, 84, 180], ...pts, [156, 84, 180], [156, 96, 180]].map(([x, y, a], i) => LAMP(x, y - 2, cols[i % cols.length], 0, i)).join("")}</svg>`;
       pad.append(d);
     }
     if (st.hat && bird) bird.setHat(HATS[st.hat]);
-    if (st.items.includes("nest")) { const d = put(ART.nest, 148, 122, 66, " nest-item", "Munkels Nest"); d.style.zIndex = 3; }
     if (bird) bird.slim(!!st.slim);
   }
 
   /* ---------- Himmel nach Uhrzeit ---------- */
+  const nightKey = (d = new Date()) => { const x = new Date(d); if (x.getHours() < 6) x.setDate(x.getDate() - 1); return `${x.getFullYear()}-${x.getMonth() + 1}-${x.getDate()}`; };
   function sky() {
     if (!lock) return;
     const h = new Date().getHours();
     const mode = h >= 6 && h < 11 ? "morning" : h >= 11 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     lock.dataset.sky = mode;
-    if (!lock.querySelector(".sky-orb")) lock.prepend(Object.assign(document.createElement("div"), { className: "sky-orb" }), Object.assign(document.createElement("div"), { className: "sky-stars" }));
+    let orb = lock.querySelector(".sky-orb");
+    if (!orb) { orb = Object.assign(document.createElement("div"), { className: "sky-orb" }); lock.prepend(orb, Object.assign(document.createElement("div"), { className: "sky-stars" })); }
+    const dark = mode === "evening" || mode === "night";
+    orb.classList.toggle("moon", dark);
+    orb.innerHTML = dark ? moonSVG(moonPhase(), 52) : "";
+    orb.title = dark ? `Heute: ${moonName()}` : "";
+    // selbst angeknipste Sterne bleiben die ganze Nacht
+    lock.querySelectorAll(".mk-star-keep").forEach((d) => d.remove());
+    if (dark && st.sky && st.sky.key === nightKey()) st.sky.stars.forEach(([x, y]) => keepStar(x, y, false));
+  }
+  function keepStar(x, y, store = true) {
+    const d = document.createElement("div"); d.className = "mk-sky mk-star-keep"; d.innerHTML = `<div class="mk-star bright"></div>`;
+    d.style.left = x + "%"; d.style.top = y + "%"; d.style.width = "18px"; lock.append(d);
+    if (store) { if (!st.sky || st.sky.key !== nightKey()) st.sky = { key: nightKey(), stars: [] }; st.sky.stars.push([+x.toFixed(1), +y.toFixed(1)]); save(); }
+    return d;
   }
 
   /* ---------- Die Szenen ---------- */
@@ -226,8 +342,10 @@ const MunkelShow = (() => {
     /* ---------------- 14.11. ---------------- */
     /* ---------------- 14.11. ---------------- */
     "14m": { title: "Aufwachen", async run(c) {
-      c.face("sleep"); bird.classList.add("swaying");
-      const z = c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" });
+      const nest = st.items.includes("nest");
+      if (nest) { c.jump(SEATS.nest[0], SEATS.nest[1]); c.legsNow = "tuck"; }
+      c.face("sleep"); bird.classList.remove("swaying");
+      const z = c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 50, 26, { cls: "mk-zzz" });
       c.hint("Tipp den Munkelvogel an, um ihn zu wecken!", 7000);
       const woke = await c.waitTap(bird, 7000);
       z.remove(); c.face("wow"); tone(700, 0.2, "triangle", 0.1, 1100); await c.wait(600);
@@ -237,48 +355,35 @@ const MunkelShow = (() => {
       bird.act("fluff", 900); c.burstAt(bird, ["·"], 10, 40); await c.wait(1100);
       c.face("normal"); await c.seat("top", 1300, { feathers: 2 });
       c.face("happy"); bird.classList.add("wings-up"); c.say("Hallo, Sonne!", 1800); tone(784, 0.3, "triangle", 0.07); tone(988, 0.3, "triangle", 0.07, null, 0.15); await c.wait(1500);
-      bird.classList.remove("wings-up"); c.face(); await c.home(1300);
+      bird.classList.remove("wings-up"); c.face(); await c.home(1300); bird.classList.add("swaying");
     } },
     "14e": { title: "Einnicken im Nest", async run(c) {
       c.face("sleepy"); await c.wait(900);
       c.pose("mk-open"); bird.classList.add("wings-up"); tone(320, 0.7, "sine", 0.05, 200); await c.wait(1100);
       c.pose("mk-open", false); bird.classList.remove("wings-up"); c.say("Uaaah … Zeit für ein gemütliches Bett.", 2600); await c.wait(2700);
-      const nest = c.prop(NEST(0), 148, 122, 66, { cls: "mk-nest" });
-      const trips = [[ART.mossBeak, 1, "Erst weiches Moos …"], [ART.twigBeak2, 2, "… ein paar Zweige …"], [ART.featherBeak, 3, "… und eine Daunenfeder!"]];
+      const back = c.prop(NEST_BACK, 148, 110, 84, { cls: "mk-nest-back" }); back.style.opacity = 0;
+      const front = c.prop(NEST_FRONT(0), 148, 110, 84, { cls: "mk-nest" });
+      const trips = [[ART.mossBeak, 1, "Erst weiches Moos …"], [ART.twigBeak2, 2, "… ganz viele Zweige …"], [ART.featherBeak, 3, "… und weiche Daunenfedern!"]];
       for (const [beak, stage, txt] of trips) {
-        await c.moveTo(250, 40, 900, { keepFlying: true, arc: 30 });
-        await c.wait(500); bird.carry(beak);
-        await c.moveTo(150, 96, 1000, { arc: -20, land: "stand" });
-        bird.carry(""); nest.innerHTML = NEST(stage); nest.classList.remove("plop"); void nest.offsetWidth; nest.classList.add("plop");
-        tone(500 + stage * 120, 0.1, "triangle", 0.06); c.say(txt, 1500); await c.wait(1300);
+        await c.fetch(beak, { y: 30 });
+        await c.moveTo(148, 88, 1300, { arc: -20, land: "stand" });
+        bird.carry(""); front.innerHTML = NEST_FRONT(stage); back.style.opacity = 1; front.classList.remove("plop"); void front.offsetWidth; front.classList.add("plop");
+        tone(500 + stage * 120, 0.1, "triangle", 0.06); c.say(txt, 1600); await c.wait(1500);
         if (stage === 2) c.hint("Tipp aufs Nest – dann klopft er es kuschelig!", 5200);
       }
-      let fluffed = 0; nest.classList.add("tappable"); nest.onclick = (e) => { e.stopPropagation(); fluffed++; nest.classList.remove("plop"); void nest.offsetWidth; nest.classList.add("plop"); tone(700 + fluffed * 60, 0.08, "sine", 0.06); c.burstAt(nest, ["·"], 4, 20); };
-      await c.moveTo(148, 114, 400, { fly: false, arc: 6 }); c.legsNow = "tuck"; bird.act("squash", 450); bird.act("mk-flutter", 900); await c.wait(1300);
-      c.say(fluffed ? "So weich! Danke fürs Aufschütteln." : "Perfekt. Genau richtig weich.", 2400); await c.wait(2500);
+      let fluffed = 0; front.classList.add("tappable"); front.onclick = (e) => { e.stopPropagation(); fluffed++; front.classList.remove("plop"); void front.offsetWidth; front.classList.add("plop"); tone(700 + fluffed * 60, 0.08, "sine", 0.06); c.burstAt(front, ["·"], 4, 20); };
+      await c.moveTo(SEATS.nest[0], SEATS.nest[1], 500, { fly: false, arc: 6 }); c.legsNow = "tuck"; bird.act("squash", 450); bird.act("mk-flutter", 900); await c.wait(1300);
+      c.face("happy"); c.say(fluffed ? "So weich! Danke fürs Aufschütteln." : "Perfekt. Genau richtig weich.", 2400); await c.wait(2500);
       c.face("sleepy");
-      for (let i = 0; i < 2; i++) {
-        bird.classList.add("nod"); await c.wait(1300); bird.classList.remove("nod");
-        c.face("wow"); tone(900, 0.06, "square", 0.04); await c.wait(450); c.face("sleepy"); await c.wait(700);
-      }
-      c.hint("Pssst … tipp ihn an, wenn du ihn wecken willst.", 6000);
-      c.face("sleep"); const z = c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" });
-      if (await c.waitTap(bird, 5500)) {
-        z.remove(); c.face("wow"); tone(1200, 0.1, "triangle", 0.07); await c.wait(500);
-        c.face("shy"); c.say("Ich hab gar nicht geschlafen! Ehrlich.", 2600); await c.wait(2700);
-        c.face("sleepy"); await c.wait(900); c.face("sleep"); c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" });
-      }
-      await c.wait(3500); nest.remove(); addItem("nest");
+      for (let i = 0; i < 2; i++) { bird.classList.add("nod"); await c.wait(1300); bird.classList.remove("nod"); c.face("wow"); tone(900, 0.06, "square", 0.04); await c.wait(450); c.face("sleepy"); await c.wait(700); }
+      c.face("sleep"); c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 50, 26, { cls: "mk-zzz" });
+      await c.wait(3200); back.remove(); front.remove(); addItem("nest");
     }, end: (c) => c.face() },
     "15m": { title: "Postflug", async run(c) {
       c.face("normal"); bird.act("mk-look", 2400); await c.wait(2400);
-      c.face("wow"); await c.wait(500); c.face("happy"); await c.wait(500);
-      await c.moveTo(260, -30, 1300, { keepFlying: true, arc: 40 });
-      c.feathers(2, 160, 80); c.face(); await c.wait(1400);
-      bird.carry(ART.letterBeak); c.jump(-70, 40);
-      await c.moveTo(60, 0, 1100, { keepFlying: true, arc: -10 });
-      await c.moveTo(150, 20, 900, { keepFlying: true, arc: 25 });
-      await c.seat("top", 900);
+      c.face("wow"); await c.wait(500); c.face("happy"); c.say("Moment – ich hol was!", 1500); await c.wait(900);
+      await c.fetch(ART.letterBeak, { side: 1, y: -10, from: -1, backY: 30 });
+      await c.path([[40, 10], [110, -10], [100, 5]], 2400, { land: "stand" });
       c.say("Post für Ute!", 1800); bird.act("mk-hop", 700); await c.wait(1900);
       c.face("focus"); await c.seat("keyhole", 1000);
       c.say("Passt der … ins Schlüsselloch?", 2000);
@@ -296,23 +401,27 @@ const MunkelShow = (() => {
     "15e": { title: "Sterne anknipsen", async run(c) {
       await c.seat("top", 1300);
       c.face("dreamy"); c.say("So dunkel heute … ich mach mal Licht.", 2400); await c.wait(2500);
-      const spots = [[18, 14], [32, 9], [70, 12], [84, 20], [58, 6], [12, 26], [90, 8]];
+      const spots = [[18, 14], [32, 9], [70, 12], [62, 22], [48, 6], [12, 26], [88, 26]];
       c.face("focus");
-      for (const [x, y] of spots) { bird.act("mk-flutter", 500); bird.classList.add("wings-up"); await c.wait(220); bird.classList.remove("wings-up"); c.sky(`<div class="mk-star"></div>`, x, y, 14, { cls: "pop" }); tone(1200 + Math.random() * 900, 0.15, "sine", 0.06); await c.wait(260); }
-      c.face("happy"); c.hint("Tipp in den Himmel – mach selbst Sterne an!", 6000);
+      for (const [x, y] of spots) { bird.classList.add("wings-up"); await c.wait(220); bird.classList.remove("wings-up"); keepStar(x, y).classList.add("pop"); tone(1200 + Math.random() * 900, 0.15, "sine", 0.06); await c.wait(300); }
+      c.face("happy"); c.hint("Tipp in den Himmel – mach selbst Sterne an! Sie bleiben die ganze Nacht.", 7000);
       let mine = 0;
-      const tapSky = (e) => { if (e.target.closest(".lock-pad, .lock-clock, .mk-album-btn, .mk-album")) return; mine++; const x = (e.clientX / innerWidth) * 100, y = (e.clientY / innerHeight) * 100; c.sky(`<div class="mk-star"></div>`, x, y, 14, { cls: "pop" }); tone(1400 + Math.random() * 900, 0.12, "sine", 0.06); bird.act("mk-hop", 600); };
-      lock.addEventListener("click", tapSky); await c.wait(6000).finally(() => lock.removeEventListener("click", tapSky));
-      c.face("wow"); c.sky(ART.moon, 76, 3, 60, { cls: "pop slow" }); tone(660, 0.6, "sine", 0.06); await c.wait(900);
-      c.face("dreamy"); c.say(mine ? `${mine} Sterne von dir – und dazu der Mond.` : "Und zum Schluss: der Mond.", 2600); await c.wait(2800);
+      const tapSky = (e) => { if (e.target.closest(".lock-pad svg *, .munkel, .lock-clock, .mk-album-btn, .mk-album, .lock-copy, .sky-orb")) return; mine++; keepStar((e.clientX / innerWidth) * 100, (e.clientY / innerHeight) * 100).classList.add("pop"); tone(1400 + Math.random() * 900, 0.12, "sine", 0.06); bird.act("mk-hop", 600); };
+      lock.addEventListener("click", tapSky);
+      try { await c.wait(7000); } finally { lock.removeEventListener("click", tapSky); }
+      const orb = lock.querySelector(".sky-orb");
+      c.face("focus"); bird.classList.add("wings-up"); await c.wait(300); bird.classList.remove("wings-up");
+      orb?.classList.add("lit"); tone(660, 0.6, "sine", 0.06); c.face("wow"); await c.wait(900);
+      c.face("dreamy"); c.say(mine ? `${mine} Sterne von dir! Und der Mond leuchtet auch.` : "Und jetzt leuchtet auch der Mond.", 2600); await c.wait(2800);
       await c.home(1300);
     } },
-
     /* ---------------- 16.11. ---------------- */
     "16m": { title: "Frühstück", async run(c) {
-      await c.seat("edgeL", 1300);
-      const t = c.prop(ART.twig, 84, 106, 44);
-      c.face("wow"); c.say("Frühstück! Beeren!", 1600); await c.wait(1600);
+      c.face("happy"); c.say("Frühstück! Ich hol mir Beeren.", 1700); await c.wait(1300);
+      await c.fetch(ART.twigBeak, { side: -1, y: 20 });
+      await c.moveTo(SEATS.edgeL[0], SEATS.edgeL[1], 1500, { land: "dangle" });
+      bird.carry(""); const t = c.prop(ART.twig, 84, 106, 44);
+      c.face("wow"); c.say("Mmmh!", 1200); await c.wait(1200);
       c.face("happy");
       for (let i = 0; i < 3; i++) { bird.classList.add("preen-r"); c.pose("mk-open"); tone(1100, 0.05, "square", 0.04); await c.wait(320); bird.classList.remove("preen-r"); c.pose("mk-open", false); await c.wait(360); }
       const b = c.prop(ART.berry, 74, 104, 9);
@@ -327,7 +436,7 @@ const MunkelShow = (() => {
       } else { b.remove(); c.face("sad"); c.say("Na gut …", 1600); }
       await c.wait(2200); c.face("wow");
       for (let i = 0; i < 3; i++) { bird.act("mk-hop", 500); c.say("Hicks!", 600); tone(1500, 0.06, "sine", 0.08, 2200); await c.wait(850); }
-      c.face("shy"); await c.wait(1000); t.remove(); c.face(); await c.home(1200);
+      c.face("shy"); await c.wait(900); t.remove(); c.face(); await c.home(1200);
     } },
     "16e": { title: "Gute-Nacht-Lied", async run(c) {
       await c.seat("groundR", 1400);
@@ -386,37 +495,39 @@ const MunkelShow = (() => {
       c.say("Morgensport! Machst du mit?", 2200); await c.wait(2000);
       await c.seat("ground", 1300);
       c.hint("Feuere ihn an – tipp ihn an!", 6000);
-      let cheers = 0; bird.onSceneTap = () => { cheers++; c.burstAt(bird, ["⭐", "✨"], 6, 40); tone(1000 + cheers * 60, 0.08, "triangle", 0.08); bird.act("mk-hop", 600); };
+      let cheers = 0; bird.onSceneTap = () => { cheers++; c.burstAt(bird, ["⭐", "✨"], 6, 40); tone(1000 + cheers * 60, 0.08, "triangle", 0.08); };
       c.face("focus");
       for (let i = 1; i <= 4; i++) { bird.classList.add("jj"); tone(500 + i * 50, 0.07, "triangle", 0.05); c.say(`Hampelmann ${i}!`, 700); await c.wait(450); bird.classList.remove("jj"); await c.wait(400); }
-      bird.carry(ART.dumbbell); c.say("Beeren-Hanteln!", 1200); await c.wait(1100);
-      for (let i = 1; i <= 3; i++) { bird.classList.add("lift"); tone(300 + i * 60, 0.12, "sawtooth", 0.03); await c.wait(600); bird.classList.remove("lift"); await c.wait(450); }
-      bird.carry("");
+      c.say("Jetzt die Beeren-Hantel!", 1500); await c.wait(1200);
+      bird.classList.add("lifting");
+      for (let i = 1; i <= 3; i++) { await c.wait(1450); c.face("focus"); c.say(`${i}…`, 600); await c.wait(330); tone(300 + i * 80, 0.15, "sawtooth", 0.03, 500 + i * 80); c.face("happy"); await c.wait(420); }
+      bird.classList.remove("lifting"); c.face("happy");
       for (let i = 0; i < 3; i++) { bird.classList.add("pushup"); await c.wait(450); bird.classList.remove("pushup"); await c.wait(350); }
-      c.face("happy"); c.prop(`<div class="mk-sweat">💧</div>`, 50, 170, 8); await c.wait(900);
+      c.prop(`<div class="mk-sweat">💧</div>`, 50, 170, 8); await c.wait(900);
       const sc = c.prop(ART.scale, 40, 236, 46, { cls: "mk-scaleprop" });
       c.face("normal"); c.say("Und jetzt … die Waage.", 1800); await c.wait(1300);
       await c.moveTo(40, 226, 600, { arc: 18, land: "stand" });
       const nd = sc.querySelector(".sc-needle"); nd.style.transformOrigin = "30px 13px"; nd.style.transformBox = "view-box";
-      await c.anim(nd, [{ transform: "rotate(0)" }, { transform: "rotate(70deg)" }, { transform: "rotate(30deg)" }, { transform: "rotate(48deg)" }, { transform: "rotate(40deg)" }], 1500, { easing: "ease-out" }).finished;
+      await c.anim(nd, [{ transform: "rotate(0)" }, { transform: "rotate(70deg)" }, { transform: "rotate(30deg)" }, { transform: "rotate(48deg)" }, { transform: "rotate(36deg)" }], 1500, { easing: "ease-out" }).finished;
       c.face("wow"); tone(1200, 0.2, "triangle", 0.08, 1600); await c.wait(500);
       bird.slim(true); st.slim = true; save(); c.burstAt(bird, ["✨", "⭐"], 12, 50);
-      c.prop(`<div class="mk-tag">−1 Gramm!</div>`, 116, 212, 30);
-      c.face("happy"); bird.act("mk-hop", 700); c.say(cheers ? `Danke fürs Anfeuern! Ich fühl mich so leicht!` : "Ein Gramm weniger! Ich fühl mich so leicht!", 2800); await c.wait(3000);
+      c.prop(`<div class="mk-tag">−2 Gramm!</div>`, 116, 212, 30);
+      c.face("happy"); bird.act("mk-hop", 700); c.say(cheers ? "Danke fürs Anfeuern! Ich bin ja richtig schlank geworden!" : "Zwei Gramm weniger – ich bin richtig schlank geworden!", 3000); await c.wait(3200);
       c.face(); await c.home(1300); bird.act("mk-flutter", 900); await c.wait(900);
     } },
     "18e": { title: "Schal stricken", async run(c) {
-      await c.seat("edgeL", 1300);
-      bird.carry(ART.needles); c.face("focus"); c.say("Mein Schal ist zu kurz. Ich stricke weiter!", 2400); await c.wait(2400);
+      c.face("focus"); c.say("Mein Schal ist zu kurz …", 1800); await c.wait(1400);
+      await c.fetch(ART.needles, { side: -1, y: 30 });
+      await c.moveTo(SEATS.edgeL[0], SEATS.edgeL[1], 1400, { land: "dangle" });
+      c.say("Ich stricke weiter!", 1600); await c.wait(1500);
       const scarf = c.prop(`<div class="mk-knit"></div>`, 64, 112, 9, { anchor: "top" });
       c.hint("Tipp ihn an – dann strickt er schneller!", 6000);
       let len = 4, speed = 1; bird.onSceneTap = () => { speed = Math.min(4, speed + 1); tone(900, 0.05, "square", 0.04); };
-      for (let i = 0; i < 28; i++) { len += 2.2 * speed; scarf.firstChild.style.height = len + "px"; tone(1800, 0.02, "square", 0.02); bird.act("mk-knit", 300); await c.wait(260); if (len > 110) break; }
+      for (let i = 0; i < 28; i++) { len += 2.2 * speed; scarf.firstChild.style.height = len + "px"; tone(1800, 0.02, "square", 0.02); bird.act("knitting", 300); await c.wait(260); if (len > 110) break; }
       c.face("wow"); c.say("Oh … der ist ein bisschen lang geworden.", 2400); await c.wait(2400);
       scarf.remove(); bird.carry(""); c.pose("mk-wrapped"); c.face("happy"); c.say("Dafür sooo kuschelig!", 2000); await c.wait(2600); c.pose("mk-wrapped", false);
       c.face(); await c.home(1300);
     } },
-
     /* ---------------- 19.11. ---------------- */
     "19m": { title: "Schlüssel knacken", async run(c) {
       c.face("wink"); c.say("Ich krieg das Schloss schon auf …", 2200); await c.wait(2300);
@@ -432,17 +543,26 @@ const MunkelShow = (() => {
       c.face(); await c.home(1400);
     } },
     "19e": { title: "Laterne & Glühwürmchen", async run(c) {
-      await c.seat("groundR", 1400);
-      const l = c.prop(ART.lantern, 190, 228, 14, { cls: "lit" });
-      c.face("happy"); c.say("Ich hab eine Laterne mitgebracht.", 2200); await c.wait(2200);
-      for (let i = 0; i < 8; i++) { const f = c.prop(`<div class="mk-firefly"></div>`, 20 + Math.random() * 160, 20 + Math.random() * 180, 6, { cls: "drift", onTap: (d) => { d.classList.add("bright"); tone(1800 + Math.random() * 600, 0.12, "sine", 0.06); c.anim(d, [{ left: d.style.left, top: d.style.top }, { left: "95%", top: "88%" }], 1200); } }); f.style.animationDelay = -Math.random() * 6 + "s"; await c.wait(250); }
-      c.face("dreamy"); c.hint("Tipp die Glühwürmchen an – sie fliegen zur Laterne!", 6500);
+      c.face("dreamy"); c.say("Es ist so dunkel … ich hol eine Laterne.", 2200); await c.wait(1800);
+      await c.fetch(`<g transform="translate(-8 -4) scale(.55)">${ART.lantern.replace(/<\/?svg[^>]*>/g, "")}</g>`, { side: -1, y: 30 });
+      await c.moveTo(48, 100, 1500, { arc: 20, keepFlying: true });
+      bird.carry(""); addItem("laterne"); tone(700, 0.1, "triangle", 0.06); c.burstPt(36, 96, ["✨"], 8, 24);
+      await c.seat("lampL", 600);
+      c.face("happy"); c.say("Da steht sie gut.", 1600); await c.wait(1700);
+      const flies = [];
+      for (let i = 0; i < 9; i++) {
+        const x0 = 10 + Math.random() * 180, y0 = 20 + Math.random() * 200;
+        const f = c.prop(FIREFLY, x0, y0, 9, { cls: "mk-firefly2", anchor: "center", onTap: (d) => { d.classList.add("bright"); tone(1800 + Math.random() * 600, 0.12, "sine", 0.06); c.anim(d, [{ left: d.style.left, top: d.style.top }, { left: "18%", top: "38%" }], 1300, { easing: "ease-in-out" }); } });
+        const dx = (Math.random() - 0.5) * 40, dy = (Math.random() - 0.5) * 40;
+        f.animate([{ translate: "0 0" }, { translate: `${dx}px ${dy}px` }, { translate: `${-dy}px ${dx}px` }, { translate: "0 0" }], { duration: 5000 + Math.random() * 3000, iterations: Infinity, easing: "ease-in-out" });
+        flies.push(f); await c.wait(220);
+      }
+      c.face("wow"); c.hint("Tipp die Glühwürmchen an – sie fliegen zur Laterne!", 6500); await c.wait(1200);
+      c.face("dreamy");
       for (let i = 0; i < 3; i++) { bird.act("mk-look", 2400); await c.wait(2300); }
-      l.remove(); addItem("laterne");
       c.face("happy"); c.say("Die Laterne bleibt hier. Für gemütliche Abende.", 2600); await c.wait(2700);
       c.face(); await c.home(1300);
     } },
-
     /* ---------------- 20.11. ---------------- */
     "20m": { title: "Seifenblasen", async run(c) {
       c.face("happy"); c.say("Seifenblasen!", 1500); await c.wait(1400);
@@ -454,10 +574,10 @@ const MunkelShow = (() => {
         c.anim(b, [{ transform: "translate(-50%,-100%) translate(0,0)" }, { transform: `translate(-50%,-100%) translate(${(Math.random() - 0.4) * 160}px, ${-120 - Math.random() * 120}px)` }], 4200 + Math.random() * 1500, { easing: "ease-out" });
         await c.wait(250); c.pose("mk-open", false); await c.wait(350);
       }
-      const big = c.prop(ART.bubble, 146, 112, 54, { cls: "mk-bubble-prop" });
+      const big = c.prop(ART.bubble, c.cur[0], c.cur[1] + 8, 54, { cls: "mk-bubble-prop" });
       await c.wait(700); c.face("wow"); c.say("Huch – die trägt mich!", 1800);
       c.anim(big, [{ top: "46.6%" }, { top: "18%" }, { top: "46.6%" }], 2600);
-      bird.legs("tuck"); await c.moveTo(146, 36, 1300, { fly: false, arc: 0 }); c.face("happy"); await c.moveTo(146, 104, 1300, { fly: false, arc: 0 }); bird.legs("dangle");
+      const [hx, hy] = c.cur; bird.legs("tuck"); await c.moveTo(hx, 36, 1300, { fly: false, arc: 0 }); c.face("happy"); await c.moveTo(hx, hy, 1300, { fly: false, arc: 0 }); c.legsNow = st.items.includes("nest") ? "tuck" : "dangle";
       big.classList.add("pop"); tone(1600, 0.08, "square", 0.06); bird.act("squash", 450); await c.wait(300); big.remove();
       c.say(popped ? `${popped} Blasen geplatzt – du bist schnell!` : "Plopp!", 2200); await c.wait(2300);
     } },
@@ -522,14 +642,15 @@ const MunkelShow = (() => {
       ball.remove(); const sm = c.prop(ART.snowman, 74, 106, 22, { cls: "grow" });
       c.face("happy"); bird.act("mk-hop", 700); c.burstAt(sm, ["❄️", "✨"], 8, 30);
       c.hint("Tipp den Schneemann an!", 5000);
-      if (await c.waitTap(sm, 4500)) { sm.classList.add("wiggle"); tone(900, 0.2, "triangle", 0.08); c.face("wow"); c.say("Er hat „Hallo Ute“ gesagt!", 2200); await c.wait(2000); }
+      if (await c.waitTap(sm, 4500)) { sm.classList.add("wiggle"); tone(900, 0.2, "triangle", 0.08); c.face("wow"); c.say("Er sagt, er hat kalte Füße – aber ein warmes Herz!", 2600); await c.wait(2000); }
       c.face("happy"); c.say("Er bleibt hier und passt mit auf.", 2200); sm.remove(); addItem("schneemann"); await c.wait(2300);
       c.face(); await c.home(1100);
     } },
     "22e": { title: "Kerze anzünden", async run(c) {
-      c.face("dreamy"); c.say("Bald ist der erste Advent …", 2200); await c.wait(2300);
-      const k = c.prop(ART.candle.replace('class="cd-flame"', 'class="cd-flame" style="opacity:0"').replace('class="cd-glow"', 'class="cd-glow" style="opacity:0"'), 108, 106, 12);
-      await c.moveTo(124, 104, 1000, { land: "stand" });
+      c.face("dreamy"); c.say("Bald ist der erste Advent … ich hol eine Kerze.", 2400); await c.wait(1900);
+      await c.fetch(`<g transform="translate(-5 -6) scale(.5)">${ART.candle.replace(/<\/?svg[^>]*>/g, "").replace('class="cd-flame"', 'class="cd-flame" style="opacity:0"').replace('class="cd-glow"', 'class="cd-glow" style="opacity:0"')}</g>`, { side: 1, y: 20 });
+      await c.moveTo(128, 104, 1400, { land: "stand" });
+      bird.carry(""); const k = c.prop(ART.candle.replace('class="cd-flame"', 'class="cd-flame" style="opacity:0"').replace('class="cd-glow"', 'class="cd-glow" style="opacity:0"'), 112, 106, 12);
       c.face("focus"); c.say("Ganz vorsichtig …", 1500); await c.wait(1000); c.pose("mk-open"); await c.wait(1100); c.pose("mk-open", false);
       k.remove(); addItem("kerze"); tone(523, 0.6, "sine", 0.08); tone(784, 0.6, "sine", 0.06, null, 0.1);
       lock.classList.add("candle-glow"); c.face("wow"); await c.wait(700); c.face("happy");
@@ -539,22 +660,38 @@ const MunkelShow = (() => {
       c.face("dreamy"); c.say("Jetzt ist es richtig gemütlich.", 2400); await c.wait(2500);
       c.face(); await c.home(1100);
     } },
-
     /* ---------------- 23.11. ---------------- */
     "23m": { title: "Wurm-Tauziehen", async run(c) {
       await c.seat("groundR", 1400);
-      const w = c.prop(ART.worm, 186, 236, 12);
-      c.anim(w, [{ clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0 0 0 0)" }], 800);
-      c.face("wow"); c.say("Ein Wurm! Frühstück!", 1700); await c.wait(1500);
-      c.face("focus"); await c.moveTo(178, 228, 400, { fly: false, arc: 6 });
-      c.hint("Hilf ihm ziehen – tipp den Wurm an!", 5000);
+      await c.moveTo(152, 226, 500, { fly: false, arc: 6 });
+      const hole = c.prop(ART.hole, 176, 240, 26);
+      const w = c.prop(ART.bigworm, 174, 238, 15, { cls: "mk-worm" });
+      w.animate([{ clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0 0 0 0)" }], { duration: 1100, easing: "ease-out", fill: "forwards" });
+      w.animate([{ rotate: "-6deg" }, { rotate: "6deg" }, { rotate: "-6deg" }], { duration: 900, iterations: 2 });
+      c.face("wow"); c.say("Ein Wurm! Frühstück!", 1700); await c.wait(1800);
+      c.face("focus"); bird.classList.add("peek"); await c.wait(500);
+      c.pose("mk-open"); await c.wait(250); c.pose("mk-open", false); tone(1500, 0.05, "square", 0.05);
+      c.say("Hab ihn!", 1000); await c.wait(700);
+      c.hint("Hilf ihm ziehen – tipp den Wurm an!", 6000);
       let help = 0; w.addEventListener("click", (e) => { e.stopPropagation(); help++; tone(500 + help * 40, 0.06, "triangle", 0.06); }); w.classList.add("tappable");
-      for (let i = 0; i < 6; i++) { c.anim(perch, [{ rotate: "0deg" }, { rotate: "-14deg" }, { rotate: "0deg" }], 500); c.anim(w, [{ transform: "translate(-50%,-100%) scaleY(1)" }, { transform: "translate(-50%,-100%) scaleY(1.15)" }, { transform: "translate(-50%,-100%) scaleY(1)" }], 500); await c.wait(550); }
-      c.face("wow"); tone(200, 0.3, "sawtooth", 0.06, 90);
-      await c.moveTo(150, 232, 400, { fly: false, arc: 10 }); bird.act("squash", 450); c.say("Ups!", 1100);
-      c.anim(w, [{ transform: "translate(-50%,-100%) rotate(0)" }, { transform: "translate(-50%,-100%) rotate(14deg)" }, { transform: "translate(-50%,-100%) rotate(-14deg)" }, { transform: "translate(-50%,-100%) rotate(0)" }], 900);
-      await c.wait(900); c.anim(w, [{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(100% 0 0 0)" }], 600); await c.wait(700);
-      bird.act("fluff", 900); c.face("sad"); await c.wait(900);
+      for (let i = 0; i < 5; i++) {
+        const st3 = 1.12 + i * 0.06 + help * 0.02;
+        c.anim(perch, [{ rotate: "0deg", translate: "0 0" }, { rotate: "-12deg", translate: "-6% 2%" }, { rotate: "-4deg", translate: "-2% 0" }], 650);
+        c.anim(w, [{ transform: "translate(-50%,-100%) scaleY(1)" }, { transform: `translate(-50%,-100%) scaleY(${st3})` }, { transform: "translate(-50%,-100%) scaleY(1.04)" }], 650);
+        tone(260 + i * 30, 0.12, "sawtooth", 0.03); await c.wait(720);
+      }
+      // der Wurm flutscht zurück ins Loch, der Vogel fällt auf den Po
+      bird.classList.remove("peek"); c.face("wow"); tone(900, 0.3, "sine", 0.06, 200);
+      w.animate([{ transform: "translate(-50%,-100%) scaleY(1.3)" }, { transform: "translate(-50%,-100%) scaleY(.9)" }], { duration: 160, fill: "forwards" });
+      w.animate([{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(100% 0 0 0)" }], { duration: 260, easing: "ease-in", fill: "forwards" });
+      await c.moveTo(126, 230, 420, { fly: false, arc: 22 }); c.anim(perch, [{ rotate: "-24deg" }, { rotate: "0deg" }], 600); bird.act("squash", 450); tone(180, 0.15, "triangle", 0.06); c.feathers(3);
+      c.say("Uff!", 1000); await c.wait(1300);
+      // er guckt noch mal heraus und winkt
+      w.animate([{ clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(55% 0 0 0)" }], { duration: 500, fill: "forwards" });
+      w.animate([{ rotate: "-12deg" }, { rotate: "12deg" }, { rotate: "-12deg" }], { duration: 500, iterations: 3 });
+      c.face("sad"); await c.wait(1500);
+      w.animate([{ clipPath: "inset(55% 0 0 0)" }, { clipPath: "inset(100% 0 0 0)" }], { duration: 400, fill: "forwards" }); await c.wait(500);
+      hole.remove(); bird.act("fluff", 900);
       c.face("shy"); c.say(help ? "Danke fürs Helfen. Der Wurm war stärker." : "Hmpf. Dann eben Beeren.", 2400); await c.wait(2500);
       c.face(); await c.home(1400);
     } },
@@ -579,72 +716,102 @@ const MunkelShow = (() => {
       c.face("focus"); c.say("Kurz schick machen …", 1700); await c.wait(1500);
       for (let i = 0; i < 4; i++) { bird.classList.add(i % 2 ? "preen-l" : "preen-r"); tone(2400, 0.03, "sine", 0.03); await c.wait(650); bird.classList.remove("preen-l", "preen-r"); if (i === 1) c.feathers(2, 58, 70); await c.wait(250); }
       bird.act("fluff", 900); await c.wait(900);
-      const m = c.prop(ART.mirror, 24, 112, 20);
+      c.face("happy"); c.say("Wo ist mein Spiegel …?", 1600); await c.wait(1200);
+      // Spiegel hinter dem Schloss hervorholen
+      await c.moveTo(70, 60, 700, { keepFlying: true, arc: 16 });
+      perch.classList.add("behind"); pad.classList.add("bird-behind");
+      await c.moveTo(70, 150, 600, { keepFlying: true, arc: 0 }); await c.wait(700);
+      bird.hold(`<g transform="translate(-6 -30) scale(.6)">${ART.mirror.replace(/<\/?svg[^>]*>/g, "")}</g>`);
+      await c.moveTo(70, 60, 600, { keepFlying: true, arc: 0 });
+      perch.classList.remove("behind"); pad.classList.remove("bird-behind");
+      await c.moveTo(SEATS.edgeL[0], SEATS.edgeL[1], 600, { land: "dangle" });
       c.face("happy"); c.say("Spieglein, Spieglein …", 1800); await c.wait(1800);
       c.hint("Tipp den Spiegel an!", 5000);
-      const t = await c.waitTap(m, 4500);
-      c.burstAt(m, ["✨", "✦"], t ? 12 : 6, 30); tone(1568, 0.2, "sine", 0.08);
+      const t = await c.waitTap(bird, 4500);
+      c.burstAt(bird, ["✨", "✦"], t ? 12 : 6, 30); tone(1568, 0.2, "sine", 0.08);
       c.face("wink"); c.say(t ? "… wer ist der Schönste? Ich. Und du, Ute!" : "*zwinker*", 2600); await c.wait(2700);
-      c.face(); await c.home(1300);
+      // Spiegel wieder hinter das Schloss legen
+      c.face("normal"); await c.moveTo(70, 60, 700, { keepFlying: true, arc: 16 });
+      perch.classList.add("behind"); pad.classList.add("bird-behind");
+      await c.moveTo(70, 150, 600, { keepFlying: true, arc: 0 }); await c.wait(500); bird.hold("");
+      await c.moveTo(70, 60, 600, { keepFlying: true, arc: 0 });
+      perch.classList.remove("behind"); pad.classList.remove("bird-behind");
+      c.face(); await c.home(1100);
     } },
     "24e": { title: "Mond-Schaukel", async run(c) {
-      const moon = c.prop(ART.moon, 100, -60, 50, { cls: "mk-moonswing" });
-      c.face("wow"); await c.anim(moon, [{ top: "-25%" }, { top: "30%" }], 1600, { easing: "cubic-bezier(.3,1.2,.5,1)" }).finished;
-      c.face("happy"); await c.moveTo(102, 64, 1100, { land: "dangle" });
+      const orb = lock.querySelector(".sky-orb"); const ob = orb.getBoundingClientRect(), lr = lock.getBoundingClientRect(), pr = pad.getBoundingClientRect();
+      const p = moonPhase(), rot = p < 0.5 ? 90 : -90;
+      // Schaukel: Seile von oben, Mond als Sitz
+      const sw = document.createElement("div"); sw.className = "mk-moon-swing";
+      const seatX = pr.left - lr.left + pr.width * 0.5, seatY = pr.top - lr.top + pr.height * 0.12;
+      sw.style.left = seatX + "px"; sw.style.height = seatY + "px";
+      sw.innerHTML = `<div class="mms-ropes"></div><div class="mms-moon">${moonSVG(p, 88)}</div>`;
+      lock.append(sw); c.made.push(sw);
+      const moonEl = sw.querySelector(".mms-moon");
+      orb.classList.add("away");
+      const dx = ob.left + ob.width / 2 - (lr.left + seatX), dy = ob.top + ob.height / 2 - (lr.top + seatY);
+      c.face("wow");
+      await moonEl.animate([{ translate: `${dx}px ${dy}px`, rotate: "0deg", scale: ".8" }, { translate: "0 0", rotate: `${rot}deg`, scale: "1" }], { duration: 2000, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }).finished;
+      sw.classList.add("ropes"); tone(523, 0.4, "sine", 0.05, 784); await c.wait(900);
+      c.face("happy"); c.say("Eine Mondschaukel!", 1600);
+      // in die Schaukel fliegen
+      const sx = ((seatX - (pr.left - lr.left)) / pr.width) * 200, sy = ((seatY - (pr.top - lr.top)) / pr.height) * 240 - 2;
+      await c.moveTo(sx, sy, 1200, { land: "tuck" });
+      const bw = perch.getBoundingClientRect().width;
+      const seat = document.createElement("div"); seat.className = "mms-bird"; seat.style.width = bw + "px"; seat.style.height = bw + "px"; seat.style.left = -bw / 2 + "px"; seat.style.top = seatY - bw * 0.79 + 16 + "px"; moonEl.after(seat); seat.append(bird);
+      perch.style.visibility = "hidden";
       c.face("dreamy"); c.hint("Tipp den Mond an – dann schwingt er höher!", 6000);
-      let amp = 8; moon.classList.add("tappable"); moon.addEventListener("click", (e) => { e.stopPropagation(); amp = Math.min(26, amp + 6); tone(880, 0.2, "sine", 0.06); });
+      let amp = 8; moonEl.classList.add("tappable"); moonEl.addEventListener("click", (e) => { e.stopPropagation(); amp = Math.min(22, amp + 5); tone(880, 0.2, "sine", 0.06); });
       const notes = [784, 659, 698, 587, 659, 523, 587, 494];
-      for (let i = 0; i < 8; i++) {
-        const deg = (i % 2 ? -1 : 1) * amp;
-        [moon, perch].forEach((el) => el.animate([{ rotate: `${-deg}deg` }, { rotate: `${deg}deg` }], { duration: 900, easing: "ease-in-out", fill: "forwards" }));
-        tone(notes[i], 0.5, "triangle", 0.05); await c.wait(900);
-        if (i === 5) c.face("sleepy");
-      }
-      [moon, perch].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
-      c.say("Gute Nacht, Ute …", 2000); await c.wait(1300); c.face(); await c.home(1200);
-      await c.anim(moon, [{ top: "30%" }, { top: "-25%" }], 1400).finished;
-    } },
-
+      try {
+        for (let i = 0; i < 8; i++) { const d = (i % 2 ? -1 : 1) * amp; sw.animate([{ rotate: `${-d}deg` }, { rotate: `${d}deg` }], { duration: 1000, easing: "ease-in-out", fill: "forwards" }); tone(notes[i], 0.5, "triangle", 0.05); await c.wait(1000); if (i === 5) c.face("sleepy"); }
+        sw.animate([{ rotate: `${amp}deg` }, { rotate: "0deg" }], { duration: 900, easing: "ease-out", fill: "forwards" }); await c.wait(900);
+        c.say("Gute Nacht, Ute …", 2000); await c.wait(1400);
+      } finally { perch.append(bird); perch.style.visibility = ""; }
+      c.face(); await c.home(1100);
+      sw.classList.remove("ropes"); await c.wait(500);
+      await moonEl.animate([{ translate: "0 0", rotate: `${rot}deg` }, { translate: `${dx}px ${dy}px`, rotate: "0deg", scale: ".8" }], { duration: 1600, easing: "ease-in-out", fill: "forwards" }).finished;
+      orb.classList.remove("away"); sw.remove();
+    }, end: () => document.querySelector(".sky-orb")?.classList.remove("away") },
     /* ---------------- 25.11. ---------------- */
     "25m": { title: "Looping-Ausflug", async run(c) {
       c.face("happy"); c.say("Ich dreh eine Runde!", 1700); await c.wait(1500);
       let extra = false; c.hint("Tipp ihn im Flug an – noch ein Looping!", 7000);
       bird.onSceneTap = () => { extra = true; };
-      const trail = setInterval(() => { const r = perch.getBoundingClientRect(); try { H().burst(r.left + r.width / 2, r.top + r.height / 2, ["·"], 1, 6); } catch (e) {} }, 110);
+      const trail = setInterval(() => { const r = perch.getBoundingClientRect(); try { H().burst(r.left + r.width / 2, r.top + r.height / 2, ["·"], 1, 6); } catch (e) {} }, 90);
+      const loop = (cx, cy, r, n = 36) => Array.from({ length: n + 1 }, (_, i) => { const a = (i / n) * Math.PI * 2; return [cx + Math.sin(a) * r, cy - (1 - Math.cos(a)) * r]; });
       try {
-        await c.moveTo(-50, 30, 1400, { keepFlying: true, arc: 30 });
-        await c.moveTo(250, 0, 1800, { keepFlying: true, arc: -20 });
-        const loop = async (cx, cy, r) => { for (let i = 0; i <= 14; i++) { const a = (i / 14) * Math.PI * 2; await c.moveTo(cx - Math.sin(a) * r, cy - (1 - Math.cos(a)) * r, 85, { arc: 0, keepFlying: true }); } };
-        c.face("wow"); await loop(140, 60, 46); if (extra) { tone(1200, 0.3, "triangle", 0.08, 1800); await loop(140, 60, 56); }
-        c.face("happy"); await c.moveTo(146, 104, 900, { arc: 20, land: "dangle" });
-        c.anim(perch, [{ translate: "0 0" }, { translate: "12% 0", rotate: "8deg" }, { translate: "0 0", rotate: "0deg" }], 700); tone(250, 0.2, "sawtooth", 0.05, 120);
+        await c.path([[60, 40], [-10, 20], [40, -10], [140, 20]], 2600, { easing: "ease-in" });
+        c.face("wow"); await c.path(loop(140, 70, 48).slice(1), 2200, { easing: "linear" });
+        if (extra) { tone(1200, 0.3, "triangle", 0.08, 1800); await c.path(loop(140, 70, 56).slice(1), 2200, { easing: "linear" }); }
+        c.face("happy"); await c.path([[170, 60], [156, 80]], 800, { easing: "ease-out" }); await c.home(700);
+        c.anim(perch, [{ translate: "0 0" }, { translate: "10% 0", rotate: "8deg" }, { translate: "0 0", rotate: "0deg" }], 700); tone(250, 0.2, "sawtooth", 0.05, 120);
       } finally { clearInterval(trail); }
       await c.wait(800); perch.getAnimations().forEach((a) => a.cancel());
       c.face("shy"); c.say(extra ? "Zwei Loopings! Mir ist schwindelig." : "Gelandet! Fast elegant.", 2400); await c.wait(2500);
     } },
     "25e": { title: "Lichterkette", async run(c) {
-      c.face("wow"); c.say("Ich hab eine Lichterkette gefunden!", 2000); bird.carry(ART.bulbBeak); await c.wait(2000);
+      c.face("wow"); c.say("Ich hab eine Idee – Moment!", 1700); await c.wait(1300);
+      await c.fetch(ART.bulbBeak, { side: 1, y: 20 });
       c.face("focus");
-      const path = [[52, 108], [52, 74], [72, 34], [100, 26], [128, 34], [148, 74], [148, 108]];
-      await c.moveTo(path[0][0], path[0][1], 900, { keepFlying: true });
-      for (const [x, y] of path.slice(1)) await c.moveTo(x, y, 520, { arc: 8, keepFlying: true });
+      await c.path([[180, 40], [156, 100], [156, 74], [130, 30], [100, 20], [70, 30], [44, 74], [44, 100]], 4200, { easing: "ease-in-out" });
       bird.carry(""); addItem("lichter");
-      const bulbs = [...pad.querySelectorAll(".mk-lights .bulb")];
-      bulbs.forEach((b, i) => { b.style.opacity = 0; setTimeout(() => { b.style.opacity = 1; tone(900 + i * 70, 0.06, "sine", 0.05); }, 300 + i * 160); });
-      await c.moveTo(146, 104, 700, { land: "dangle" });
-      c.face("wow"); await c.wait(400 + bulbs.length * 160); c.face("happy");
+      const lamps = [...pad.querySelectorAll(".mk-lights .lamp")];
+      lamps.forEach((b, i) => { b.style.opacity = 0; setTimeout(() => { b.style.opacity = 1; tone(900 + i * 50, 0.06, "sine", 0.05); }, 300 + i * 140); });
+      await c.home(1100);
+      c.face("wow"); await c.wait(400 + lamps.length * 140); c.face("happy");
       c.hint("Tipp die Lämpchen an – sie wechseln die Farbe!", 6000);
-      const pal = ["#ff5a7a", "#ffcf3f", "#4fd18b", "#58b6ff", "#c77dff", "#fff3cf"];
+      const pal = ["#ffcf6a", "#ff7a6a", "#7fd6a0", "#7fbfff", "#ffd98a", "#e7a1ff"];
       const lights = pad.querySelector(".mk-lights"); lights.style.pointerEvents = "auto";
-      const onTap = (e) => { const b = e.target.closest(".bulb"); if (!b) return; e.stopPropagation(); b.setAttribute("fill", pal[(pal.indexOf(b.getAttribute("fill")) + 1) % pal.length]); tone(1200, 0.06, "sine", 0.06); bird.act("mk-hop", 600); };
+      const onTap = (e) => { const g = e.target.closest(".lamp"); if (!g) return; e.stopPropagation(); const b = g.querySelector(".bulb"), h = g.querySelector(".halo"); const n = pal[(pal.indexOf(b.getAttribute("fill")) + 1) % pal.length]; b.setAttribute("fill", n); h.setAttribute("fill", n); tone(1200, 0.06, "sine", 0.06); bird.act("mk-hop", 600); };
       lights.addEventListener("click", onTap);
       try { c.say("Jetzt funkelt unser Schloss!", 2400); await c.wait(5600); }
       finally { lights.removeEventListener("click", onTap); lights.style.pointerEvents = ""; }
     } },
-
     /* ---------------- 26.11. ---------------- */
     "26m": { title: "Schloss polieren", async run(c) {
-      c.face("focus"); c.say("Das Schloss muss glänzen!", 1800); bird.carry(`<g transform="translate(-10 -4) scale(.6)">${ART.cloth.replace(/<\/?svg[^>]*>/g, "")}</g>`); await c.wait(1800);
+      c.face("focus"); c.say("Das Schloss muss glänzen! Ich hol ein Tuch.", 2200); await c.wait(1700);
+      await c.fetch(`<g transform="translate(-10 -4) scale(.6)">${ART.cloth.replace(/<\/?svg[^>]*>/g, "")}</g>`, { side: 1, y: 30 });
       c.hint("Hilf mit – tipp aufs Schloss zum Polieren!", 7000);
       const shine = (x, y) => { const s2 = c.prop(`<div class="mk-shine"></div>`, x, y, 24, { anchor: "center" }); setTimeout(() => s2.remove(), 900); tone(2000 + Math.random() * 800, 0.06, "sine", 0.04); };
       const tapPad = (e) => { if (e.target.closest(".munkel, .mk-item")) return; const r = pad.getBoundingClientRect(); shine(((e.clientX - r.left) / r.width) * 200, ((e.clientY - r.top) / r.height) * 240); };
@@ -657,13 +824,19 @@ const MunkelShow = (() => {
           shine(x, y - 30);
         }
       } finally { pad.removeEventListener("click", tapPad, true); }
-      bird.carry(""); pad.classList.add("polished"); setTimeout(() => pad.classList.remove("polished"), 2500);
-      await c.home(1100); c.face("wink"); c.say("Ich kann mich darin spiegeln!", 2400); await c.wait(2500);
+      pad.classList.add("polished"); addItem("glanz");
+      await c.fetch("", { side: 1, y: 40, away: 600 }); await c.home(1500);
+      c.face("wink"); c.say("Glänzt! So bleibt es jetzt.", 2400); await c.wait(2500); pad.classList.remove("polished");
     } },
     "26e": { title: "Schattenspiel", async run(c) {
-      await c.seat("groundR", 1400);
-      const l = c.prop(ART.lantern, 192, 228, 14, { cls: "lit" });
-      c.face("wink"); c.say("Rate mal, was das ist …", 2000); await c.wait(1800);
+      const hasL = st.items.includes("laterne");
+      const li = pad.querySelector(".mk-item.lantern-item");
+      c.face("wink"); c.say("Rate mal, was das ist …", 1800); await c.wait(1400);
+      const lanternBeak = `<g transform="translate(-8 -4) scale(.55)">${ART.lantern.replace(/<\/?svg[^>]*>/g, "")}</g>`;
+      if (hasL && li) { await c.moveTo(48, 100, 1100, { keepFlying: true }); li.style.visibility = "hidden"; bird.carry(lanternBeak); }
+      else await c.fetch(lanternBeak, { side: 1, y: 60 });
+      await c.moveTo(176, 228, 1300, { land: "stand" });
+      bird.carry(""); const l = c.prop(ART.lantern, 194, 230, 13, { cls: "lit" });
       const SH = {
         Hase: `<svg viewBox="0 0 100 80"><path d="M30 70 C10 70 10 44 30 40 C30 20 34 4 40 6 C44 8 42 24 42 36 C46 22 54 6 60 8 C66 12 54 30 50 40 C70 40 86 52 82 66 C80 74 70 74 60 70Z"/></svg>`,
         Kapibara: `<svg viewBox="0 0 120 80"><ellipse cx="54" cy="46" rx="40" ry="24"/><rect x="70" y="24" width="40" height="32" rx="14"/><circle cx="82" cy="22" r="6"/><rect x="26" y="60" width="10" height="16" rx="4"/><rect x="70" y="60" width="10" height="16" rx="4"/><circle cx="88" cy="10" r="8"/></svg>`,
@@ -676,10 +849,13 @@ const MunkelShow = (() => {
       screen.classList.add("tappable"); screen.addEventListener("click", (e) => { e.stopPropagation(); i++; show(); c.say(names[i % names.length] + "!", 1200); });
       c.face("focus"); show(); c.say(names[0] + "!", 1200);
       for (let k = 0; k < 3; k++) { await c.wait(2600); i++; show(); c.face(k % 2 ? "happy" : "wow"); c.say(names[i % names.length] + "!", 1200); }
-      await c.wait(2300); c.face("wink"); c.say("Das Kapibara kennst du bald persönlich.", 2500); await c.wait(2600); l.remove();
-      c.face(); await c.home(1400);
+      await c.wait(2300); c.face("wink"); c.say("Das Kapibara kennst du bald persönlich.", 2500); await c.wait(2600);
+      // Laterne zurückbringen
+      l.remove(); bird.carry(lanternBeak);
+      if (hasL && li) { await c.moveTo(48, 100, 1300, { keepFlying: true }); bird.carry(""); li.style.visibility = ""; }
+      else { await c.fetch("", { side: 1, y: 60, away: 500 }); }
+      c.face(); await c.home(1200);
     } },
-
     /* ---------------- 27.11. ---------------- */
     "27m": { title: "Aufregung", async run(c) {
       c.face("wow"); c.say("MORGEN! Morgen ist es so weit!", 2000); await c.wait(1300);
@@ -694,29 +870,50 @@ const MunkelShow = (() => {
     } },
     "27e": { title: "Schäfchen zählen", async run(c) {
       const inNest = st.items.includes("nest");
-      if (inNest) { await c.moveTo(148, 114, 1000, { land: "tuck" }); } else await c.home(800);
+      if (inNest) await c.moveTo(SEATS.nest[0], SEATS.nest[1], 1000, { land: "tuck" }); else await c.home(800);
       c.face("sleepy"); c.say("Ich kann nicht schlafen … zu aufgeregt.", 2400); await c.wait(2500);
       c.face("normal"); c.say("Ich zähl Schäfchen.", 1600); await c.wait(1400);
       c.hint("Tipp ein Schäfchen an – es springt höher!", 6000);
-      let n = 0;
-      while (n < 12) {
-        n++; const sh = c.prop(ART.sheep, -20, 232, 26, { onTap: (d) => { d.classList.add("high"); tone(1000, 0.1, "triangle", 0.06); } });
+      for (let n = 1; n <= 20; n++) {
+        const sh = c.prop(SHEEP(n - 1), -20, 232, 28, { onTap: (d) => { d.classList.add("high"); tone(1000, 0.1, "triangle", 0.06); } });
         const hi = () => (sh.classList.contains("high") ? -18 : 18);
-        c.anim(sh, [{ left: "-12%", top: "96.6%" }, { left: "30%", top: "96.6%", offset: 0.35 }, { left: "50%", top: `${hi()}%`, offset: 0.55 }, { left: "70%", top: "96.6%", offset: 0.75 }, { left: "112%", top: "96.6%" }], 2400, { easing: "linear" }).onfinish = () => sh.remove();
-        c.say(String(n), 800); tone(500 + n * 25, 0.08, "triangle", 0.05);
-        c.face(n > 9 ? "sleep" : n > 6 ? "sleepy" : "normal");
-        await c.wait(900);
+        c.anim(sh, [{ left: "-14%", top: "96.6%" }, { left: "30%", top: "96.6%", offset: 0.35 }, { left: "50%", top: `${hi()}%`, offset: 0.55 }, { left: "70%", top: "96.6%", offset: 0.75 }, { left: "114%", top: "96.6%" }], 2600, { easing: "linear" }).onfinish = () => sh.remove();
+        c.say(String(n), 700); tone(500 + n * 18, 0.08, "triangle", 0.05);
+        c.face(n > 16 ? "sleep" : n > 10 ? "sleepy" : "normal");
+        await c.wait(820);
       }
-      c.face("sleep"); c.prop(`<span>z</span><span>Z</span><span>z</span>`, 176, 52, 26, { cls: "mk-zzz" }); c.say("Zwölf … zzz …", 1800); await c.wait(4200);
+      c.face("sleep"); c.say("Zwanzig … zzz …", 1800); await c.wait(3000);
     }, end: (c) => c.face() },
   };
 
   /* ---------- Abspielen ---------- */
+  const sleepTime = (d = new Date()) => d.getHours() >= 21 || d.getHours() < 6;
+  let sleeping = false, zzz = null;
+  function goSleep() {
+    if (!bird || stage) return;
+    sleeping = true; bird.busy = true;
+    if (st.items.includes("nest")) { place(perch, SEATS.nest[0], SEATS.nest[1]); bird.legs("tuck"); } else { place(perch, HOME[0], HOME[1]); bird.legs("dangle"); }
+    bird.classList.remove("swaying"); bird.face("sleep");
+    zzz?.remove(); zzz = document.createElement("div"); zzz.className = "mk-prop mk-zzz"; zzz.innerHTML = "<span>z</span><span>Z</span><span>z</span>"; place(zzz, 176, 50); zzz.style.width = "13%"; pad.append(zzz);
+    bird.onSceneTap = () => { bird.face("sleepy"); bird.say("Zzz … psst, ich schlafe. Morgen früh geht's weiter!", 2200); setTimeout(() => sleeping && bird.face("sleep"), 1600); };
+  }
+  function wakeQuiet() { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; bird.busy = false; bird.classList.add("swaying"); bird.face(); restHome(); }
   async function play(id, { auto } = {}) {
     if (!SCENES[id] || !bird) return;
     if (stage) stage.cleanup();
+    const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; }
     const c = makeCtx(); stage = c; bird.busy = true; lock.classList.add("scene-on");
-    try { await c.wait(auto ? 1200 : 200); await SCENES[id].run(c); }
+    try {
+      await c.wait(auto ? 1200 : 200);
+      // morgens: aus dem Schlaf aufwachen, bevor die Szene beginnt
+      if (id.endsWith("m") && id !== "14m" && (wasAsleep || auto)) {
+        if (st.items.includes("nest")) { c.jump(SEATS.nest[0], SEATS.nest[1]); c.legsNow = "tuck"; }
+        c.face("sleep"); await c.wait(1300); c.face("wow"); tone(900, 0.1, "triangle", 0.06); await c.wait(500);
+        c.face("sleepy"); bird.classList.add("wings-up"); c.pose("mk-open"); await c.wait(900); bird.classList.remove("wings-up"); c.pose("mk-open", false);
+        c.face(); if (st.items.includes("nest")) await c.home(900); else { c.legsNow = "dangle"; }
+      }
+      await SCENES[id].run(c);
+    }
     catch (e) { if (e && e.message !== "abgebrochen") console.error("Munkel-Szene " + id + ":", e); }
     finally {
       if (stage === c) {
@@ -724,6 +921,10 @@ const MunkelShow = (() => {
         c.cleanup(); stage = null; bird.busy = false; lock.classList.remove("scene-on");
         if (!st.seen[id]) { st.seen[id] = Date.now(); save(); }
         renderItems(); updateAlbumBtn();
+        if (id.endsWith("e")) {
+          if (sleepTime()) setTimeout(goSleep, 300);
+          else setTimeout(() => { if (!stage) { bird.face("sleepy"); bird.say("Boah, bin ich müde … ich geh gleich ins Bett.", 3000); setTimeout(() => !stage && !sleeping && bird.face(), 3200); } }, 500);
+        }
       }
     }
   }
@@ -755,7 +956,7 @@ const MunkelShow = (() => {
   /* ---------- Start auf dem Schloss-Bildschirm ---------- */
   function attach(lockEl, padEl, perchEl, birdEl) {
     lock = lockEl; pad = padEl; perch = perchEl; bird = birdEl;
-    place(perch, HOME[0], HOME[1]);
+    restHome();
     sky(); setInterval(sky, 60000);
     renderItems();
     albumBtn = document.createElement("button"); albumBtn.className = "mk-album-btn";
@@ -764,8 +965,14 @@ const MunkelShow = (() => {
     lock.append(albumBtn); requestAnimationFrame(() => lock.querySelector(".lock-clock")?.after(albumBtn)); updateAlbumBtn();
     // die Szene des aktuellen Tagesabschnitts einmal von selbst abspielen
     let last = currentSlot();
-    if (!st.seen[last]) setTimeout(() => play(last, { auto: true }), 2600);
-    setInterval(() => { const s = currentSlot(); if (s !== last) { last = s; if (!st.seen[s] && !stage) play(s, { auto: true }); } }, 30000);
+    if (!st.seen[last]) { if (sleepTime() && last.endsWith("m")) goSleep(); setTimeout(() => play(last, { auto: true }), 2600); }
+    else if (sleepTime()) goSleep();
+    setInterval(() => {
+      const s = currentSlot();
+      if (s !== last) { last = s; if (!st.seen[s] && !stage) { play(s, { auto: true }); return; } }
+      if (!stage && sleepTime() && !sleeping) goSleep();
+      if (!stage && !sleepTime() && sleeping) wakeQuiet();
+    }, 30000);
   }
-  return { attach, play, openAlbum, currentSlot, SCENES, HATS, ART, state: () => st };
+  return { attach, play, openAlbum, currentSlot, SCENES, HATS, ART, moonPhase, moonSVG, state: () => st, goSleep };
 })();

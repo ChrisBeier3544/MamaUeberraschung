@@ -2011,3 +2011,75 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 .mk-hint { font: 500 12px "DM Sans", sans-serif; padding: 5px 11px; background: rgba(10, 24, 18, .55); color: #f3e3b5; border: 1px solid rgba(201, 160, 74, .45); box-shadow: none; backdrop-filter: blur(3px); }
 .mk-hint::before { content: "☞ "; color: #e8c46b; }
 .munkel.peek .munkel-svg { transform: rotate(16deg) translate(6%, 4%); transition: transform .35s ease; }
+/* Halten, Hantel, schlanker ohne Stirnband */
+.munkel.slim .mk-band { opacity: 0 !important; }
+.munkel.slim .mk-torso { transform: scale(.84, .96); }
+.munkel.slim .mk-wing-r { translate: -7px 0; } .munkel.slim .mk-wing-l { translate: 7px 0; }
+.munkel.slim .mk-scarf { transform: scaleX(.86); }
+.munkel.holding .mk-wing-r { transform: rotate(-58deg); }
+.munkel .mk-barbell { display: none; }
+.munkel.lifting .mk-barbell { display: inline; }
+.munkel.lifting .bb-move { transform: translateY(16px); animation: bbLift 2.2s ease-in-out infinite; }
+.munkel.lifting .mk-wing-r { transform-origin: 100px 76px; animation: wLiftR 2.2s ease-in-out infinite; }
+.munkel.lifting .mk-wing-l { transform-origin: 40px 76px; animation: wLiftL 2.2s ease-in-out infinite; }
+.munkel.lifting .mk-head { animation: hLift 2.2s ease-in-out infinite; }
+/* langsam runter (0–65 %), schnell hoch (65–80 %), oben halten */
+@keyframes bbLift { 0% { transform: translateY(16px); } 65% { transform: translateY(70px); } 80%, 100% { transform: translateY(16px); } }
+@keyframes wLiftR { 0% { transform: rotate(-118deg); } 65% { transform: rotate(-38deg); } 80%, 100% { transform: rotate(-118deg); } }
+@keyframes wLiftL { 0% { transform: rotate(118deg); } 65% { transform: rotate(38deg); } 80%, 100% { transform: rotate(118deg); } }
+@keyframes hLift { 0%, 100% { transform: translateY(0); } 70% { transform: translateY(2px) scale(1.02); } 78% { transform: translateY(-2px); } }
+
+/* ================= Munkel: Feinschliff 3 ================= */
+/* Ebenen: Nest hinten < Dinge < Vogel < Nest vorne */
+.lock-perch { z-index: 4; }
+.mk-item { z-index: 3; }
+.mk-item.nest-back { z-index: 1; }
+.mk-item.nest-front { z-index: 5; }
+.lock-perch.behind { z-index: 0; }
+.lock-pad.bird-behind > svg { position: relative; z-index: 2; }
+/* Trefferfläche: nur das gezeichnete Schloss reagiert, nicht das ganze Rechteck */
+.site-lock .lock-pad { pointer-events: none; }
+.site-lock .lock-pad > svg { pointer-events: none; }
+.site-lock .lock-pad > svg * { pointer-events: visiblePainted; }
+.site-lock .lock-perch, .site-lock .munkel, .site-lock .mk-item, .site-lock .mk-prop.tappable { pointer-events: auto; }
+.mk-sky.tappable { z-index: 7; }
+.mk-sky.tappable::after { content: ""; position: absolute; inset: -12px; }
+/* hellere Sterne, die die Nacht über bleiben */
+.mk-star { background: radial-gradient(circle, #fff 0 22%, rgba(255, 248, 210, .95) 30%, rgba(255, 236, 160, .45) 48%, transparent 66%); filter: drop-shadow(0 0 6px rgba(255, 244, 200, .9)); }
+.mk-star.bright { animation: twinkleSoft 3s ease-in-out infinite; }
+@keyframes twinkleSoft { 50% { opacity: .78; transform: scale(.9); } }
+.mk-star-keep { z-index: 1; }
+/* echter Mond */
+.sky-orb.moon { background: none !important; box-shadow: none !important; width: 52px !important; height: 52px !important; filter: drop-shadow(0 0 12px rgba(255, 243, 196, .35)); }
+.sky-orb.moon svg { width: 100%; height: 100%; display: block; }
+.sky-orb.moon.lit { filter: drop-shadow(0 0 22px rgba(255, 243, 196, .85)); transition: filter 1s; }
+.sky-orb.away { opacity: 0; transition: opacity .3s; }
+/* poliertes Schloss bleibt glänzend */
+.mk-sheen { position: absolute; left: 11%; top: 43.3%; width: 78%; height: 51.7%; border-radius: 17%/22%; pointer-events: none; z-index: 1; overflow: hidden; mix-blend-mode: screen; }
+.mk-sheen::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 240, .55) 42%, transparent 54%); animation: sheen 4.5s ease-in-out infinite; }
+.mk-sheen::after { content: ""; position: absolute; left: 8%; top: 8%; width: 30%; height: 18%; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 255, 255, .45), transparent 70%); }
+@keyframes sheen { 0%, 40% { transform: translateX(-90%); } 75%, 100% { transform: translateX(90%); } }
+/* Lämpchen */
+.mk-lights .lamp .halo { animation: lampGlow 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes lampGlow { 50% { opacity: .15; transform: scale(.8); } }
+.mk-lights .lamp .bulb { filter: drop-shadow(0 0 2px rgba(255, 240, 200, .8)); }
+/* Glühwürmchen */
+.mk-firefly2 svg { width: 100%; height: auto; display: block; overflow: visible; }
+.mk-firefly2 .ff-wings { transform-box: fill-box; transform-origin: 50% 100%; animation: ffWing .09s ease-in-out infinite alternate; }
+@keyframes ffWing { to { transform: scaleY(.4); } }
+.mk-firefly2 .ff-glow, .mk-firefly2 .ff-tail { animation: ffGlow 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ffGlow { 50% { opacity: .35; } }
+.mk-firefly2.bright .ff-glow { opacity: .7; transform: scale(1.6); animation: none; }
+.mk-firefly2 { filter: drop-shadow(0 0 6px rgba(255, 238, 120, .9)); }
+.mk-ff-trail { width: 100%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255, 240, 150, .9), transparent 70%); }
+/* Wurm */
+.mk-worm { transform-origin: 50% 100%; }
+.munkel.knitting .mk-carry { animation: mkKnit2 .3s ease-in-out; }
+/* Mondschaukel */
+.mk-moon-swing { position: absolute; top: 0; width: 0; transform-origin: 50% 0; z-index: 5; pointer-events: none; }
+.mk-moon-swing::before, .mk-moon-swing::after { content: ""; position: absolute; top: 0; width: 1.6px; height: 100%; background: linear-gradient(#e8d8b0, #c9a04a); transform: scaleY(0); transform-origin: 50% 0; transition: transform .8s ease-out; }
+.mk-moon-swing::before { left: -24px; } .mk-moon-swing::after { left: 22px; }
+.mk-moon-swing.ropes::before, .mk-moon-swing.ropes::after { transform: scaleY(1); }
+.mms-moon { position: absolute; left: -44px; bottom: -50px; width: 88px; height: 88px; z-index: 3; pointer-events: auto; filter: drop-shadow(0 0 14px rgba(255, 243, 196, .6)); }
+.mms-moon svg { width: 100%; height: 100%; display: block; }
+.mms-bird { position: absolute; z-index: 4; }

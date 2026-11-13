@@ -61,7 +61,7 @@ const Munkel = (() => {
       <path d="M50 60 q8 -6 16 -4" stroke="#ffd2b0" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
     </g>
     <!-- angelegte Flügelchen -->
-    <g class="mk-wing mk-wing-r"><path d="M100 72 C116 74 122 92 112 106 C106 112 96 108 96 98 C96 88 96 78 100 72Z" fill="#7d5338"/><path d="M104 84 q6 6 4 16 M100 88 q5 6 3 14" stroke="#5e3b27" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/></g>
+    <g class="mk-wing mk-wing-r"><path d="M100 72 C116 74 122 92 112 106 C106 112 96 108 96 98 C96 88 96 78 100 72Z" fill="#7d5338"/><path d="M104 84 q6 6 4 16 M100 88 q5 6 3 14" stroke="#5e3b27" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/><g class="mk-hold" transform="translate(110 104)"></g></g>
     <g class="mk-wing mk-wing-l"><path d="M40 72 C26 76 22 92 30 104 C36 110 44 106 44 96 C44 86 44 78 40 72Z" fill="#7d5338"/><path d="M36 84 q-6 6 -4 16" stroke="#5e3b27" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/></g>
     ${scarf ? `<g class="mk-scarf"><path d="M42 88 C54 98 88 98 100 88 L102 96 C88 106 54 106 40 96Z" fill="#8e2d3b"/>
       <path d="M48 92 v6 M56 95 v6 M64 96 v6 M72 96 v6 M80 96 v6 M88 95 v6 M95 92 v6" stroke="#b5485a" stroke-width="1.6"/>
@@ -81,6 +81,10 @@ const Munkel = (() => {
       <g class="mk-hat"></g>
       <g class="mk-carry" transform="translate(71 60)"></g>
     </g>
+    <!-- Beeren-Hantel (Morgensport) -->
+    <g class="mk-barbell"><g class="bb-move"><path d="M16 0 H124" stroke="#7a5537" stroke-width="5" stroke-linecap="round"/><path d="M28 -4 v8 M112 -4 v8" stroke="#5e3b27" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="14" cy="0" r="11" fill="#d93a4a"/><circle cx="10" cy="-4" r="3.4" fill="#fff" opacity=".55"/><path d="M14 -11 q3 -5 8 -4" stroke="#4f9e5c" stroke-width="2.4" fill="none"/>
+      <circle cx="126" cy="0" r="11" fill="#d93a4a"/><circle cx="122" cy="-4" r="3.4" fill="#fff" opacity=".55"/><path d="M126 -11 q3 -5 8 -4" stroke="#4f9e5c" stroke-width="2.4" fill="none"/></g></g>
   </g>
 </svg>`;
   }
@@ -156,6 +160,7 @@ const Munkel = (() => {
     el.act = act;
     el.blink = blink;
     el.setHat = (inner) => { el.querySelector(".mk-hat").innerHTML = inner || ""; };
+    el.hold = (inner) => { el.querySelector(".mk-hold").innerHTML = inner || ""; el.classList.toggle("holding", !!inner); };
     el.carry = (inner) => { el.querySelector(".mk-carry").innerHTML = inner || ""; };
     el.say = (text, ms = 3200) => bubble(el, text, ms);
     el.stop = () => { alive = false; };
