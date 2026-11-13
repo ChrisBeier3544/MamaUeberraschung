@@ -1548,3 +1548,24 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 @media (max-width: 420px) { .intro-letter { padding: 26px 24px 8px; } }
 .intro-card.is-letter .intro-dots { visibility: hidden; }
 .intro-dots { flex-wrap: nowrap; min-width: 0; }
+.il-photo { position: relative; width: min(58%, 230px); margin: 4px auto 22px; padding: 9px 9px 30px; background: #fff; border-radius: 3px; box-shadow: 0 10px 24px rgba(60, 40, 20, .22), 0 1px 3px rgba(0, 0, 0, .12); transform: rotate(-2.5deg); }
+.il-photo img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 30%; border-radius: 1px; }
+.il-tape { position: absolute; top: -11px; left: 50%; width: 84px; height: 22px; transform: translateX(-50%) rotate(3deg); background: rgba(243, 220, 147, .75); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.il-photo::after { content: "♥"; position: absolute; right: 12px; bottom: 5px; color: #8e2d3b; font-size: 17px; }
+@media (max-width: 759px) { .il-photo { width: min(46%, 190px); margin-bottom: 18px; } }
+@media (min-width: 760px) {
+  .intro-card.is-letter { width: min(860px, 100%); }
+  .intro-letter { display: grid; grid-template-columns: 250px 1fr; column-gap: 34px; align-items: start; padding: 38px 40px 14px; }
+  .intro-letter .il-photo { grid-column: 1; grid-row: 1 / span 6; width: 100%; margin: 14px 0 0; }
+  .intro-letter > :not(.il-photo) { grid-column: 2; }
+  .il-text { font-size: 24px; }
+}
+@media (max-width: 759px) {
+  .intro-letter { padding: 22px 22px 6px; }
+  .il-photo { width: min(38%, 170px); padding: 6px 6px 20px; margin: 6px auto 12px; }
+  .il-photo::after { font-size: 13px; right: 8px; bottom: 2px; }
+  .il-title { font-size: 30px !important; margin-bottom: 6px; }
+  .il-text { font-size: 19.5px; line-height: 1.28; margin-bottom: 9px; }
+  .il-sign { margin: 8px 0 4px; font-size: 23px; }
+}
+.intro-next { white-space: nowrap; }

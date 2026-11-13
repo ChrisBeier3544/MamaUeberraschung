@@ -143,7 +143,9 @@ const Intro = (() => {
       if (s.letter) {
         const C = typeof CONFIG !== "undefined" ? CONFIG : {};
         body.append(H.el("div", { class: "intro-page intro-letter" + (dir ? (dir > 0 ? " from-right" : " from-left") : "") },
-          H.el("div", { class: "il-seal", "aria-hidden": "true", html: `<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#8e2d3b"/><circle cx="30" cy="30" r="21" fill="none" stroke="#b5485a" stroke-width="1.5"/><path d="M30 41 c-9 -7 -14 -11 -14 -17 a6.5 6.5 0 0 1 14 -3 a6.5 6.5 0 0 1 14 3 c0 6 -5 10 -14 17z" fill="#f3dc93"/></svg>` }),
+          C.welcomePhoto ? H.el("figure", { class: "il-photo" },
+            H.el("img", { src: C.welcomePhoto, alt: "Chris und Mama", onerror: (e) => e.target.closest("figure")?.remove() }),
+            H.el("span", { class: "il-tape", "aria-hidden": "true" })) : null,
           H.el("h2", { class: "il-title", text: C.welcomeTitle || "Liebe Mama," }),
           ...String(C.welcomeMessage || "").split(/\n\n+/).map((t) => H.el("p", { class: "il-text", text: t })),
           H.el("p", { class: "il-sign", text: C.welcomeSignature || C.signature || "" })));

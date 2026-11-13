@@ -30,7 +30,8 @@ const CONFIG = {
     "es freut mich sehr, dir hiermit deinen diesjährigen Adventskalender zu übergeben.\n\n" +
     "Und du wirst dringend gebraucht: Die Tiere warten schon sehnsüchtig auf dich – sie brauchen deine Hilfe.\n\n" +
     "In diesem Sinne wünsche ich dir eine wunderschöne, besinnliche Adventszeit und übergebe jetzt an Kalle.",
-  welcomeSignature: "In Liebe ❤️",
+  welcomeSignature: "Dein Chris ❤️",
+  welcomePhoto: "fotos/brief.jpg",
 };
 
 /* ========================================================= */
