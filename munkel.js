@@ -38,6 +38,7 @@ const Munkel = (() => {
     <radialGradient id="${id}w" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#fffaf2"/><stop offset="1" stop-color="#f1e3cf"/></radialGradient>
     <radialGradient id="${id}e" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4a3428"/><stop offset=".7" stop-color="#1e140f"/></radialGradient>
     <linearGradient id="${id}f" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6e4630"/><stop offset="1" stop-color="#9c6f4d"/></linearGradient>
+    <pattern id="${id}k" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 0 l3 4 l3 -4" stroke="#fff" stroke-opacity=".35" stroke-width="1.1" fill="none"/></pattern>
     <clipPath id="${id}cl"><ellipse cx="58" cy="44" rx="9" ry="10.5"/></clipPath>
     <clipPath id="${id}cr"><ellipse cx="84" cy="44" rx="9" ry="10.5"/></clipPath>
   </defs>
@@ -80,6 +81,15 @@ const Munkel = (() => {
       <path class="mk-beak" d="M66 55 Q71 53 76 55 L71 61Z" fill="#f2b13c" stroke="#d48a22" stroke-width="1" stroke-linejoin="round"/>
       <g class="mk-hat"></g>
       <g class="mk-carry" transform="translate(71 60)"></g>
+    </g>
+    <!-- selbst gestrickter Schal: über den ganzen Hals -->
+    <g class="mk-scarf2">
+      <path d="M36 64 Q71 84 106 64 L108 90 Q71 110 34 90Z" style="fill:var(--scarf,#8e2d3b)"/>
+      <path d="M36 64 Q71 84 106 64 L108 90 Q71 110 34 90Z" fill="url(#${id}k)" opacity=".5"/>
+      <path d="M40 72 Q71 90 102 72 M38 81 Q71 99 104 81" stroke="#000" stroke-opacity=".14" stroke-width="1.6" fill="none"/>
+      <path class="mk-scarf2-end" d="M82 92 L98 90 L104 124 L86 126Z" style="fill:var(--scarf,#8e2d3b)"/>
+      <path d="M82 92 L98 90 L104 124 L86 126Z" fill="url(#${id}k)" opacity=".5"/>
+      <path d="M88 126 v6 M93 125 v6 M98 124 v6 M102 123 v5" style="stroke:var(--scarf,#8e2d3b)" stroke-width="2.4" stroke-linecap="round"/>
     </g>
     <!-- Beeren-Hantel (Morgensport) -->
     <g class="mk-barbell"><g class="bb-move"><path d="M16 0 H124" stroke="#7a5537" stroke-width="5" stroke-linecap="round"/><path d="M28 -4 v8 M112 -4 v8" stroke="#5e3b27" stroke-width="3" stroke-linecap="round"/>

@@ -158,7 +158,7 @@
     ["26m", "Schloss polieren"], ["26e", "Schattenspiel"], ["27m", "Aufregung"], ["27e", "Schäfchen zählen"],
   ];
   // was nach welcher Szene am Schloss liegt
-  const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
+  const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "18e": ["scarf"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
   const SPECIAL = { "2026-11-27": "Schloss zu", "2026-11-28": "Schloss öffnet", "2026-11-29": "1. Advent", "2026-12-01": "Erstes Türchen", "2026-12-06": "Nikolaus", "2026-12-13": "Neue Tiere", "2026-12-17": "Nachwuchs", "2026-12-18": "Bonus-Paket", "2026-12-19": "Erster Schnee", "2026-12-20": "Neue Tiere", "2026-12-23": "Weihnachtsfoto", "2026-12-24": "Heiligabend", "2026-12-31": "Silvester" };
   const EVENTS = [
     ["2026-11-28", "08:59", "Eine Minute vor dem Öffnen"], ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", 1],
@@ -195,9 +195,9 @@
     cfg.scene = id; cfg.date = `2026-11-${id.slice(0, 2)}`;
     cfg.time = id.endsWith("m") ? "09:30" : cfg.late ? "21:30" : "19:30";
     // Stand wie an diesem Tag: alles, was vor dieser Szene passiert ist
-    const items = [], seen = {}; let slim = false, hat = null;
-    SCENES.forEach(([s], k) => { seen[s] = 1; if (k < i) (GAINS[s] || []).forEach((g) => { if (g === "slim") slim = true; else if (g === "hat") hat = "bommel"; else items.push(g); }); });
-    try { localStorage.setItem(T + "mama-munkel-2026", JSON.stringify({ seen, items, hat, slim, sky: null })); } catch (e) {}
+    const items = [], seen = {}; let slim = false, hat = null, scarf = null;
+    SCENES.forEach(([s], k) => { seen[s] = 1; if (k < i) (GAINS[s] || []).forEach((g) => { if (g === "slim") slim = true; else if (g === "hat") hat = "bommel"; else if (g === "scarf") scarf = "#2f8a52"; else items.push(g); }); });
+    try { localStorage.setItem(T + "mama-munkel-2026", JSON.stringify({ seen, items, hat, slim, scarf, sky: null })); } catch (e) {}
     load(false, () => { const M = G("MunkelShow"); if (M) M.play(id); });
   }
   function buildScenes() {
