@@ -547,9 +547,34 @@ const App = (() => {
       <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/>
     </svg>` });
     pad.addEventListener("click", () => { pad.classList.remove("rattle"); void pad.offsetWidth; pad.classList.add("rattle"); });
-    lock.append(pad, el("p", { class: "lock-text", text: "Öffnet am 28. November um 9 Uhr morgens." }));
+    // Kleine goldene Taschenuhr mit Countdown
+    const ticks = Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="${i % 3 ? 15 : 13}" x2="50" y2="${i % 3 ? 19 : 21}" stroke="#7a5a1c" stroke-width="${i % 3 ? 1.4 : 2.4}" stroke-linecap="round" transform="rotate(${i * 30} 50 50)"/>`).join("");
+    const watch = el("div", { class: "lock-watch", html: `<svg viewBox="0 0 100 112" aria-hidden="true">
+      <defs><linearGradient id="lwG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".55" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient></defs>
+      <circle cx="50" cy="6" r="5" fill="none" stroke="url(#lwG)" stroke-width="3"/><rect x="45" y="9" width="10" height="6" rx="2" fill="url(#lwG)"/>
+      <g transform="translate(0 12)"><circle cx="50" cy="50" r="46" fill="url(#lwG)"/><circle cx="50" cy="50" r="40" fill="#fbf6ea" stroke="#a8812f" stroke-width="1.5"/>${ticks}
+      <g class="lw-hour"><line x1="50" y1="50" x2="50" y2="32" stroke="#2b241f" stroke-width="3.2" stroke-linecap="round"/></g>
+      <g class="lw-min"><line x1="50" y1="50" x2="50" y2="22" stroke="#2b241f" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g class="lw-sec"><line x1="50" y1="56" x2="50" y2="18" stroke="#8e2d3b" stroke-width="1.1" stroke-linecap="round"/></g>
+      <circle cx="50" cy="50" r="2.6" fill="#8e2d3b"/></g></svg>` });
+    const left = el("div", { class: "lock-left" });
+    const hand = (cls, deg) => { const g = watch.querySelector(cls); if (g) g.setAttribute("transform", `rotate(${deg} 50 50)`); };
+    const p2 = (n) => String(n).padStart(2, "0");
+    const tickClock = () => {
+      const ms = Math.max(0, OPENS - new Date()), t = Math.floor(ms / 1000);
+      const d = Math.floor(t / 86400), h = Math.floor((t % 86400) / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+      left.innerHTML = `${d ? `<b>${d}</b><span>${d === 1 ? "Tag" : "Tage"}</span>` : ""}<b>${p2(h)}</b><span>Std.</span><b>${p2(m)}</b><span>Min.</span><b>${p2(sec)}</b><span>Sek.</span>`;
+      // die Uhr läuft rückwärts: Zeiger zeigen die verbleibende Zeit
+      hand(".lw-sec", sec * 6); hand(".lw-min", m * 6 + sec * 0.1); hand(".lw-hour", (h % 12) * 30 + m * 0.5);
+    };
+    tickClock(); setInterval(tickClock, 1000);
+    lock.append(pad,
+      el("div", { class: "lock-copy" },
+        el("p", { class: "lock-text", text: "Hier wartet etwas ganz Besonderes auf dich, liebe Mama." }),
+        el("p", { class: "lock-sub", text: "Das Schloss öffnet sich am 28.\u00a0November um 9\u00a0Uhr morgens." })),
+      el("div", { class: "lock-clock" }, watch, left));
     document.body.append(lock);
-    setInterval(() => { if (!isLocked()) location.reload(); }, 20000);
+    setInterval(() => { if (!isLocked()) location.reload(); }, 5000);
   }
 
   // Beim allerersten Besuch nach dem 28.11.: Schlüssel schließt auf, Schloss klackt auf und gibt den Kalender frei
