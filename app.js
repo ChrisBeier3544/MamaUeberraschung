@@ -134,34 +134,71 @@ const App = (() => {
 
   /* ---------- Effekte ---------- */
   const fx = () => document.getElementById("fx");
+  /* ---------- Effekte: gezeichnete Funken, Herzen, Sterne statt Emojis ---------- */
+  const G = (body, vb = "0 0 24 24") => `<svg viewBox="${vb}" aria-hidden="true">${body}</svg>`;
+  const SPARK = (c1, c2) => G(`<path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0Z" fill="${c1}"/><circle cx="12" cy="12" r="2.2" fill="${c2}"/>`);
+  const STAR = (c) => G(`<path d="M12 1.5 l3.1 6.6 7.2.9 -5.3 5 1.4 7.1 -6.4-3.6 -6.4 3.6 1.4-7.1 -5.3-5 7.2-.9z" fill="${c}" stroke="rgba(120,80,10,.35)" stroke-width=".8" stroke-linejoin="round"/>`);
+  const HEART = (c) => G(`<path d="M12 21 C5 16 1.5 12.5 1.5 8.2 A5.2 5.2 0 0 1 12 6 A5.2 5.2 0 0 1 22.5 8.2 C22.5 12.5 19 16 12 21Z" fill="${c}"/><path d="M6 6.5 a3 3 0 0 1 3 -1.5" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round" fill="none"/>`);
+  const FLAKE = G(`<g stroke="#eaf6ff" stroke-width="1.8" stroke-linecap="round">${[0, 60, 120].map((a) => `<g transform="rotate(${a} 12 12)"><path d="M12 1.5 V22.5"/><path d="M12 5.5 l-2.6 -2.4 M12 5.5 l2.6 -2.4 M12 18.5 l-2.6 2.4 M12 18.5 l2.6 2.4"/></g>`).join("")}</g>`);
+  const PAWG = G(`<g fill="#3c6b59"><ellipse cx="12" cy="16" rx="5.4" ry="4.4"/><ellipse cx="5.4" cy="10" rx="2.2" ry="2.8"/><ellipse cx="9.6" cy="6.4" rx="2.2" ry="2.9"/><ellipse cx="14.4" cy="6.4" rx="2.2" ry="2.9"/><ellipse cx="18.6" cy="10" rx="2.2" ry="2.8"/></g>`);
+  const GIFT = G(`<rect x="3" y="9" width="18" height="13" rx="2" fill="#8e2d3b"/><rect x="2" y="6" width="20" height="5" rx="1.5" fill="#a63a4b"/><rect x="10.5" y="6" width="3" height="16" fill="#e8c46b"/><path d="M12 6 C9 1 4.5 2 6 5 C7 6.5 10 6 12 6Z M12 6 C15 1 19.5 2 18 5 C17 6.5 14 6 12 6Z" fill="#e8c46b"/>`);
+  const DROP = G(`<path d="M12 2 C16 8 19 11.5 19 15 A7 7 0 0 1 5 15 C5 11.5 8 8 12 2Z" fill="#7fc4ea"/><path d="M8.5 15 a3.5 3.5 0 0 0 2.5 3.5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".8"/>`);
+  const NOTE = G(`<path d="M9 18V5l11-2v13" fill="none" stroke="#3c6b59" stroke-width="2.2"/><circle cx="6" cy="18" r="3" fill="#3c6b59"/><circle cx="17" cy="16" r="3" fill="#3c6b59"/>`);
+  const DOT = G(`<circle cx="12" cy="12" r="3.2" fill="#fff1b0"/><circle cx="12" cy="12" r="6.5" fill="#ffd25a" opacity=".3"/>`);
+  const GLYPHS = {
+    "✨": () => SPARK(pick(["#f3d27a", "#ffe9a8", "#e7b94a"]), "#fffbe8"), "✦": () => SPARK("#f3d27a", "#fff"), "💫": () => SPARK("#fff1b8", "#fff"), "✧": () => SPARK("#fff4cf", "#fff"),
+    "⭐": () => STAR(pick(["#f2c84b", "#f6d572", "#e6b23a"])), "★": () => STAR("#f2c84b"), "🌟": () => STAR("#f6d572"),
+    "💖": () => HEART("#c9415a"), "💕": () => HEART("#e07a8f"), "💗": () => HEART("#d4566e"), "💞": () => HEART("#e58fa0"), "❤️": () => HEART("#b8324b"), "🤎": () => HEART("#9c6b45"), "💛": () => HEART("#e8b93e"),
+    "❄️": () => FLAKE, "❄": () => FLAKE, "❅": () => FLAKE, "❆": () => FLAKE,
+    "🐾": () => PAWG, "🎁": () => GIFT, "💧": () => DROP, "♪": () => NOTE, "♫": () => NOTE, "·": () => DOT,
+  };
   function particle(x, y, content, { dx = 0, dy = -120, rot = 0, dur = 1000, size = 24, delay = 0, scale = 1 } = {}) {
-    const p = el("div", { class: "particle", text: content, style: `left:${x}px;top:${y}px;font-size:${size}px` });
+    const g = GLYPHS[content];
+    const p = el("div", { class: "particle" + (g ? " glyph" : ""), style: `left:${x}px;top:${y}px;font-size:${size}px;${g ? `width:${size}px;height:${size}px;` : ""}` });
+    if (g) p.innerHTML = g(); else p.textContent = content;
     fx().append(p);
+    // leichter Bogen: erst nach außen und oben, dann sinkt es etwas ab
+    const fall = Math.abs(dy) * 0.18 + 18;
     const anim = p.animate(
       [
-        { transform: "translate(-50%,-50%) scale(.3) rotate(0deg)", opacity: 1 },
-        { transform: `translate(calc(-50% + ${dx * 0.6}px), calc(-50% + ${dy * 0.6}px)) scale(${scale}) rotate(${rot * 0.6}deg)`, opacity: 1, offset: 0.6 },
-        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale * 0.8}) rotate(${rot}deg)`, opacity: 0 },
+        { transform: "translate(-50%,-50%) scale(.2) rotate(0deg)", opacity: 0 },
+        { transform: `translate(calc(-50% + ${dx * 0.35}px), calc(-50% + ${dy * 0.35}px)) scale(${scale * 1.15}) rotate(${rot * 0.3}deg)`, opacity: 1, offset: 0.18 },
+        { transform: `translate(calc(-50% + ${dx * 0.8}px), calc(-50% + ${dy * 0.8}px)) scale(${scale}) rotate(${rot * 0.75}deg)`, opacity: 1, offset: 0.62 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + fall}px)) scale(${scale * 0.55}) rotate(${rot}deg)`, opacity: 0 },
       ],
-      { duration: dur, delay, easing: "cubic-bezier(.2,.7,.4,1)", fill: "backwards" }
+      { duration: dur, delay, easing: "cubic-bezier(.22,.7,.35,1)", fill: "backwards" }
     );
     anim.onfinish = () => p.remove();
   }
   function burst(x, y, emojis = ["💖", "✨", "🐾"], n = 10, spread = 120) {
     for (let i = 0; i < n; i++) {
-      const a = Math.random() * Math.PI * 2, r = spread * (0.5 + Math.random() * 0.7);
-      particle(x, y, pick(emojis), { dx: Math.cos(a) * r, dy: Math.sin(a) * r - 40, rot: (Math.random() - 0.5) * 360, dur: 800 + Math.random() * 600, size: 16 + Math.random() * 18 });
+      const a = Math.random() * Math.PI * 2, r = spread * (0.45 + Math.random() * 0.75);
+      particle(x, y, pick(emojis), { dx: Math.cos(a) * r, dy: Math.sin(a) * r - 30, rot: (Math.random() - 0.5) * 300, dur: 850 + Math.random() * 650, size: 13 + Math.random() * 15, delay: Math.random() * 90 });
     }
   }
   function burstAt(node, emojis, n, spread) {
     const r = node.getBoundingClientRect();
     burst(r.left + r.width / 2, r.top + r.height / 2, emojis, n, spread);
   }
-  function confetti(emojis = ["🎉", "✨", "💖", "🐾", "⭐", "🎀", "❄️"], n = 60) {
-    const W = innerWidth;
-    for (let i = 0; i < n; i++) {
-      particle(Math.random() * W, -20, pick(emojis), { dx: (Math.random() - 0.5) * 200, dy: innerHeight + 60, rot: (Math.random() - 0.5) * 720, dur: 2200 + Math.random() * 1800, size: 18 + Math.random() * 20, delay: Math.random() * 900, scale: 1 });
+  // Konfetti: echte Papierschnipsel, die flattern – dazu ein paar der gewünschten Motive
+  const PAPER = ["#c9a04a", "#e8c46b", "#8e2d3b", "#c9415a", "#2a5a46", "#4f8a6e", "#f3e3b5", "#ffffff", "#e8a0ab"];
+  function paperPiece(x, delay) {
+    const w = 6 + Math.random() * 7, h = w * (0.4 + Math.random() * 0.9);
+    const p = el("div", { class: "confetti-paper", style: `left:${x}px;top:-24px;width:${w}px;height:${h}px;background:${pick(PAPER)};border-radius:${Math.random() < 0.25 ? "50%" : "1.5px"}` });
+    fx().append(p);
+    const dur = 2600 + Math.random() * 2200, sway = 40 + Math.random() * 90, dir = Math.random() < 0.5 ? -1 : 1, spin = 360 + Math.random() * 900;
+    const frames = [];
+    for (let k = 0; k <= 8; k++) {
+      const t = k / 8;
+      frames.push({ transform: `translate(${Math.sin(t * Math.PI * 3 + dir) * sway}px, ${t * (innerHeight + 60)}px) rotateZ(${t * spin * dir}deg) rotateX(${t * spin * 1.4}deg) rotateY(${t * spin * 0.8}deg)`, opacity: t > 0.9 ? 1 - (t - 0.9) * 10 : 1 });
     }
+    p.animate(frames, { duration: dur, delay, easing: "linear", fill: "backwards" }).onfinish = () => p.remove();
+  }
+  function confetti(emojis = ["✨", "💖", "⭐", "❄️"], n = 60) {
+    const W = innerWidth;
+    const pieces = Math.round(n * 1.3), motifs = Math.round(n * 0.25);
+    for (let i = 0; i < pieces; i++) paperPiece(Math.random() * W, Math.random() * 1100);
+    for (let i = 0; i < motifs; i++) particle(Math.random() * W, -20, pick(emojis), { dx: (Math.random() - 0.5) * 200, dy: innerHeight + 60, rot: (Math.random() - 0.5) * 540, dur: 2800 + Math.random() * 1800, size: 16 + Math.random() * 14, delay: Math.random() * 1100, scale: 1 });
   }
   function rain(emojis, n = 40) { confetti(emojis, n); }
 
@@ -292,8 +329,9 @@ const App = (() => {
     }
     sfx.boop(500 + day * 15);
     if (typeof Animals !== "undefined") Animals.clearIn(d.wrap);
+    d.wrap.classList.add("opening"); setTimeout(() => d.wrap.classList.remove("opening"), 1300);
     d.door.classList.add("open");
-    burstAt(d.door, ["✨", "⭐", "❄️"], 8, 70);
+    burstAt(d.door, ["✨", "⭐", "❄️"], 10, 80);
     setTimeout(() => openPuzzle(day), 450);
   }
 

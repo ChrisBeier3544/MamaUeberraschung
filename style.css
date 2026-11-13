@@ -1606,3 +1606,39 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
 .sg-amount svg { width: 28px; height: 28px; }
 .sg-amount b { font-size: 20px; color: #7a5300; }
 .sg-card .btn { min-width: 180px; }
+
+/* ---------- Edlere Effekte ---------- */
+.particle.glyph { line-height: 0; filter: drop-shadow(0 1px 2px rgba(60, 40, 10, .25)); }
+.particle.glyph svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.confetti-paper { position: absolute; will-change: transform; box-shadow: inset 0 0 0 .5px rgba(0, 0, 0, .06); backface-visibility: visible; }
+.coin-fly { position: absolute; width: 30px; height: 30px; z-index: 5; pointer-events: none; perspective: 200px; filter: drop-shadow(0 4px 6px rgba(120, 80, 10, .35)); }
+.coin-fly .cf-spin { width: 100%; height: 100%; }
+.coin-fly svg { width: 100%; height: 100%; display: block; }
+.coin-flash { position: absolute; width: 140px; height: 140px; margin: -70px 0 0 -70px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 236, 160, .9), rgba(255, 210, 90, .35) 40%, transparent 70%); animation: coinFlash .65s ease-out forwards; pointer-events: none; }
+@keyframes coinFlash { from { transform: scale(.2); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+#topnav .coins.coin-hit { animation: coinHit .35s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes coinHit { 40% { transform: scale(1.12); box-shadow: 0 0 0 4px rgba(242, 200, 75, .35), 0 0 18px rgba(242, 200, 75, .6); } }
+.coin-plus { position: absolute; transform: translateX(-50%); font: 800 17px/1 "DM Sans", sans-serif; color: #a8740c; background: #fff7d6; border: 1.5px solid #f2d27a; border-radius: 999px; padding: 5px 10px; box-shadow: 0 6px 16px rgba(120, 80, 10, .2); animation: coinPlus 1.6s cubic-bezier(.2, .8, .3, 1) forwards; pointer-events: none; }
+@keyframes coinPlus { from { opacity: 0; transform: translate(-50%, -6px) scale(.7); } 15% { opacity: 1; transform: translate(-50%, 4px) scale(1.05); } 75% { opacity: 1; transform: translate(-50%, 8px) scale(1); } to { opacity: 0; transform: translate(-50%, 14px) scale(.95); } }
+/* Fenster: ruhiges, hochwertiges Erscheinen statt Hüpfen */
+#modal:not(.hidden) { animation: backdropIn .35s ease-out; }
+@keyframes backdropIn { from { background-color: rgba(31, 61, 51, 0); backdrop-filter: blur(0); } }
+.modal-card { animation: modalIn2 .5s cubic-bezier(.2, .9, .25, 1); }
+@keyframes modalIn2 { from { transform: translateY(26px) scale(.965); opacity: 0; filter: blur(2px); } 60% { filter: blur(0); } }
+.modal-card .modal-story:not(.hidden), .modal-card .modal-intro, .modal-card .modal-body { animation: riseIn .55s cubic-bezier(.2, .9, .25, 1) both; }
+.modal-card .modal-intro { animation-delay: .08s; } .modal-card .modal-body { animation-delay: .16s; }
+@keyframes riseIn { from { opacity: 0; transform: translateY(10px); } }
+.pola-wrap, .finale-overlay { animation: backdropIn2 .4s ease-out; }
+@keyframes backdropIn2 { from { opacity: 0; } }
+/* Hinweise gleiten weich herein */
+#toast { transition: transform .5s cubic-bezier(.2, 1.2, .3, 1), opacity .3s ease; transform: translate(-50%, -160%) scale(.96); }
+#toast.show { transform: translate(-50%, 0) scale(1); }
+/* Türchen: warmes Licht strömt beim Öffnen heraus */
+.door-wrap.opening .door-inside::after { content: ""; position: absolute; inset: -20%; background: radial-gradient(circle at 30% 50%, rgba(255, 236, 170, .95), rgba(255, 214, 110, .45) 35%, transparent 65%); animation: doorGlow 1.2s ease-out forwards; pointer-events: none; z-index: 3; }
+@keyframes doorGlow { from { opacity: 0; transform: scale(.6); } 30% { opacity: 1; } to { opacity: 0; transform: scale(1.3); } }
+.door-wrap.opening .door { box-shadow: 18px 0 30px rgba(0, 0, 0, .25); }
+/* Kauf: goldener Ring am Boden */
+.buy-ring { position: absolute; aspect-ratio: 3 / 1; transform: translate(-50%, -50%); border: 2px solid rgba(255, 220, 120, .95); border-radius: 50%; box-shadow: 0 0 18px rgba(255, 210, 90, .7); animation: buyRing 1.1s ease-out forwards; pointer-events: none; }
+@keyframes buyRing { from { transform: translate(-50%, -50%) scale(.3); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .modal-card, .modal-card * { animation: none !important; } .confetti-paper { display: none; } }
+@media (max-width: 420px) { .intro-next { padding: 10px 14px; font-size: 15px; } }

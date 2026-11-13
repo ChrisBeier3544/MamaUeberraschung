@@ -329,7 +329,7 @@ const Zoo = (() => {
   const visibleItems = () => ITEMS.filter(([k]) => dayOfItem(k) <= 24 || App.bonusVisible());
   function refresh(newKey) {
     document.querySelectorAll(".zoo-scene").forEach((n) => (n.innerHTML = scene(newKey)));
-    const c = document.getElementById("coin-count"); if (c) c.textContent = st.coins;
+    const c = document.getElementById("coin-count"); if (c) c.textContent = shownCoins();
     const vis = visibleItems();
     const done = vis.filter(([k]) => owns(k)).length;
     const pr = document.getElementById("zoo-progress");
@@ -338,12 +338,64 @@ const Zoo = (() => {
     if (sb) sb.classList.toggle("has-new", [...ITEMS, ...EXTRAS].some(([k, , p]) => !owns(k) && available(k) && p <= st.coins));
   }
 
+  /* ---------- Taler fliegen in die Kasse – immer, sobald kein Fenster mehr offen ist ---------- */
+  const COIN_FLY = `<svg viewBox="0 0 40 40" aria-hidden="true"><defs><radialGradient id="cfG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff3c0"/><stop offset=".45" stop-color="#f2c84b"/><stop offset="1" stop-color="#b9831a"/></radialGradient></defs><circle cx="20" cy="20" r="18" fill="url(#cfG)" stroke="#a8740c" stroke-width="2"/><circle cx="20" cy="20" r="12.5" fill="none" stroke="#c9961f" stroke-width="1.6"/><text x="20" y="25.5" text-anchor="middle" font-size="15" font-weight="800" font-family="Fraunces, Georgia, serif" fill="#9a6a0c">T</text><path d="M9 15 a12 12 0 0 1 9 -7" stroke="#fffbe6" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".85"/></svg>`;
+  let pending = 0, flying = false;
+  const coinQueue = [];
+  const shownCoins = () => Math.max(0, st.coins - pending);
   function addCoins(n, from) {
     st.coins += n; save();
-    const c = document.getElementById("coin-count");
-    if (c) { c.textContent = st.coins; const b = c.closest(".coins"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }
-    if (from && H) { const tr = (c || document.body).getBoundingClientRect(); for (let i = 0; i < Math.min(12, Math.ceil(n / 15)); i++) { const p = H.el("div", { class: "fly-coin", html: coinSvg, style: `left:${from.x}px;top:${from.y}px` }); document.getElementById("fx").append(p); p.animate([{ transform: "translate(-50%,-50%) scale(1)" }, { transform: `translate(calc(-50% + ${tr.left + 10 - from.x}px), calc(-50% + ${tr.top + 10 - from.y}px)) scale(.6)`, opacity: 0.6 }], { duration: 700 + i * 70, easing: "cubic-bezier(.5,0,.3,1)", delay: i * 40 }).onfinish = () => p.remove(); } }
+    if (n > 0 && H) { pending += n; coinQueue.push({ n, from, t: Date.now() }); setTimeout(runCoinFlights, 80); }
     refresh();
+  }
+  function runCoinFlights() {
+    if (flying || !coinQueue.length) return;
+    if (document.hidden || (H.busy && H.busy())) { setTimeout(runCoinFlights, 350); return; }
+    const box = document.querySelector("#topnav .coins"), countEl = document.getElementById("coin-count");
+    const f = coinQueue.shift();
+    if (!box || !countEl) { pending -= f.n; refresh(); runCoinFlights(); return; }
+    flying = true;
+    const tr = (box.querySelector("#coin-icon") || box).getBoundingClientRect();
+    const tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
+    // Start: dort, wo die Taler verdient wurden – oder, wenn erst ein Fenster zu war, aus der Bildschirmmitte
+    const fresh = f.from && Date.now() - f.t < 500 && f.from.y > 0 && f.from.y < innerHeight;
+    const sx = fresh ? f.from.x : innerWidth / 2, sy = fresh ? f.from.y : innerHeight * 0.52;
+    const k = Math.max(5, Math.min(16, Math.round(4 + f.n / 6)));
+    const fx = document.getElementById("fx");
+    // kleiner Lichtblitz am Start
+    const flash = H.el("div", { class: "coin-flash", style: `left:${sx}px;top:${sy}px` }); fx.append(flash); setTimeout(() => flash.remove(), 700);
+    let landed = 0, given = 0;
+    for (let i = 0; i < k; i++) {
+      const a = (i / k) * Math.PI * 2 + Math.random() * 0.5, r = 34 + Math.random() * 46;
+      const px = sx + Math.cos(a) * r, py = sy + Math.sin(a) * r * 0.75 - 10;
+      const cx = (px + tx) / 2 + (Math.random() - 0.5) * 120, cy = Math.min(py, ty) - 80 - Math.random() * 90;
+      const q = (t) => { const u = 1 - t; return [u * u * px + 2 * u * t * cx + t * t * tx, u * u * py + 2 * u * t * cy + t * t * ty]; };
+      const c = H.el("div", { class: "coin-fly", style: `left:0;top:0` }, H.el("div", { class: "cf-spin", html: COIN_FLY }));
+      fx.append(c);
+      const frames = [{ transform: `translate(${sx}px,${sy}px) translate(-50%,-50%) scale(.2)`, opacity: 0, offset: 0 },
+        { transform: `translate(${px}px,${py}px) translate(-50%,-50%) scale(1.15)`, opacity: 1, offset: 0.22, easing: "cubic-bezier(.3,0,.2,1)" }];
+      [0.25, 0.5, 0.75].forEach((t, m) => { const [x, y] = q(t); frames.push({ transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(${(1.05 - t * 0.4).toFixed(2)})`, opacity: 1, offset: 0.22 + (m + 1) * 0.18 }); });
+      frames.push({ transform: `translate(${tx}px,${ty}px) translate(-50%,-50%) scale(.5)`, opacity: 1, offset: 1 });
+      const dur = 1150 + Math.random() * 250, delay = i * 75;
+      c.firstChild.animate([{ transform: "rotateY(0deg)" }, { transform: "rotateY(1080deg)" }], { duration: dur, delay, easing: "linear" });
+      const an = c.animate(frames, { duration: dur, delay, easing: "linear", fill: "both" });
+      // Funkelspur
+      const trail = setInterval(() => { const rr = c.getBoundingClientRect(); if (rr.width) H.burst(rr.left + rr.width / 2, rr.top + rr.height / 2, ["·"], 1, 8); }, 110);
+      setTimeout(() => clearInterval(trail), delay + dur);
+      an.onfinish = () => {
+        c.remove(); clearInterval(trail);
+        const share = Math.round((f.n * (landed + 1)) / k) - given; given += share; landed++;
+        pending -= share; countEl.textContent = shownCoins();
+        box.classList.remove("coin-hit"); void box.offsetWidth; box.classList.add("coin-hit");
+        H.sfx.tone(1150 + landed * 45, 0.07, "sine", 0.07, 1800);
+        if (landed === k) {
+          const pl = H.el("div", { class: "coin-plus", text: `+${f.n}`, style: `left:${tx}px;top:${tr.bottom + 6}px` }); fx.append(pl); setTimeout(() => pl.remove(), 1600);
+          H.burst(tx, ty, ["✨"], 6, 40);
+          flying = false; refresh(); setTimeout(runCoinFlights, 250);
+        }
+      };
+    }
+    H.sfx.tone(880, 0.12, "triangle", 0.1, 1320);
   }
   // Belohnung pro Türchen nur einmal
   function earn(day) {
@@ -361,7 +413,15 @@ const Zoo = (() => {
     refresh(key);
     if (typeof Animals !== "undefined") { Animals.refreshPens(); const [ax, ay] = anchorOf(key); setTimeout(() => Animals.celebrate(ax, ay, it[1]), 1300); }
     document.getElementById("zoo")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setTimeout(() => { const z = document.getElementById("zoo-pen"); if (z) H.burstAt(z, ["✨", "⭐", "💖"], 20, 220); }, 400);
+    // Funkeln genau dort, wo das neue Teil im Gehege steht
+    setTimeout(() => {
+      const g = document.querySelector(`#zoo-pen g.zi[data-k="${key}"]`) || document.getElementById("zoo-pen");
+      if (!g) return;
+      const r = g.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+      H.burstAt(g, ["✨", "⭐", "✦"], 18, Math.min(160, 50 + r.width / 2));
+      const ring = H.el("div", { class: "buy-ring", style: `left:${r.left + r.width / 2}px;top:${r.top + r.height * 0.8}px;width:${Math.max(60, r.width * 1.1)}px` });
+      document.getElementById("fx").append(ring); setTimeout(() => ring.remove(), 1200);
+    }, 1500);
     H.toast(`Neu im Gehege: ${it[1]}!`, 3500);
     if (key === "feuerwerk") setTimeout(() => letter(CONFIG.newYearTitle, CONFIG.newYearMessage, true), 3200);
     return true;
