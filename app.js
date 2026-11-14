@@ -209,7 +209,7 @@ const App = (() => {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
   }
   /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
-  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits";
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits, .xmas-show, .santa-fly";
   const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
   const notes = [];
   function flushNotes() {
@@ -401,13 +401,14 @@ const App = (() => {
     const replay = el("button", { class: "btn btn-soft", text: "Nochmal spielen", onclick: () => { body.innerHTML = ""; puzzles[day].render(body, { solve: () => { sfx.win(); confetti(); setTimeout(() => showReward(day, true), 600); }, day }); } });
     const letterBtn = day === 24 ? el("button", { class: "btn", text: "Zur Bescherung unter dem Baum", onclick: () => { closeModal(); const letter = () => Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage); typeof Extras !== "undefined" ? Extras.christmasShow(letter) : letter(); } })
       : day === 31 && typeof Extras !== "undefined" ? el("button", { class: "btn", text: "Jahresrückblick ansehen", onclick: () => { closeModal(); Extras.review(); } }) : null;
+    const nyBtn = day === 31 && Zoo.owns("feuerwerk") ? el("button", { class: "btn btn-soft", text: "Neujahrsbrief lesen", onclick: () => { closeModal(); Zoo.letter(CONFIG.newYearTitle, CONFIG.newYearMessage, true); } }) : null;
     body.append(el("div", { class: "reward" },
       el("h3", { text: again ? "Dieses Kapitel ist geschafft" : Texts.say("lob") }),
       again ? null : coinBox,
       puzzles[day].outro ? el("p", { class: "r-solution", text: puzzles[day].outro }) : null,
       el("div", { class: "r-story" }, el("div", { class: "r-item", html: Zoo.preview(st.item) }), el("p", { text: st.outro })),
-      el("div", { class: "row" }, letterBtn, shopBtn, again ? replay : later)));
-    if (!again && coins) { const r = coinBox.getBoundingClientRect(); setTimeout(() => Zoo.addCoins(coins, { x: r.left + r.width / 2, y: r.top + r.height / 2 }), 500); }
+      el("div", { class: "row" }, letterBtn, nyBtn, shopBtn, again ? replay : later)));
+    if (!again && coins) Zoo.addCoins(coins, () => { const r = coinBox.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, 500);
     if (!again && day === 18) setTimeout(() => buildBonus(true), 900);
   }
 
@@ -526,7 +527,7 @@ const App = (() => {
     }
     else if (n < unlockDate(1)) { const d = daysUntil(1); c.innerHTML = `Noch <b>${d}</b> ${d === 1 ? "Tag" : "Tage"} bis zum ersten Türchen`; }
     else if (t && (t <= 24 || bonusVisible())) c.innerHTML = `Heute ist der <b>${t}. Dezember</b> · Kapitel ${t} wartet auf dich`;
-    else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖";
+    else if (t) c.innerHTML = "Frohe Weihnachten! 🎄💖 Tipp: Löse Türchen 18 – dort wartet ein Paket mit Bonus-Türchen.";
     else c.innerHTML = "Frohes neues Jahr! Dein Gehege bleibt für dich geöffnet – schau vorbei, wann immer du magst.";
   }
 
@@ -572,7 +573,7 @@ const App = (() => {
     if (typeof Munkel !== "undefined") {
       const perch = el("div", { class: "lock-perch" });
       pad.append(perch);
-      const MUNKEL_LOCK = ["Psst … ich darf noch nichts verraten!", "Ich hab da was gemunkelt gehört … über Tiere!", "Noch ein bisschen Geduld, liebe Mama.", "Ich passe gut auf das Schloss auf.", "Tschirp! Bald geht es los.", "Ich glaube, hinter dem Schloss wohnt ein Kapibara …"];
+      const MUNKEL_LOCK = ["Psst … ich darf noch nichts verraten!", "Ich hab da was gemunkelt gehört … über Tiere!", "Noch ein bisschen Geduld, liebe Ute.", "Ich passe gut auf das Schloss auf.", "Tschirp! Bald geht es los.", "Ich glaube, hinter dem Schloss wohnt ein Kapibara …"];
       let mi = 0;
       const bird = Munkel.mount(perch, { sit: true, dreamy: true, onTap: (b) => b.say(MUNKEL_LOCK[mi++ % MUNKEL_LOCK.length]) });
       if (typeof MunkelShow !== "undefined") MunkelShow.attach(lock, pad, perch, bird);
@@ -683,7 +684,7 @@ const App = (() => {
     // Akku schonen: Animationen außerhalb des Bildschirms anhalten
     if ("IntersectionObserver" in window) { const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "80px" }); ["hero", "calendar", "calendar-bonus", "today"].forEach((id) => { const n = document.getElementById(id); if (n) io.observe(n); }); }
     let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(buildLights, 300); });
-    playUnlock(() => { if (typeof Intro !== "undefined") setTimeout(Intro.maybeShow, 500); });
+    playUnlock(() => { if (typeof Intro !== "undefined") Intro.maybeShow(); });
     setInterval(() => { updateCountdown(); Object.keys(doors).forEach((d) => { if (!currentDay) refreshDoor(+d); }); }, 60000);
   }
 

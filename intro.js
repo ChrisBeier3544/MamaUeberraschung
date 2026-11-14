@@ -180,7 +180,7 @@ const Intro = (() => {
       document.removeEventListener("keydown", key);
       wrap.classList.add("closing"); setTimeout(() => wrap.remove(), 300);
       document.body.style.overflow = "";
-      if (typeof Zoo !== "undefined") setTimeout(Zoo.startGift, 700);
+      if (typeof Zoo !== "undefined") setTimeout(Zoo.startGift, 320);
     }
     document.addEventListener("keydown", key);
     document.body.append(wrap); document.body.style.overflow = "hidden";

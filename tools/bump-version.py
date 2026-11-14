@@ -10,6 +10,6 @@ v = time.strftime("%Y%m%d%H%M%S")
 p = root / "index.html"
 s = p.read_text()
 s = re.sub(r'const BUILD = "[^"]*"', f'const BUILD = "{v}"', s)
-s = re.sub(r'((?:src|href)="(?:[a-z]+\.js|style\.css|manifest\.webmanifest))(?:\?v=[0-9]+)?"', rf'\1?v={v}"', s)
+s = re.sub(r'((?:src|href)="(?:[a-z-]+\.js|style\.css|manifest\.webmanifest))(?:\?v=[0-9]+)?"', rf'\1?v={v}"', s)
 p.write_text(s)
 print("Version", v)

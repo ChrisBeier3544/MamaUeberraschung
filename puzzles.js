@@ -567,14 +567,15 @@
       const enc = plain.replace(/[A-Z]/g, (ch) => String.fromCharCode(((ch.charCodeAt(0) - 65 + K) % 26) + 65));
       const AB = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
       let s = 0;
-      const top = el("div", { class: "wheel-row" }), bot = el("div", { class: "wheel-row cipher" }), lab = el("b");
-      const draw = () => { top.innerHTML = ""; bot.innerHTML = ""; AB.forEach((c, i) => { top.append(el("span", { text: c })); bot.append(el("span", { text: AB[(i + s) % 26] })); }); lab.textContent = `Verschiebung: ${s}`; };
+      // drei Blöcke untereinander, damit alle 26 Buchstaben auch auf dem Handy ohne Wischen sichtbar sind
+      const parts = [[0, 9], [9, 18], [18, 26]].map(() => [el("div", { class: "wheel-row" }), el("div", { class: "wheel-row cipher" })]), lab = el("b");
+      const draw = () => { parts.forEach(([top, bot], k) => { top.innerHTML = ""; bot.innerHTML = ""; AB.slice(k * 9, k === 2 ? 26 : k * 9 + 9).forEach((c, j) => { const i = k * 9 + j; top.append(el("span", { text: c })); bot.append(el("span", { text: AB[(i + s) % 26] })); }); }); lab.textContent = `Verschiebung: ${s}`; };
       draw();
       const shift = (d) => { s = (s + d + 26) % 26; sfx.tick(); draw(); };
       root.append(
         el("div", { class: "p-info", text: "Die Nachricht:" }), el("div", { class: "cipher-text", text: enc }),
         el("div", { class: "p-info", style: "margin-top:16px", text: "Entschlüsselungsscheibe – obere Reihe: Klartext, untere Reihe: Geheimtext" }),
-        el("div", { class: "scroll-x" }, el("div", { class: "wheel" }, top, bot)),
+        el("div", { class: "wheel-wrap" }, ...parts.map(([top, bot]) => el("div", { class: "wheel" }, top, bot))),
         el("div", { class: "row", style: "margin-top:10px" }, el("button", { class: "btn btn-soft", text: "◀", onclick: () => shift(-1), "aria-label": "weniger" }), lab, el("button", { class: "btn btn-soft", text: "▶", onclick: () => shift(1), "aria-label": "mehr" })),
         el("div", { class: "p-info", style: "margin-top:16px", text: "Notizzettel:" }),
         el("textarea", { id: "cipher-notes", class: "notes", rows: "2", placeholder: "Hier kannst du mitschreiben …" }));
