@@ -368,9 +368,14 @@ const Zoo = (() => {
   let pending = 0, flying = false;
   const coinQueue = [];
   const shownCoins = () => Math.max(0, st.coins - pending);
-  function addCoins(n, from) {
+  // Taler werden sofort gespeichert; nur der Münzflug kann verzögert starten (from darf eine Funktion sein)
+  function addCoins(n, from, delay = 0) {
     st.coins += n; save();
-    if (n > 0 && H) { pending += n; coinQueue.push({ n, from, t: Date.now() }); setTimeout(runCoinFlights, 80); }
+    if (n > 0 && H) {
+      pending += n;
+      const go = () => { coinQueue.push({ n, from: typeof from === "function" ? from() : from, t: Date.now() }); setTimeout(runCoinFlights, 80); };
+      if (delay) setTimeout(go, delay); else go();
+    }
     refresh();
   }
   function runCoinFlights() {
@@ -431,8 +436,11 @@ const Zoo = (() => {
 
   function buy(key) {
     const it = info(key);
-    if (owns(key) || st.coins < it[2] || !available(key)) return false;
-    st.coins -= it[2]; st.owned.push(key); save();
+    if (owns(key) || !available(key)) return false;
+    // Teile der Geschichte kann man immer kaufen: fehlt etwas, legen die Tiere zusammen
+    const story = dayOfItem(key) > 0, gift = Math.max(0, it[2] - st.coins);
+    if (gift && !story) return false;
+    st.coins -= it[2] - gift; st.owned.push(key); save();
     if (typeof Extras !== "undefined") Extras.track("bought", 1, it[1]);
     H.sfx.win();
     refresh(key);
@@ -468,7 +476,7 @@ const Zoo = (() => {
         H.burst(rr.left + rr.width / 2, rr.top + rr.height / 2, ["✨", "⭐", "✦"], 16, Math.min(150, 40 + rr.width / 2));
       }, 650);
     }, 1450);
-    H.toast(`Neu im Gehege: ${it[1]}!`, 3500);
+    H.toast(gift ? `Neu im Gehege: ${it[1]}! Die Tiere haben ${gift} Taler dazugelegt.` : `Neu im Gehege: ${it[1]}!`, gift ? 5000 : 3500);
     if (key === "feuerwerk") setTimeout(() => letter(CONFIG.newYearTitle, CONFIG.newYearMessage, true), 3200);
     return true;
   }
@@ -484,13 +492,13 @@ const Zoo = (() => {
     const area = H.el("div", { class: "g-area" });
     const card = (it) => {
       const [key, name, price, desc] = it;
-      const has = owns(key), afford = st.coins >= price;
-      const btn = H.el("button", { class: "btn" + (afford ? "" : " btn-soft"), text: has ? "Im Gehege ✓" : afford ? "Kaufen" : `Noch ${price - st.coins} Taler` });
-      btn.disabled = has || !afford;
+      const has = owns(key), afford = st.coins >= price, help = !afford && dayOfItem(key) > 0;
+      const btn = H.el("button", { class: "btn" + (afford || help ? "" : " btn-soft"), text: has ? "Im Gehege ✓" : afford || help ? "Kaufen" : `Noch ${price - st.coins} Taler` });
+      btn.disabled = has || (!afford && !help);
       btn.onclick = () => { if (buy(key)) close(); };
       return H.el("div", { class: "shop-card" + (has ? " owned" : "") + (key === highlight ? " hl" : "") },
         H.el("div", { class: "shop-pic", html: preview(key) }),
-        H.el("div", { class: "shop-info" }, H.el("b", { text: name }), H.el("small", { text: desc })),
+        H.el("div", { class: "shop-info" }, H.el("b", { text: name }), H.el("small", { text: desc }), help && !has ? H.el("small", { class: "shop-help", text: `Dir fehlen ${price - st.coins} Taler – die Tiere legen zusammen!` }) : null),
         H.el("div", { class: "shop-buy" }, has ? null : H.el("div", { class: "shop-price", html: `${coinSvg}<span>${price}</span>` }), btn));
     };
     const vis = visibleItems();
@@ -613,7 +621,7 @@ const Zoo = (() => {
     <g class="wheel" style="transform-origin:166px 96px"><circle cx="166" cy="96" r="17" fill="#c94060"/><circle cx="166" cy="96" r="6" fill="#fff"/><path d="M166 80 V112 M150 96 H182" stroke="#fff" stroke-width="3"/></g>
   </svg>`;
   function nikolausGift() {
-    if (document.querySelector(".gehege-overlay, .finale-overlay, .pola-wrap, .post-run, .gift-parcel") || !document.getElementById("modal").classList.contains("hidden")) { setTimeout(nikolausGift, 4000); return; }
+    if (H.busy() || document.hidden || document.querySelector(".post-run, .gift-parcel, .santa-fly")) { setTimeout(nikolausGift, 4000); return; }
     const parcelInner = PARCEL.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
     const run = H.el("div", { class: "post-run" });
     const dogW = innerWidth < 600 ? 90 : 130, cartW = innerWidth < 600 ? 150 : 220;
@@ -660,11 +668,13 @@ const Zoo = (() => {
     const r = parcel.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     setTimeout(() => { H.burst(cx, cy, ["💖", "✨", "⭐", "🐾", "💝"], 30, 220); H.confetti(["💖", "✨", "🐾", "⭐", "🎁"], 70); }, 600);
     st.gift6 = true; save();
+    let coinRef = null;
+    addCoins(100, () => { const c = coinRef && coinRef.isConnected && coinRef.getBoundingClientRect(); return c ? { x: c.left + c.width / 2, y: c.top + c.height / 2 } : null; }, 2200);
     setTimeout(() => {
       parcel.remove();
       const ov = H.el("div", { class: "finale-overlay gift-letter" });
       const animals = [{ sp: "capy", col: 0, acc: "orange" }, { sp: "katze", col: 1, acc: "schleife", accColor: "#e85d75" }, { sp: "hund", col: 0, acc: "postmuetze" }, { sp: "waschbaer", col: 0, acc: "muetze" }, { sp: "hase", col: 2, acc: "blume", accColor: "#e85d75" }, { sp: "pinguin", col: 1, acc: "schal", accColor: "#e85d75" }];
-      const coin = H.el("div", { class: "r-coins", html: `${coinSvg}+100 Taler` });
+      const coin = H.el("div", { class: "r-coins", html: `${coinSvg}+100 Taler` }); coinRef = coin;
       ov.append(H.el("div", { class: "finale-card gift-card" },
         H.el("div", { class: "finale-animals" }, ...animals.map((a) => H.el("div", { class: "fa", html: Animals.svg(a, { walk: true, width: Animals.SPECIES[a.sp].W * 0.55 }) }))),
         H.el("h2", { text: GIFT.title }), coin,
@@ -672,7 +682,6 @@ const Zoo = (() => {
         H.el("p", { class: "sig", text: GIFT.from }),
         H.el("div", { class: "row", style: "margin-top:14px" }, H.el("button", { class: "btn", text: "Danke, ihr Lieben!", onclick: () => ov.remove() }))));
       document.body.append(ov);
-      setTimeout(() => { const c = coin.getBoundingClientRect(); addCoins(100, { x: c.left + c.width / 2, y: c.top + c.height / 2 }); }, 900);
     }, 1300);
   }
 

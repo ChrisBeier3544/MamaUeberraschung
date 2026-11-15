@@ -225,6 +225,7 @@ const Extras = (() => {
     nebel: ["Heute Morgen war alles in Nebel gehüllt.", "Im Nebel haben wir Verstecken gespielt.", "So neblig, dass Rocky sich zweimal verlaufen hat."],
   };
   const CLOSE = ["Ich bin gespannt auf morgen.", "Jetzt kuschle ich mich ein. Gute Nacht!", "Danke, Ute. Für alles.", "Was für ein schöner Tag.", "Morgen wird bestimmt wieder wunderbar.", "Ich träume heute sicher von Mandarinen."];
+  const DAYCLOSE = ["Mal sehen, was der Tag noch bringt.", "Ich bin gespannt, was heute noch passiert.", "Später schreibe ich weiter.", "Der Tag ist ja noch jung."];
   function diaryEntry(k) {
     const lg = st.log[k] || { bought: [], fed: 0, found: 0, games: 0, door: 0 };
     const [y, m, d] = k.split("-").map(Number);
@@ -236,8 +237,9 @@ const Extras = (() => {
     if (lg.found) lines.push(lg.found === 1 ? "Ein neues Tier ist bei uns eingezogen." : `${lg.found} neue Tiere sind bei uns eingezogen.`);
     if (lg.fed) lines.push(lg.fed === 1 ? "Ein Tier hat leckeres Futter bekommen." : `${lg.fed} Mal gab es leckeres Futter.`);
     if (lg.games) lines.push("In der Spielecke wurde gespielt und gelacht.");
-    if (lines.length === 1) lines.push("Es war ein ruhiger Tag – wir haben dich vermisst!");
-    lines.push(CLOSE[Math.floor(r() * CLOSE.length)]);
+    const isToday = k === dkey(), early = isToday && new Date().getHours() < 18;
+    if (lines.length === 1) lines.push(isToday ? "Bisher ist es ganz ruhig – schön, dass du vorbeischaust!" : "Es war ein ruhiger Tag – wir haben dich vermisst!");
+    lines.push(early ? DAYCLOSE[Math.floor(r() * DAYCLOSE.length)] : CLOSE[Math.floor(r() * CLOSE.length)]);
     return { date: `${d}. ${["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"][m - 1]}`, text: lines.join(" ") };
   }
   function openDiary() {
@@ -529,7 +531,10 @@ const Extras = (() => {
     "Wir sind so froh, dass es dich gibt.";
   function review() {
     const { area } = overlay("Dein Dezember", "Ein Rückblick auf 31 Kapitel im Tiergehege", "review-overlay");
-    area.append(H.el("div", { class: "rv-actions" }, st.xmasPhoto ? H.el("button", { class: "btn", text: "Das Weihnachtsfoto ansehen", onclick: showXmasPhoto }) : null, App.isSolved(31) ? H.el("button", { class: "btn btn-soft", text: "Abspann ansehen", onclick: credits }) : null));
+    area.append(H.el("div", { class: "rv-actions" }, st.xmasPhoto ? H.el("button", { class: "btn", text: "Das Weihnachtsfoto ansehen", onclick: showXmasPhoto }) : null,
+      App.isSolved(24) ? H.el("button", { class: "btn btn-soft", text: "Weihnachtsbrief lesen", onclick: () => Zoo.letter(CONFIG.christmasTitle, CONFIG.christmasMessage) }) : null,
+      Zoo.owns("feuerwerk") ? H.el("button", { class: "btn btn-soft", text: "Neujahrsbrief lesen", onclick: () => Zoo.letter(CONFIG.newYearTitle, CONFIG.newYearMessage, true) }) : null,
+      App.isSolved(31) ? H.el("button", { class: "btn btn-soft", text: "Abspann ansehen", onclick: credits }) : null));
     const found = Animals.VARIANTS.filter((v) => Animals.isFound(v.id));
     const favs = found.length ? found.slice().sort((a, b) => Zoo.fedAt(b.id) - Zoo.fedAt(a.id))[0] : null;
     const tile = (n, l) => H.el("div", { class: "rv-tile" }, H.el("b", { text: n }), H.el("span", { text: l }));
@@ -634,7 +639,7 @@ const Extras = (() => {
       block("Idee, Geschichte & ganz viel Liebe", "Chris"),
       H.el("div", { class: "cr-end" }, H.el("b", { text: "Danke, dass du dabei warst." }), H.el("span", { text: "Frohes neues Jahr, Ute!" }), H.el("em", { text: "Das Gehege bleibt für dich geöffnet." })));
     const close = () => { ov.classList.add("out"); setTimeout(() => ov.remove(), 600); document.body.style.overflow = ""; };
-    ov.append(H.el("div", { class: "cr-stars" }), roll, H.el("button", { class: "cr-skip", text: "Schließen", onclick: close }));
+    ov.append(H.el("div", { class: "cr-stars" }), roll, H.el("button", { class: "cr-skip", text: "✕", "aria-label": "Abspann schließen", title: "Schließen", onclick: close }));
     document.body.append(ov); document.body.style.overflow = "hidden";
     requestAnimationFrame(() => {
       const dist = roll.offsetHeight + innerHeight * 0.55;

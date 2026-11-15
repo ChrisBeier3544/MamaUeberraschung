@@ -32,6 +32,7 @@ const MunkelShow = (() => {
     // zwischen 0 und 6 Uhr gehört die Zeit noch zum Abend davor
     if (d.getHours() < 6) { d = new Date(d); d.setDate(d.getDate() - 1); d.setHours(22); }
     if (d.getTime() < START) return null; // vor dem 14.11. noch keine Szene
+    if (d.getMonth() === 10 && d.getDate() >= 28) return "27e"; // 28.11. bis zum Öffnen: bleibt beim letzten Abend
     let day = d.getMonth() === 10 ? d.getDate() : d.getMonth() < 10 ? 14 : 27;
     if (d.getMonth() === 10 && d.getDate() >= 28) day = 27;
     day = Math.max(14, Math.min(27, day));
