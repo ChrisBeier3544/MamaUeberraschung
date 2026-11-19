@@ -2178,3 +2178,14 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx) { visibility: hidden;
   #topnav .nav-actions > button { padding-left: 9px; padding-right: 9px; }
   #topnav .coins { padding: 4px 8px 4px 4px; gap: 4px; }
 }
+
+/* ---------- Lotte & Besucher am Schloss ---------- */
+.mk-actor { position: absolute; width: 34%; aspect-ratio: 1; transform: translate(-50%, -79%); transform-origin: 50% 79%; z-index: 3; pointer-events: auto; }
+@media (max-width: 480px) { .mk-actor { width: 37%; } }
+.mk-actor.facing-left .munkel-svg { transform: scaleX(-1); }
+.mk-actor.mk-guest { width: 28%; z-index: 5; }
+@media (max-width: 480px) { .mk-actor.mk-guest { width: 31%; } }
+.mk-sparrow .munkel-svg { filter: sepia(.55) saturate(.55) hue-rotate(-8deg) brightness(.92); }
+.mk-pigeon .munkel-svg { filter: grayscale(1) brightness(1.12) contrast(.92); }
+.mk-heart-big svg { width: 100%; display: block; filter: drop-shadow(0 0 8px rgba(255, 120, 160, .7)); }
+.mk-heart-big { cursor: pointer; }
