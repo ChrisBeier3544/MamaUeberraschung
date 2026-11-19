@@ -364,7 +364,7 @@ const MunkelShow = (() => {
   const HEART = S("0 0 40 36", `<path d="M20 34 C7 25 1 18 1 10 A9 9 0 0 1 20 6 A9 9 0 0 1 39 10 C39 18 33 25 20 34Z" fill="#e8476f" stroke="#fff" stroke-width="2"/><path d="M9 9 a5 5 0 0 1 6 -3" stroke="#fff" stroke-opacity=".7" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
   const MATE_LINES = [`Hallo Ute! Ich bin ${MATE_NAME}.`, "Der Munkelvogel ist der Allerbeste!", "Wir passen zusammen gut auf das Schloss auf.", "Ich freu mich so auf den 28.!", "Tschirp! ♥", "Unser Nest ist das gemütlichste der Welt."];
   let matePerch = null, mate = null, mateLine = 0;
-  const mateSeat = () => (st.items.includes("nest") ? [176, 94, "tuck"] : [178, 104, "dangle"]);
+  const mateSeat = () => (st.items.includes("nest") ? [183, 90, "tuck"] : [178, 104, "dangle"]);
   // eine zweite Figur (Partnerin oder Besucher) mit eigenem Platz am Schloss
   function actor(cls, o = {}) {
     const pe = document.createElement("div"); pe.className = "mk-actor " + cls;
@@ -405,7 +405,8 @@ const MunkelShow = (() => {
     if (st.items.includes("schneemann")) put(ART.snowman, 70, 106, 46, "", "Mini-Schneemann");
     if (st.items.includes("kerze")) put(ART.candle, 112, 106, 16, " lit candle", "Adventskerze");
     if (st.items.includes("laterne")) put(ART.lantern, 36, 108, 13, " lit lantern-item", "Laterne");
-    if (st.items.includes("nest")) { put(NEST_BACK, 148, 110, 84, " nest-back", "Munkels Nest"); put(ART.nestFront, 148, 110, 84, " nest-front", "Munkels Nest"); }
+    // mit Lotte wird das Nest breiter (Platz für zwei), der linke Rand bleibt, wo er war
+    if (st.items.includes("nest")) { const two = st.items.includes("partnerin"), nx = two ? 162 : 148, nw = two ? 110 : 84; put(NEST_BACK, nx, 110, nw, " nest-back", "Munkels Nest"); put(ART.nestFront, nx, 110, nw, " nest-front", "Munkels Nest"); }
     if (st.items.includes("glanz")) { const g = document.createElement("div"); g.className = "mk-sheen"; pad.append(g); }
     if (st.items.includes("lichter")) {
       const d = document.createElement("div"); d.className = "mk-prop mk-item mk-lights"; d.style.left = "0"; d.style.top = "0"; d.style.width = "100%"; d.style.height = "100%"; d.style.transform = "none";
