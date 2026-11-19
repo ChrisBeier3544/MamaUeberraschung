@@ -385,10 +385,28 @@ const MunkelShow = (() => {
   }
   function mountMate(x, y, legs) {
     if (matePerch) return;
-    [matePerch, mate] = actor("mk-mate-perch", { onTap: () => { if (stage) return; if (sleeping) { mate.say("Zzz … psst.", 1800); return; } mate.face("happy"); mate.say(MATE_LINES[mateLine++ % MATE_LINES.length], 2600); setTimeout(() => !sleeping && mate.face(), 2400); } });
+    [matePerch, mate] = actor("mk-mate-perch", { onTap: () => { if (stage) return; mate.face("happy"); mate.say(MATE_LINES[mateLine++ % MATE_LINES.length], 2600); setTimeout(() => !sleeping && mate.face(), 2400); } });
     mate.classList.add("scarf2"); mate.style.setProperty("--scarf", "#e8628c"); mate.setHat(BOW);
     matePerch.classList.add("facing-left"); place(matePerch, x, y); mate.legs(legs);
-    if (sleeping) mate.face("sleep");
+    if (sleeping) mateSleep();
+  }
+  // Lotte schläft, wird müde und wacht auf – genau wie der Munkelvogel
+  function mateSleep() {
+    if (!mate) return;
+    mate.busy = true; mate.classList.remove("swaying"); mate.face("sleep");
+    mate.onSceneTap = () => { mate.face("sleepy"); mate.say("Zzz … psst, wir schlafen schon. Gute Nacht, Ute!", 2200); setTimeout(() => sleeping && mate && mate.face("sleep"), 1600); };
+  }
+  function mateWake() { if (!mate) return; mate.busy = false; mate.onSceneTap = null; mate.classList.add("swaying"); mate.face(); }
+  function mateTired() { if (!mate || mate.busy) return; mate.face("sleepy"); setTimeout(() => mate && !mate.busy && !sleeping && mate.face(), 3200); }
+  // Aufwachen am Morgen: kurz nach ihm, mit Strecken und Gähnen
+  function mateWakeAnim() {
+    if (!mate) return;
+    const m = mate;
+    m.busy = true; m.onSceneTap = null; m.classList.remove("swaying"); m.face("sleep");
+    setTimeout(() => { if (mate !== m) return; m.face("wow"); tone(1100, 0.08, "triangle", 0.05); }, 1700);
+    setTimeout(() => { if (mate !== m) return; m.face("sleepy"); m.classList.add("wings-up", "mouth"); }, 2200);
+    setTimeout(() => { if (mate !== m) return; m.classList.remove("wings-up", "mouth"); m.face(); }, 3100);
+    setTimeout(() => { if (mate !== m) return; m.busy = false; m.classList.add("swaying"); }, 3300);
   }
   function renderMate() {
     if (!pad || typeof Munkel === "undefined") return;
@@ -1169,19 +1187,21 @@ const MunkelShow = (() => {
     if (st.items.includes("nest")) { place(perch, SEATS.nest[0], SEATS.nest[1]); bird.legs("tuck"); } else { place(perch, HOME[0], HOME[1]); bird.legs("dangle"); }
     bird.classList.remove("swaying"); bird.face("sleep");
     zzz?.remove(); zzz = document.createElement("div"); zzz.className = "mk-prop mk-zzz"; zzz.innerHTML = "<span>z</span><span>Z</span><span>z</span>"; if (mate) place(zzz, 150, 20); else place(zzz, 176, 50); zzz.style.width = "13%"; pad.append(zzz);
-    if (mate) { mate.classList.remove("swaying"); mate.face("sleep"); }
+    mateSleep();
     bird.onSceneTap = () => { bird.face("sleepy"); bird.say("Zzz … psst, ich schlafe. Morgen früh geht's weiter!", 2200); setTimeout(() => sleeping && bird.face("sleep"), 1600); };
   }
-  function wakeQuiet() { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; bird.busy = false; bird.classList.add("swaying"); bird.face(); restHome(); if (mate) { mate.face(); mate.classList.add("swaying"); } }
+  function wakeQuiet() { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; bird.busy = false; bird.classList.add("swaying"); bird.face(); restHome(); mateWake(); }
   async function play(id, { auto } = {}) {
     if (!SCENES[id] || !bird) return;
     if (stage) stage.cleanup();
-    const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; if (mate) { setTimeout(() => mate && mate.face("sleepy"), 1600); setTimeout(() => mate && (mate.face(), mate.classList.add("swaying")), 3200); } }
+    const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; }
     const c = makeCtx(); stage = c; bird.busy = true; lock.classList.add("scene-on");
     try {
       await c.wait(auto ? 1200 : 200);
       // morgens: aus dem Schlaf aufwachen, bevor die Szene beginnt
-      if (id.endsWith("m") && id !== "14m" && (wasAsleep || (auto && new Date().getHours() < 11))) {
+      const intro = id.endsWith("m") && id !== "14m" && (wasAsleep || (auto && new Date().getHours() < 11));
+      if (intro || wasAsleep) mateWakeAnim(); // Lotte wacht mit ihm auf
+      if (intro) {
         if (st.items.includes("nest")) { c.jump(SEATS.nest[0], SEATS.nest[1]); c.legsNow = "tuck"; }
         c.face("sleep"); await c.wait(1300); c.face("wow"); tone(900, 0.1, "triangle", 0.06); await c.wait(500);
         c.face("sleepy"); bird.classList.add("wings-up"); c.pose("mk-open"); await c.wait(900); bird.classList.remove("wings-up"); c.pose("mk-open", false);
@@ -1199,7 +1219,7 @@ const MunkelShow = (() => {
         renderItems(); updateAlbumBtn();
         if (id.endsWith("e")) {
           if (sleepTime()) setTimeout(goSleep, 300);
-          else setTimeout(() => { if (!stage) { bird.face("sleepy"); bird.say("Boah, bin ich müde … ich geh gleich ins Bett.", 3000); setTimeout(() => !stage && !sleeping && bird.face(), 3200); } }, 500);
+          else setTimeout(() => { if (!stage) { bird.face("sleepy"); mateTired(); bird.say("Boah, bin ich müde … ich geh gleich ins Bett.", 3000); setTimeout(() => !stage && !sleeping && bird.face(), 3200); } }, 500);
         }
       }
     }
@@ -1243,7 +1263,8 @@ const MunkelShow = (() => {
     // welche Szene jetzt von selbst kommt: die verpasste Partnersuche zuerst, dann die aktuelle
     const nextAuto = () => { const s = currentSlot(); if (!s) return null; if (!st.seen["19s"] && slotOrder(s) > slotOrder("19s")) return "19s"; return st.seen[s] ? null : s; };
     const first = nextAuto();
-    if (first) { if (sleepTime() && first.endsWith("m")) goSleep(); setTimeout(() => play(first, { auto: true }), 2600); }
+    // morgens schlafen beide noch, bis die Szene sie weckt
+    if (first) { if (first.endsWith("m") && first !== "14m" && (sleepTime() || new Date().getHours() < 11)) goSleep(); setTimeout(() => play(first, { auto: true }), 2600); }
     else if (sleepTime()) goSleep();
     tick = () => {
       if (stage) return;
