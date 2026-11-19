@@ -27,18 +27,22 @@ const MunkelShow = (() => {
   const HOME = [146, 104];
 
   /* ---------- Zeit: welcher Tag, morgens oder abends ---------- */
-  const isEvening = (d = new Date()) => d.getHours() >= 17 || d.getHours() < 6;
+  // Sonderszenen: an einem Tag zu einer eigenen Zeit; die Abendszene beginnt dann erst danach
+  const SPECIAL = { "19s": { day: 19, from: 15, to: 18 } };
+  const eveStart = (d) => { const s = Object.values(SPECIAL).find((x) => d.getMonth() === 10 && d.getDate() === x.day); return s ? s.to : 17; };
+  const isEvening = (d = new Date()) => d.getHours() >= eveStart(d) || d.getHours() < 6;
   function currentSlot(d = new Date()) {
     // zwischen 0 und 6 Uhr gehört die Zeit noch zum Abend davor
     if (d.getHours() < 6) { d = new Date(d); d.setDate(d.getDate() - 1); d.setHours(22); }
     if (d.getTime() < START) return null; // vor dem 14.11. noch keine Szene
     if (d.getMonth() === 10 && d.getDate() >= 28) return "27e"; // 28.11. bis zum Öffnen: bleibt beim letzten Abend
+    for (const [id, s] of Object.entries(SPECIAL)) if (d.getMonth() === 10 && d.getDate() === s.day && d.getHours() >= s.from && d.getHours() < s.to) return id;
     let day = d.getMonth() === 10 ? d.getDate() : d.getMonth() < 10 ? 14 : 27;
     if (d.getMonth() === 10 && d.getDate() >= 28) day = 27;
     day = Math.max(14, Math.min(27, day));
     return day + (isEvening(d) ? "e" : "m");
   }
-  const slotOrder = (id) => (parseInt(id) - 14) * 2 + (id.endsWith("e") ? 1 : 0);
+  const slotOrder = (id) => (parseInt(id) - 14) * 2 + (id.endsWith("e") ? 1 : id.endsWith("s") ? 0.5 : 0);
   const free = () => !!(window.TEST || (typeof App !== "undefined" && App.preview));
 
   /* ---------- kleine Bilder ---------- */
@@ -353,6 +357,45 @@ const MunkelShow = (() => {
   }
 
   /* ---------- Sammelstücke am Schloss ---------- */
+  /* ---------- Lotte, Munkels Partnerin (ab dem 19.11.) ---------- */
+  const MATE_NAME = "Lotte";
+  const BOW = `<g transform="translate(82 10) rotate(-18)"><path d="M0 0 L-13 -8 Q-16 0 -13 8Z" fill="#e8628c"/><path d="M0 0 L13 -8 Q16 0 13 8Z" fill="#e8628c"/><path d="M-11 -5 L-4 -1 M11 -5 L4 -1" stroke="#f7a8c2" stroke-width="1.6" stroke-linecap="round"/><circle r="3.6" fill="#c83f6c"/></g>`;
+  const ROSE = `<path d="M-2 0 Q6 2 12 10" stroke="#3f8a4f" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M5 3 q3 -4 6 -1 q-3 2 -6 1z" fill="#4f9e5c"/><g transform="translate(13 12)"><circle r="5.5" fill="#d93a5a"/><path d="M-3 -1 q3 -4 6 0 q-3 3 -6 0z" fill="#b82a48"/><circle r="1.8" cx=".5" cy="-.5" fill="#f2768f"/></g>`;
+  const HEART = S("0 0 40 36", `<path d="M20 34 C7 25 1 18 1 10 A9 9 0 0 1 20 6 A9 9 0 0 1 39 10 C39 18 33 25 20 34Z" fill="#e8476f" stroke="#fff" stroke-width="2"/><path d="M9 9 a5 5 0 0 1 6 -3" stroke="#fff" stroke-opacity=".7" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+  const MATE_LINES = [`Hallo Ute! Ich bin ${MATE_NAME}.`, "Der Munkelvogel ist der Allerbeste!", "Wir passen zusammen gut auf das Schloss auf.", "Ich freu mich so auf den 28.!", "Tschirp! ♥", "Unser Nest ist das gemütlichste der Welt."];
+  let matePerch = null, mate = null, mateLine = 0;
+  const mateSeat = () => (st.items.includes("nest") ? [176, 94, "tuck"] : [178, 104, "dangle"]);
+  // eine zweite Figur (Partnerin oder Besucher) mit eigenem Platz am Schloss
+  function actor(cls, o = {}) {
+    const pe = document.createElement("div"); pe.className = "mk-actor " + cls;
+    pad.append(pe);
+    const b = Munkel.mount(pe, { sit: true, scarf: o.scarf !== false, onTap: o.onTap });
+    return [pe, b];
+  }
+  // Flug einer zweiten Figur im Bogen, mit Landung
+  async function actorFly(pe, b, from, to, ms, o = {}) {
+    b.fly(true); b.classList.remove("swaying");
+    pe.classList.toggle("facing-left", to[0] < from[0]);
+    const arc = o.arc ?? 30, cx = (from[0] + to[0]) / 2, cy = (from[1] + to[1]) / 2 - arc, frames = [];
+    for (let i = 0; i <= 24; i++) { const t = i / 24, e = 0.5 - Math.cos(Math.PI * t) / 2, u = 1 - e; const x = u * u * from[0] + 2 * u * e * cx + e * e * to[0], y = u * u * from[1] + 2 * u * e * cy + e * e * to[1] + Math.sin(t * Math.PI * 8) * 1.4 * Math.sin(Math.PI * t); const [l, tp] = pct(x, y); frames.push({ left: l + "%", top: tp + "%" }); }
+    const a = pe.animate(frames, { duration: ms, easing: "linear", fill: "forwards" });
+    await new Promise((r) => (a.onfinish = r));
+    place(pe, to[0], to[1]); a.cancel();
+    if (o.land) { b.fly(false); b.legs(o.land); b.act("squash", 450); b.classList.add("swaying"); if (o.face) pe.classList.toggle("facing-left", o.face < 0); }
+  }
+  function mountMate(x, y, legs) {
+    if (matePerch) return;
+    [matePerch, mate] = actor("mk-mate-perch", { onTap: () => { if (stage) return; if (sleeping) { mate.say("Zzz … psst.", 1800); return; } mate.face("happy"); mate.say(MATE_LINES[mateLine++ % MATE_LINES.length], 2600); setTimeout(() => !sleeping && mate.face(), 2400); } });
+    mate.classList.add("scarf2"); mate.style.setProperty("--scarf", "#e8628c"); mate.setHat(BOW);
+    matePerch.classList.add("facing-left"); place(matePerch, x, y); mate.legs(legs);
+    if (sleeping) mate.face("sleep");
+  }
+  function renderMate() {
+    if (!pad || typeof Munkel === "undefined") return;
+    if (!st.items.includes("partnerin")) { if (matePerch && !stage) { matePerch.remove(); matePerch = mate = null; } return; }
+    if (!matePerch) { const [x, y, l] = mateSeat(); mountMate(x, y, l); }
+  }
+
   function addItem(name) { if (!st.items.includes(name)) { st.items.push(name); save(); renderItems(); } }
   function renderItems() {
     if (!pad) return;
@@ -372,6 +415,7 @@ const MunkelShow = (() => {
       d.innerHTML = `<svg viewBox="0 0 200 240"><path d="${wire}" stroke="#2f4a3a" stroke-width="1.4" fill="none"/>${[[44, 96, 180], [44, 84, 180], ...pts, [156, 84, 180], [156, 96, 180]].map(([x, y, a], i) => LAMP(x, y - 2, cols[i % cols.length], 0, i)).join("")}</svg>`;
       pad.append(d);
     }
+    renderMate();
     if (st.hat && bird) bird.setHat(HATS[st.hat]);
     if (bird) { bird.slim(!!st.slim); bird.classList.toggle("scarf2", !!st.scarf); if (st.scarf) bird.style.setProperty("--scarf", st.scarf); }
     // Glühwürmchen bleiben die ganze Nacht, in der sie gekommen sind
@@ -660,6 +704,75 @@ const MunkelShow = (() => {
       c.say(caught ? "Erwischt? Ich? Ich hab nur … poliert!" : "Ich? Gar nichts. Ich steh hier nur.", 2600); await c.wait(2700);
       c.face(); await c.home(1400);
     } },
+    "19s": { title: "Partnersuche", async run(c) {
+      const nest = st.items.includes("nest");
+      // falls Lotte schon da war (Szene neu gestartet): sie wartet erst mal außerhalb
+      if (matePerch) { matePerch.remove(); matePerch = mate = null; }
+      c.face("sad"); bird.classList.remove("swaying"); c.say("Hach …", 1500); await c.wait(1600);
+      c.face("dreamy"); c.say(nest ? "So ein schönes Nest – aber ganz allein ist es ein bisschen einsam." : "Ganz allein ist es ein bisschen einsam.", 3000); await c.wait(3200);
+      c.face("wow"); tone(880, 0.12, "triangle", 0.07, 1320); c.say("Ich weiß! Ich geh auf Partnersuche!", 2400); bird.act("mk-hop", 700); await c.wait(2500);
+      // schick machen
+      c.face("focus"); bird.act("fluff", 900); c.burstAt(bird, ["✨"], 8, 40); tone(1200, 0.2, "sine", 0.05, 1600); await c.wait(1100);
+      c.face("happy"); c.say("Federn glatt … Schal gerade …", 2000); bird.act("mk-flutter", 900); await c.wait(2100);
+      c.say("Fehlt nur noch eine Blume!", 1800); await c.wait(1700);
+      await c.fetch(`<g transform="translate(0 2)">${ROSE}</g>`, { y: 20 });
+      await c.moveTo(80, 9, 1700, { arc: 26, land: "stand" });
+      c.face("happy"); c.say("Tirili-tirilü! ♪", 2200); c.burstPt(92, -10, ["♪", "♫"], 6, 40); tone(1320, 0.15, "sine", 0.06); tone(1568, 0.15, "sine", 0.06, null, 0.18); tone(1760, 0.25, "sine", 0.06, null, 0.36); await c.wait(2400);
+      // zwei Besucher – leider nicht die Richtige
+      const guest = async (cls, line, sound) => {
+        const [pe, b] = actor("mk-guest " + cls, { scarf: false }); c.made.push(pe);
+        const ox = c.offX(1) + 30; place(pe, ox, -30);
+        await actorFly(pe, b, [ox, -30], [124, 9], 1700, { land: "stand", face: -1 });
+        sound(); await c.wait(300); b.say(line, 2800); await c.wait(3000);
+        c.face("sad"); await c.wait(900);
+        await actorFly(pe, b, [124, 9], [c.offX(1) + 30, -60], 1500, { arc: 20 });
+        pe.remove();
+      };
+      await guest("mk-sparrow", "Tschilp! Hübsche Blume – aber ich bin schon vergeben.", () => { tone(2400, 0.05, "square", 0.04); tone(2600, 0.05, "square", 0.04, null, 0.09); });
+      c.say("Oh …", 1400); await c.wait(1600);
+      c.face("happy"); c.say("Tirili? ♪", 1600); tone(1320, 0.2, "sine", 0.05); await c.wait(1800);
+      await guest("mk-pigeon", "Gurr? Ich suche nur Brotkrumen. Gurrr …", () => { tone(320, 0.25, "sine", 0.06, 260); tone(300, 0.3, "sine", 0.06, 240, 0.3); });
+      c.face("sad"); c.say("Vielleicht finde ich nie jemanden …", 2600); await c.wait(1800);
+      c.hint("Tipp den Munkelvogel an – mach ihm Mut!", 7500);
+      const cheered = await c.waitTap(bird, 7500);
+      lock.querySelectorAll(".mk-hint").forEach((h) => h.remove());
+      c.face("happy"); bird.act("mk-hop", 700); c.burstAt(bird, ["♥"], 6, 40);
+      c.say(cheered ? "Danke, Ute! Einmal versuch ich’s noch!" : "Einmal versuch ich’s noch!", 2400); await c.wait(2500);
+      c.say("Tirili-tirilüüü! ♪♫", 2400); c.burstPt(92, -10, ["♪", "♫", "♥"], 10, 50);
+      [1320, 1568, 1760, 2093].forEach((f, i) => tone(f, 0.22, "sine", 0.06, null, i * 0.2)); await c.wait(2600);
+      // sie kommt!
+      const ox = c.offX(1) + 30;
+      mountMate(ox, -40, "stand");
+      c.face("wow"); tone(1500, 0.1, "triangle", 0.06, 2200);
+      await actorFly(matePerch, mate, [ox, -40], [122, 9], 2200, { land: "stand", face: -1 });
+      mate.face("shy"); await c.wait(400);
+      mate.say("Hallo! Hast du gerade so schön gesungen?", 2800); await c.wait(3000);
+      c.face("shy"); c.say("Äh … ja! Die ist für dich.", 2200); await c.wait(1200);
+      bird.carry(""); mate.carry(`<g transform="translate(0 2)">${ROSE}</g>`); tone(988, 0.15, "triangle", 0.06); c.burstPt(101, -6, ["♥"], 6, 30); await c.wait(1300);
+      mate.face("happy"); mate.say(`Wie lieb! Ich bin ${MATE_NAME}.`, 2400); await c.wait(2600);
+      c.face("happy"); c.say(`Magst du … bei mir bleiben, ${MATE_NAME}?`, 2600); await c.wait(2700);
+      // Ute darf das Herz antippen
+      const heart = c.prop(HEART, 101, -6, 26, { anchor: "center", z: 8, cls: "mk-heart-big" });
+      c.anim(heart, [{ scale: "0.2", opacity: 0 }, { scale: "1.15", opacity: 1, offset: 0.7 }, { scale: "1", opacity: 1 }], 600);
+      const beat = heart.animate([{ scale: "1" }, { scale: "1.12" }, { scale: "1" }], { duration: 800, iterations: Infinity, delay: 600 });
+      c.hint("Tipp auf das Herz!", 7000);
+      await c.waitTap(heart, 7000); beat.cancel();
+      lock.querySelectorAll(".mk-hint").forEach((h) => h.remove());
+      c.burstAt(heart, ["♥", "💕", "✨"], 22, 110); heart.remove();
+      [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.35, "triangle", 0.07, null, i * 0.14));
+      mate.face("happy"); mate.say("Sehr gern – für immer!", 2400); mate.act("mk-hop", 700); await c.wait(2600);
+      // zusammen ins Nest
+      addItem("partnerin");
+      const [mx, my, ml] = mateSeat();
+      if (nest) { c.say("Komm, ich zeig dir unser Nest!", 2000); await c.wait(1600); }
+      const flyMate = actorFly(matePerch, mate, [122, 9], [mx, my], 1700, { land: ml, face: -1, arc: 24 });
+      await c.home(1600); await flyMate;
+      mate.carry(""); c.burstPt(mx - 12, my - 4, ["✨"], 6, 24);
+      c.face("happy"); mate.face("happy"); c.burstPt(162, 60, ["♥", "♥", "💕"], 12, 60); tone(1046, 0.3, "sine", 0.06); tone(1318, 0.4, "sine", 0.06, null, 0.2);
+      c.say(`Ute, darf ich vorstellen? Das ist ${MATE_NAME}!`, 2800); await c.wait(3000);
+      mate.say("Hallo Ute! Schön, dich kennenzulernen.", 2800); await c.wait(3000);
+      c.face(); mate.face(); bird.classList.add("swaying");
+    }, end() { if (!st.items.includes("partnerin") && matePerch) { matePerch.remove(); matePerch = mate = null; } } },
     "19e": { title: "Laterne & Glühwürmchen", async run(c) {
       c.face("dreamy"); c.say("Es ist so dunkel … ich hol eine Laterne.", 2200); await c.wait(1800);
       await c.fetch(`<g transform="translate(-8 -4) scale(.55)">${ART.lantern.replace(/<\/?svg[^>]*>/g, "")}</g>`, { side: -1, y: 30 });
@@ -739,13 +852,14 @@ const MunkelShow = (() => {
       c.face("dreamy"); await c.wait(900);
       const o = c.prop(ART.owl, 280, 20, 34, { cls: "mk-owl" });
       tone(400, 0.3, "sine", 0.08, 350); tone(330, 0.4, "sine", 0.08, 300, 0.35);
-      await c.anim(o, [{ left: "140%", top: "8%" }, { left: "90%", top: "18%" }, { left: "76%", top: "38%" }], 1800).finished;
+      const owlX = mate ? "64%" : "76%"; // mit Lotte im Nest landet die Eule weiter links am Nestrand
+      await c.anim(o, [{ left: "140%", top: "8%" }, { left: "90%", top: "18%" }, { left: owlX, top: "38%" }], 1800).finished;
       c.face("wow"); await c.wait(500); c.face("happy"); c.say("Oh, hallo Frau Eule!", 1800); await c.wait(2000);
       for (const b of ["?", "!", "?!", "…", "!!"]) { const q = c.prop(`<span>${b}</span>`, 110 + Math.random() * 30, 70, 12, { cls: "mk-whisper" }); c.anim(q, [{ opacity: 0, transform: "translate(-50%,-100%) scale(.5)" }, { opacity: 1, transform: "translate(-50%,-140%) scale(1)", offset: 0.3 }, { opacity: 0, transform: "translate(-50%,-220%) scale(.9)" }], 1600); bird.act("mk-tilt", 800); c.face(Math.random() < 0.5 ? "wow" : "focus"); tone(1200 + Math.random() * 600, 0.05, "sine", 0.05); await c.wait(750); }
       c.hint("Tipp die Eule an!", 5000);
       if (await c.waitTap(o, 4500)) { o.classList.add("hoot"); tone(380, 0.3, "sine", 0.1, 330); tone(330, 0.5, "sine", 0.1, 300, 0.35); c.face("happy"); c.say("Sie sagt: „Huhu, Ute!“", 2200); await c.wait(2200); }
       c.face("wink"); c.say("Sie hat gemunkelt … über einen Waschbären!", 2600); await c.wait(1900);
-      await c.anim(o, [{ left: "76%", top: "38%" }, { left: "90%", top: "10%" }, { left: "140%", top: "-10%" }], 1800).finished;
+      await c.anim(o, [{ left: owlX, top: "38%" }, { left: "90%", top: "10%" }, { left: "140%", top: "-10%" }], 1800).finished;
       c.face(); await c.home(1300);
     } },
 
@@ -1047,20 +1161,21 @@ const MunkelShow = (() => {
 
   /* ---------- Abspielen ---------- */
   const sleepTime = (d = new Date()) => d.getHours() >= 21 || d.getHours() < 6;
-  let sleeping = false, zzz = null;
+  let sleeping = false, zzz = null, tick = () => {};
   function goSleep() {
     if (!bird || stage) return;
     sleeping = true; bird.busy = true;
     if (st.items.includes("nest")) { place(perch, SEATS.nest[0], SEATS.nest[1]); bird.legs("tuck"); } else { place(perch, HOME[0], HOME[1]); bird.legs("dangle"); }
     bird.classList.remove("swaying"); bird.face("sleep");
-    zzz?.remove(); zzz = document.createElement("div"); zzz.className = "mk-prop mk-zzz"; zzz.innerHTML = "<span>z</span><span>Z</span><span>z</span>"; place(zzz, 176, 50); zzz.style.width = "13%"; pad.append(zzz);
+    zzz?.remove(); zzz = document.createElement("div"); zzz.className = "mk-prop mk-zzz"; zzz.innerHTML = "<span>z</span><span>Z</span><span>z</span>"; if (mate) place(zzz, 150, 20); else place(zzz, 176, 50); zzz.style.width = "13%"; pad.append(zzz);
+    if (mate) { mate.classList.remove("swaying"); mate.face("sleep"); }
     bird.onSceneTap = () => { bird.face("sleepy"); bird.say("Zzz … psst, ich schlafe. Morgen früh geht's weiter!", 2200); setTimeout(() => sleeping && bird.face("sleep"), 1600); };
   }
-  function wakeQuiet() { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; bird.busy = false; bird.classList.add("swaying"); bird.face(); restHome(); }
+  function wakeQuiet() { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; bird.busy = false; bird.classList.add("swaying"); bird.face(); restHome(); if (mate) { mate.face(); mate.classList.add("swaying"); } }
   async function play(id, { auto } = {}) {
     if (!SCENES[id] || !bird) return;
     if (stage) stage.cleanup();
-    const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; }
+    const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; if (mate) { setTimeout(() => mate && mate.face("sleepy"), 1600); setTimeout(() => mate && (mate.face(), mate.classList.add("swaying")), 3200); } }
     const c = makeCtx(); stage = c; bird.busy = true; lock.classList.add("scene-on");
     try {
       await c.wait(auto ? 1200 : 200);
@@ -1079,6 +1194,7 @@ const MunkelShow = (() => {
         if (SCENES[id].end) SCENES[id].end(c);
         c.cleanup(); stage = null; bird.busy = false; lock.classList.remove("scene-on");
         if (!st.seen[id]) { st.seen[id] = Date.now(); save(); }
+        if (id === "19s") setTimeout(() => tick(), 2500); // danach gleich die nächste fällige Szene
         renderItems(); updateAlbumBtn();
         if (id.endsWith("e")) {
           if (sleepTime()) setTimeout(goSleep, 300);
@@ -1090,7 +1206,7 @@ const MunkelShow = (() => {
 
   /* ---------- Szenen-Album ---------- */
   let albumBtn;
-  function updateAlbumBtn() { if (albumBtn) albumBtn.querySelector("b").textContent = `${Object.keys(st.seen).length} / 28`; }
+  function updateAlbumBtn() { if (albumBtn) albumBtn.querySelector("b").textContent = `${Object.keys(st.seen).filter((k) => SCENES[k]).length} / ${Object.keys(SCENES).length}`; }
   function openAlbum() {
     if (document.querySelector(".mk-album")) return;
     const now = currentSlot(), nowOrder = now ? slotOrder(now) : -1;
@@ -1099,10 +1215,10 @@ const MunkelShow = (() => {
     let html = `<div class="mka-card"><button class="mka-close" aria-label="Schließen">✕</button><h2>Munkels Szenen-Album</h2><p>Alle Szenen, die du schon gesehen hast – zum Nochmal-Ansehen.</p><div class="mka-grid">`;
     for (let d = 14; d <= 27; d++) {
       html += `<div class="mka-day"><small>${d}. November</small>`;
-      for (const p of ["m", "e"]) {
+      for (const p of SCENES[d + "s"] ? ["m", "s", "e"] : ["m", "e"]) {
         const id = d + p, seen = !!st.seen[id], order = slotOrder(id);
         const state = seen || free() || order === nowOrder ? "open" : order < nowOrder ? "missed" : "future";
-        html += `<button class="mka-scene ${state}" data-id="${id}" ${state === "open" ? "" : "disabled"}><span class="mka-ic">${p === "m" ? "☀" : "☾"}</span><span>${state === "open" ? SCENES[id].title : state === "missed" ? "verpasst" : "?"}</span></button>`;
+        html += `<button class="mka-scene ${state}" data-id="${id}" ${state === "open" ? "" : "disabled"}><span class="mka-ic">${p === "m" ? "☀" : p === "s" ? "♥" : "☾"}</span><span>${state === "open" ? SCENES[id].title : state === "missed" ? "verpasst" : "?"}</span></button>`;
       }
       html += `</div>`;
     }
@@ -1123,15 +1239,19 @@ const MunkelShow = (() => {
     albumBtn.addEventListener("click", (e) => { e.stopPropagation(); openAlbum(); });
     lock.append(albumBtn); requestAnimationFrame(() => lock.querySelector(".lock-clock")?.after(albumBtn)); updateAlbumBtn();
     // die Szene des aktuellen Tagesabschnitts einmal von selbst abspielen
-    let last = currentSlot();
-    if (last && !st.seen[last]) { if (sleepTime() && last.endsWith("m")) goSleep(); setTimeout(() => play(last, { auto: true }), 2600); }
+    // welche Szene jetzt von selbst kommt: die verpasste Partnersuche zuerst, dann die aktuelle
+    const nextAuto = () => { const s = currentSlot(); if (!s) return null; if (!st.seen["19s"] && slotOrder(s) > slotOrder("19s")) return "19s"; return st.seen[s] ? null : s; };
+    const first = nextAuto();
+    if (first) { if (sleepTime() && first.endsWith("m")) goSleep(); setTimeout(() => play(first, { auto: true }), 2600); }
     else if (sleepTime()) goSleep();
-    setInterval(() => {
-      const s = currentSlot();
-      if (s !== last) { last = s; if (s && !st.seen[s] && !stage) { play(s, { auto: true }); return; } }
-      if (!stage && sleepTime() && !sleeping) goSleep();
-      if (!stage && !sleepTime() && sleeping) wakeQuiet();
-    }, 30000);
+    tick = () => {
+      if (stage) return;
+      const want = nextAuto();
+      if (want) { play(want, { auto: true }); return; }
+      if (sleepTime() && !sleeping) goSleep();
+      if (!sleepTime() && sleeping) wakeQuiet();
+    };
+    setInterval(() => tick(), 30000);
   }
   return { attach, play, openAlbum, currentSlot, SCENES, HATS, ART, moonPhase, moonSVG, state: () => st, goSleep };
 })();

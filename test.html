@@ -34,6 +34,7 @@
     .sc i { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; }
     .sc.m i { background: #fff3cf; color: #b07a12; }
     .sc.e i { background: var(--night); color: #f3dc93; }
+    .sc.s { grid-column: 2 / 4; } .sc.s i { background: #ffd9e4; color: #c83f6c; }
     .sc b { font-size: 13px; line-height: 1.2; font-weight: 600; }
     .sc.on { background: var(--pine); border-color: var(--pine); color: #fff6e0; }
     .sc.on.m i { background: #f3dc93; } .sc.on.e i { background: #0f1b2b; }
@@ -152,13 +153,13 @@
   const T = "test:";
   const SCENES = [
     ["14m", "Aufwachen"], ["14e", "Einnicken im Nest"], ["15m", "Postflug"], ["15e", "Sterne anknipsen"], ["16m", "Frühstück"], ["16e", "Gute-Nacht-Lied"],
-    ["17m", "Durchs Schlüsselloch"], ["17e", "Schneeflocken fangen"], ["18m", "Morgensport"], ["18e", "Schal stricken"], ["19m", "Schlüssel knacken"], ["19e", "Laterne & Glühwürmchen"],
+    ["17m", "Durchs Schlüsselloch"], ["17e", "Schneeflocken fangen"], ["18m", "Morgensport"], ["18e", "Schal stricken"], ["19m", "Schlüssel knacken"], ["19s", "Partnersuche"], ["19e", "Laterne & Glühwürmchen"],
     ["20m", "Seifenblasen"], ["20e", "Sternschnuppe"], ["21m", "Mützen-Anprobe"], ["21e", "Besuch der Eule"], ["22m", "Mini-Schneemann"], ["22e", "Kerze anzünden"],
     ["23m", "Wurm-Tauziehen"], ["23e", "Polarlicht"], ["24m", "Federputz-Show"], ["24e", "Mond-Schaukel"], ["25m", "Looping-Ausflug"], ["25e", "Lichterkette"],
     ["26m", "Schloss polieren"], ["26e", "Schattenspiel"], ["27m", "Aufregung"], ["27e", "Schäfchen zählen"],
   ];
   // was nach welcher Szene am Schloss liegt
-  const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "18e": ["scarf"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
+  const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "18e": ["scarf"], "19s": ["partnerin"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
   const SPECIAL = { "2026-11-27": "Schloss zu", "2026-11-28": "Schloss öffnet", "2026-11-29": "1. Advent", "2026-12-01": "Erstes Türchen", "2026-12-06": "Nikolaus", "2026-12-13": "Neue Tiere", "2026-12-17": "Nachwuchs", "2026-12-18": "Bonus-Paket", "2026-12-19": "Erster Schnee", "2026-12-20": "Neue Tiere", "2026-12-23": "Weihnachtsfoto", "2026-12-24": "Heiligabend", "2026-12-31": "Silvester" };
   const EVENTS = [
     ["2026-11-28", "08:59", "Eine Minute vor dem Öffnen"], ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", 1],
@@ -193,7 +194,7 @@
   function playScene(id) {
     const i = SCENES.findIndex((s) => s[0] === id); if (i < 0) return;
     cfg.scene = id; cfg.date = `2026-11-${id.slice(0, 2)}`;
-    cfg.time = id.endsWith("m") ? "09:30" : cfg.late ? "21:30" : "19:30";
+    cfg.time = id.endsWith("m") ? "09:30" : id.endsWith("s") ? "15:30" : cfg.late ? "21:30" : "19:30";
     // Stand wie an diesem Tag: alles, was vor dieser Szene passiert ist
     const items = [], seen = {}; let slim = false, hat = null, scarf = null;
     SCENES.forEach(([s], k) => { seen[s] = 1; if (k < i) (GAINS[s] || []).forEach((g) => { if (g === "slim") slim = true; else if (g === "hat") hat = "bommel"; else if (g === "scarf") scarf = "#2f8a52"; else items.push(g); }); });
@@ -205,10 +206,10 @@
     for (let d = 14; d <= 27; d++) {
       const row = document.createElement("div"); row.className = "row";
       row.innerHTML = `<div class="d">${d}.</div>`;
-      ["m", "e"].forEach((p) => {
+      (SCENES.some((x) => x[0] === `${d}s`) ? ["m", "e", "s"] : ["m", "e"]).forEach((p) => {
         const id = `${d}${p}`, t = SCENES.find((s) => s[0] === id)[1];
         const b = document.createElement("button"); b.className = `sc ${p}`; b.dataset.id = id;
-        b.innerHTML = `<i>${p === "m" ? "☀" : "☾"}</i><b>${t}</b>`;
+        b.innerHTML = `<i>${p === "m" ? "☀" : p === "s" ? "♥" : "☾"}</i><b>${t}</b>`;
         b.onclick = () => playScene(id);
         row.append(b);
       });
