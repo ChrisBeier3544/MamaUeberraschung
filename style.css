@@ -2190,3 +2190,8 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx):not(.mk-album) { visi
 .mk-heart-big svg { width: 100%; display: block; filter: drop-shadow(0 0 8px rgba(255, 120, 160, .7)); }
 .mk-heart-big { cursor: pointer; }
 .mka-card h2 { padding-right: 42px; }
+/* Szenen-Album und "Szene wiederholen" nebeneinander */
+.mk-btnrow { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.mk-replay-btn[hidden] { display: none; }
+.mk-replay-btn:disabled { opacity: .45; cursor: default; }
+@media (max-width: 380px) { .mk-btnrow .mk-album-btn { padding: 7px 11px; gap: 6px; } }
