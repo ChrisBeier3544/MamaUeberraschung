@@ -1195,7 +1195,7 @@ const MunkelShow = (() => {
     if (!SCENES[id] || !bird) return;
     if (stage) stage.cleanup();
     const wasAsleep = sleeping; if (sleeping) { sleeping = false; zzz?.remove(); zzz = null; bird.onSceneTap = null; }
-    const c = makeCtx(); stage = c; bird.busy = true; lock.classList.add("scene-on");
+    const c = makeCtx(); stage = c; bird.busy = true; lock.classList.add("scene-on"); updateReplayBtn();
     try {
       await c.wait(auto ? 1200 : 200);
       // morgens: aus dem Schlaf aufwachen, bevor die Szene beginnt
@@ -1226,8 +1226,17 @@ const MunkelShow = (() => {
   }
 
   /* ---------- Szenen-Album ---------- */
-  let albumBtn;
-  function updateAlbumBtn() { if (albumBtn) albumBtn.querySelector("b").textContent = `${Object.keys(st.seen).filter((k) => SCENES[k]).length} / ${Object.keys(SCENES).length}`; }
+  let albumBtn, replayBtn;
+  // zuletzt gesehene Szene (nach Tagesablauf, nicht nach Uhrzeit des Ansehens)
+  const lastSeen = () => Object.keys(st.seen).filter((k) => SCENES[k]).sort((a, b) => slotOrder(b) - slotOrder(a))[0] || null;
+  function updateReplayBtn() {
+    if (!replayBtn) return;
+    const id = lastSeen();
+    replayBtn.hidden = !id;
+    if (id) { replayBtn.title = `Nochmal ansehen: ${SCENES[id].title}`; replayBtn.setAttribute("aria-label", replayBtn.title); }
+    replayBtn.disabled = !!stage;
+  }
+  function updateAlbumBtn() { updateReplayBtn(); if (albumBtn) albumBtn.querySelector("b").textContent = `${Object.keys(st.seen).filter((k) => SCENES[k]).length} / ${Object.keys(SCENES).length}`; }
   function openAlbum() {
     if (document.querySelector(".mk-album")) return;
     const now = currentSlot(), nowOrder = now ? slotOrder(now) : -1;
@@ -1258,7 +1267,11 @@ const MunkelShow = (() => {
     albumBtn = document.createElement("button"); albumBtn.className = "mk-album-btn";
     albumBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5z M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Munkels Szenen</span><b></b>`;
     albumBtn.addEventListener("click", (e) => { e.stopPropagation(); openAlbum(); });
-    lock.append(albumBtn); requestAnimationFrame(() => lock.querySelector(".lock-clock")?.after(albumBtn)); updateAlbumBtn();
+    replayBtn = document.createElement("button"); replayBtn.className = "mk-album-btn mk-replay-btn";
+    replayBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M4 4v4.6h4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.4 9.2v5.6l4.6-2.8z" fill="currentColor"/></svg><span>Szene wiederholen</span>`;
+    replayBtn.addEventListener("click", (e) => { e.stopPropagation(); const id = lastSeen(); if (id && !stage) play(id); });
+    const row = document.createElement("div"); row.className = "mk-btnrow"; row.append(albumBtn, replayBtn);
+    lock.append(row); requestAnimationFrame(() => lock.querySelector(".lock-clock")?.after(row)); updateAlbumBtn();
     // die Szene des aktuellen Tagesabschnitts einmal von selbst abspielen
     // welche Szene jetzt von selbst kommt: die verpasste Partnersuche zuerst, dann die aktuelle
     const nextAuto = () => { const s = currentSlot(); if (!s) return null; if (!st.seen["19s"] && slotOrder(s) > slotOrder("19s")) return "19s"; return st.seen[s] ? null : s; };
