@@ -631,22 +631,39 @@ const App = (() => {
       ov.append(perch);
       bird = Munkel.mount(perch, { sit: true });
       bird.busy = true;
-      try { const hat = JSON.parse(localStorage.getItem("mama-munkel-" + CONFIG.year) || "{}").hat; if (hat && typeof MunkelShow !== "undefined") bird.setHat(MunkelShow.HATS[hat]); } catch (e) {}
+      // so, wie er zuletzt auf dem Schloss aussah: Mütze, Schal, schlanke Figur
+      if (typeof MunkelShow !== "undefined") MunkelShow.dress(bird);
+      // Lotte fliegt mit, wenn sie schon eingezogen ist
+      let mate = null, matePerch = null;
+      if (typeof MunkelShow !== "undefined" && MunkelShow.hasMate()) {
+        matePerch = el("div", { class: "ul-bird ul-mate facing-left" }); ov.append(matePerch);
+        mate = Munkel.mount(matePerch, { sit: true }); mate.busy = true; MunkelShow.dressMate(mate);
+      }
       bird.carry(`<g transform="translate(-4 4) rotate(70) scale(1.1)"><circle cx="-2" cy="0" r="6" fill="none" stroke="#e8c46b" stroke-width="3"/><path d="M4 0 h22 M18 0 v5 M23 0 v4" stroke="#e8c46b" stroke-width="3" stroke-linecap="round"/></g>`);
       const at = (x, y) => { const r = pad.getBoundingClientRect(); return [r.left + (x / 200) * r.width, r.top + (y / 240) * r.height]; };
-      const fly = (pts, ms) => perch.animate(pts.map(([x, y]) => { const [px, py] = at(x, y); return { transform: `translate(${px}px, ${py}px) translate(-50%, -79%)` }; }), { duration: ms, easing: "ease-in-out", fill: "forwards" });
+      const flyP = (p, pts, ms) => p.animate(pts.map(([x, y]) => { const [px, py] = at(x, y); return { transform: `translate(${px}px, ${py}px) translate(-50%, -79%)` }; }), { duration: ms, easing: "ease-in-out", fill: "forwards" });
+      const fly = (pts, ms) => flyP(perch, pts, ms);
       requestAnimationFrame(() => {
         perch.style.width = pad.getBoundingClientRect().width * 0.4 + "px";
-        bird.classList.add("mk-fly");
+        bird.fly(true); bird.classList.add("flip");
         fly([[320, -120], [220, 10], [150, 60], [104, 196]], 1900);
+        if (mate) {
+          matePerch.style.width = pad.getBoundingClientRect().width * 0.34 + "px";
+          mate.fly(true);
+          flyP(matePerch, [[360, -90], [262, 0], [210, 50], [178, 104]], 2200);
+          setTimeout(() => { mate.fly(false); mate.legs("dangle"); mate.act("squash", 450); mate.face("happy"); }, 2200);
+          setTimeout(() => { mate.say("Gleich ist es so weit!", 1500); }, 2400);
+          setTimeout(() => { mate.face("wow"); }, 2900 + D);
+          setTimeout(() => { mate.face("happy"); mate.fly(true); matePerch.classList.remove("facing-left"); flyP(matePerch, [[178, 104], [250, 10], [380, -130]], 1300); }, 3800 + D);
+        }
         sfx.tone(1400, 0.08, "sine", 0.06, 1900); sfx.tone(1700, 0.08, "sine", 0.06, 2200, 0.15);
         setTimeout(() => { bird.say("Ich hab den Schlüssel!", 1600); }, 900);
         setTimeout(() => { bird.carry(""); ov.classList.add("key-in"); sfx.tone(700, 0.12, "triangle", 0.08); }, 2000);
-        setTimeout(() => { fly([[104, 196], [150, 120], [146, 104]], 700); }, 2200);
-        setTimeout(() => { bird.classList.remove("mk-fly"); }, 2950);
+        setTimeout(() => { bird.classList.remove("flip"); fly([[104, 196], [150, 120], [146, 104]], 700); }, 2200);
+        setTimeout(() => { bird.fly(false); bird.legs("dangle"); }, 2950);
         setTimeout(() => { bird.act("mk-hop", 700); bird.say("Jetzt!", 1200); }, 3900 + 0);
         setTimeout(() => { bird.act("mk-flutter", 900); bird.act("mk-hop", 700); }, 2900 + D);
-        setTimeout(() => { bird.classList.add("mk-fly"); fly([[146, 104], [220, 20], [340, -140]], 1300); }, 3700 + D);
+        setTimeout(() => { bird.fly(true); fly([[146, 104], [220, 20], [340, -140]], 1300); }, 3700 + D);
       });
     } else setTimeout(() => ov.classList.add("key-in"), 700);           // Schlüssel fährt ins Schloss
     setTimeout(() => { ov.classList.add("key-turn"); sfx.tone(420, 0.25, "triangle", 0.06, 520); }, 2100 + D); // umdrehen
@@ -665,6 +682,7 @@ const App = (() => {
     if (typeof Animals !== "undefined") Animals.init();
     if (typeof Games !== "undefined") Games.init();
     if (typeof Extras !== "undefined") Extras.init();
+    if (typeof MunkelHome !== "undefined") MunkelHome.init();
     const st = document.getElementById("sound-toggle");
     const SND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
     const SND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;

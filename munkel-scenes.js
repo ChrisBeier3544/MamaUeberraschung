@@ -386,7 +386,7 @@ const MunkelShow = (() => {
   function mountMate(x, y, legs) {
     if (matePerch) return;
     [matePerch, mate] = actor("mk-mate-perch", { onTap: () => { if (stage) return; mate.face("happy"); mate.say(MATE_LINES[mateLine++ % MATE_LINES.length], 2600); setTimeout(() => !sleeping && mate.face(), 2400); } });
-    mate.classList.add("scarf2"); mate.style.setProperty("--scarf", "#e8628c"); mate.setHat(BOW);
+    dressMate(mate);
     matePerch.classList.add("facing-left"); place(matePerch, x, y); mate.legs(legs);
     if (sleeping) mateSleep();
   }
@@ -408,6 +408,9 @@ const MunkelShow = (() => {
     setTimeout(() => { if (mate !== m) return; m.classList.remove("wings-up", "mouth"); m.face(); }, 3100);
     setTimeout(() => { if (mate !== m) return; m.busy = false; m.classList.add("swaying"); }, 3300);
   }
+  // Aussehen übertragen – auch für Auftritte außerhalb der Schloss-Bühne (Aufschließen, Kalender)
+  function dress(b) { if (!b) return; b.setHat(st.hat ? HATS[st.hat] : ""); b.slim(!!st.slim); b.classList.toggle("scarf2", !!st.scarf); if (st.scarf) b.style.setProperty("--scarf", st.scarf); }
+  function dressMate(m) { if (!m) return; m.classList.add("scarf2"); m.style.setProperty("--scarf", "#e8628c"); m.setHat(BOW); }
   function renderMate() {
     if (!pad || typeof Munkel === "undefined") return;
     if (!st.items.includes("partnerin")) { if (matePerch && !stage) { matePerch.remove(); matePerch = mate = null; } return; }
@@ -1217,7 +1220,8 @@ const MunkelShow = (() => {
         if (!st.seen[id]) { st.seen[id] = Date.now(); save(); }
         if (id === "19s") setTimeout(() => tick(), 2500); // danach gleich die nächste fällige Szene
         renderItems(); updateAlbumBtn();
-        if (id.endsWith("e")) {
+        if (cinemaEl) { if (onCinemaDone) onCinemaDone(); }
+        else if (id.endsWith("e")) {
           if (sleepTime()) setTimeout(goSleep, 300);
           else setTimeout(() => { if (!stage) { bird.face("sleepy"); mateTired(); bird.say("Boah, bin ich müde … ich geh gleich ins Bett.", 3000); setTimeout(() => !stage && !sleeping && bird.face(), 3200); } }, 500);
         }
@@ -1226,6 +1230,35 @@ const MunkelShow = (() => {
   }
 
   /* ---------- Szenen-Album ---------- */
+  /* ---------- Szenen-Kino: nach dem Öffnen des Schlosses Szenen auf einer eigenen Bühne ansehen ---------- */
+  let cinemaEl = null, onCinemaDone = null;
+  const LOCK_ART = `<svg viewBox="0 0 200 240" aria-hidden="true">
+      <defs><linearGradient id="mkcG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
+      <linearGradient id="mkcS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient></defs>
+      <path d="M52 112 V74 a48 48 0 0 1 96 0 V112" fill="none" stroke="url(#mkcS)" stroke-width="20" stroke-linecap="round"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="url(#mkcG)"/>
+      <rect x="22" y="104" width="156" height="124" rx="26" fill="none" stroke="#fff3c4" stroke-opacity=".45" stroke-width="3"/>
+      <path d="M100 146 c-10 -16 -34 -8 -26 10 c5 11 26 24 26 24 s21 -13 26 -24 c8 -18 -16 -26 -26 -10z" fill="#6f2230"/>
+      <rect x="95" y="168" width="10" height="30" rx="5" fill="#6f2230"/></svg>`;
+  function cinema(id) {
+    if (cinemaEl || !SCENES[id] || typeof Munkel === "undefined") return;
+    const mk = (tag, cls, html) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; return e; };
+    const ov = mk("div", "site-lock mk-cinema"), padEl = mk("div", "lock-pad", LOCK_ART), perchEl = mk("div", "lock-perch");
+    padEl.append(perchEl);
+    const cap = mk("div", "mkc-cap"); cap.textContent = SCENES[id].title;
+    const btns = mk("div", "mk-btnrow mkc-btns");
+    const close = mk("button", "mkc-close"); close.textContent = "✕"; close.setAttribute("aria-label", "Schließen");
+    ov.append(padEl, cap, btns, close); document.body.append(ov); document.body.style.overflow = "hidden";
+    cinemaEl = ov; lock = ov; pad = padEl; perch = perchEl; bird = Munkel.mount(perchEl, { sit: true });
+    sleeping = false; zzz = null; matePerch = mate = null;
+    restHome(); sky(); renderItems();
+    const end = () => { const c = stage; stage = null; if (c) c.cleanup(); ov.remove(); document.body.style.overflow = ""; document.querySelectorAll(".mk-bubble").forEach((x) => x.remove()); cinemaEl = null; onCinemaDone = null; lock = pad = perch = bird = null; matePerch = mate = null; };
+    const btn = (text, fn, cls = "") => { const b = mk("button", "mk-album-btn " + cls); b.textContent = text; b.onclick = (e) => { e.stopPropagation(); fn(); }; return b; };
+    close.onclick = (e) => { e.stopPropagation(); end(); };
+    onCinemaDone = () => { cap.textContent = SCENES[id].title; btns.replaceChildren(btn("Nochmal ansehen", () => { btns.replaceChildren(); play(id); }), btn("Andere Szene", () => { end(); openAlbum(); }), btn("Zurück zum Kalender", end, "mkc-back")); };
+    setTimeout(() => cinemaEl === ov && play(id), 700);
+  }
+
   let albumBtn, replayBtn;
   // zuletzt gesehene Szene (nach Tagesablauf, nicht nach Uhrzeit des Ansehens)
   const lastSeen = () => Object.keys(st.seen).filter((k) => SCENES[k]).sort((a, b) => slotOrder(b) - slotOrder(a))[0] || null;
@@ -1254,7 +1287,7 @@ const MunkelShow = (() => {
     }
     html += `</div></div>`;
     wrap.innerHTML = html;
-    wrap.addEventListener("click", (e) => { if (e.target === wrap || e.target.closest(".mka-close")) { close(); return; } const b = e.target.closest(".mka-scene.open"); if (b) { close(); play(b.dataset.id); } });
+    wrap.addEventListener("click", (e) => { if (e.target === wrap || e.target.closest(".mka-close")) { close(); return; } const b = e.target.closest(".mka-scene.open"); if (b) { close(); if (lock && !cinemaEl) play(b.dataset.id); else cinema(b.dataset.id); } });
     document.body.append(wrap);
   }
 
@@ -1288,5 +1321,5 @@ const MunkelShow = (() => {
     };
     setInterval(() => tick(), 30000);
   }
-  return { attach, play, openAlbum, currentSlot, SCENES, HATS, ART, moonPhase, moonSVG, state: () => st, goSleep };
+  return { attach, play, openAlbum, cinema, currentSlot, SCENES, HATS, ART, NEST_BACK, BOW, dress, dressMate, hasMate: () => st.items.includes("partnerin"), seenCount: () => Object.keys(st.seen).filter((k) => SCENES[k]).length, sleepTime, moonPhase, moonSVG, state: () => st, goSleep };
 })();

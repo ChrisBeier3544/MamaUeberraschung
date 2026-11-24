@@ -119,7 +119,7 @@ const Munkel = (() => {
       const bw = b.offsetWidth, bh = b.offsetHeight, m = 10;
       let x = r.left + r.width / 2, y = r.top - 6 - bh;
       let below = false;
-      if (y < 44) { y = r.bottom + 10; below = true; } // oben ist kein Platz (Hinweisleiste) → darunter
+      if (y < 44) { const home = el.closest(".mk-home .mh-stage"); y = (home ? home.getBoundingClientRect().bottom : r.bottom) + 10; below = true; } // oben ist kein Platz → darunter (im Kalender unter das Nest)
       const cx = Math.max(m + bw / 2, Math.min(innerWidth - m - bw / 2, x));
       b.style.left = cx - bw / 2 + "px";
       b.style.top = y + "px";
