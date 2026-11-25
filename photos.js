@@ -6,7 +6,12 @@ const Photos = (() => {
 
   /* ---------- Kulissen: bg hinter dem Tier, fg davor ---------- */
   const flakes = (n, seed, col = "#fff", rmax = 2.2) => { let s = seed, o = ""; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < n; i++) o += `<circle cx="${(r() * 200) | 0}" cy="${(r() * 165) | 0}" r="${(0.8 + r() * rmax).toFixed(1)}" fill="${col}"/>`; return o; };
+  const STARS = [[18, 20], [46, 12], [80, 30], [120, 14], [158, 26], [186, 10], [30, 52], [140, 46], [100, 8], [176, 60]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 ? 1 : 1.7}" fill="#fff" opacity="${0.6 + (i % 4) * 0.1}"/>`).join("");
   const SCENES = {
+    // mythische Tiere: Nachthimmel mit Polarlicht
+    polarlicht: { gy: 146,
+      bg: `<defs><linearGradient id="phN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1640"/><stop offset="1" stop-color="#2a2466"/></linearGradient><linearGradient id="phA" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5ef2c1" stop-opacity=".0"/><stop offset=".3" stop-color="#5ef2c1" stop-opacity=".7"/><stop offset=".6" stop-color="#b78cff" stop-opacity=".65"/><stop offset="1" stop-color="#ff8fd0" stop-opacity=".0"/></linearGradient></defs><rect width="200" height="170" fill="url(#phN)"/>${STARS}<path d="M-10 70 C30 20 70 60 110 30 S170 10 210 40 L210 64 C170 34 140 58 108 56 S40 46 -10 94Z" fill="url(#phA)"/><path d="M-10 92 C40 60 90 90 130 66 S190 56 210 70 L210 82 C180 72 150 88 120 84 S50 80 -10 106Z" fill="url(#phA)" opacity=".6"/><ellipse cx="100" cy="160" rx="130" ry="26" fill="#e9eefc"/><ellipse cx="100" cy="150" rx="70" ry="10" fill="#fff" opacity=".7"/>`,
+      fg: `<text x="24" y="132" font-size="12" fill="#fff6c9">✦</text><text x="168" y="120" font-size="10" fill="#ffd6f0">✧</text><text x="150" y="146" font-size="8" fill="#bfe9ff">✦</text>` },
     bad: { gy: 136, size: 0.84,
       bg: `<rect width="200" height="170" fill="#dff1f7"/><path d="M0 25H200M0 50H200M0 75H200M0 100H200M25 0V150M50 0V150M75 0V150M100 0V150M125 0V150M150 0V150M175 0V150" stroke="#c6e2ec" stroke-width="1.5"/><rect y="150" width="200" height="20" fill="#bcdbe6"/>`,
       fg: `<rect x="26" y="114" width="148" height="40" rx="16" fill="#fff" stroke="#cfe0e8" stroke-width="2"/><circle cx="44" cy="158" r="5" fill="#d8b46a"/><circle cx="156" cy="158" r="5" fill="#d8b46a"/>` +
@@ -208,7 +213,7 @@ const Photos = (() => {
   };
 
   function scene(v) {
-    const d = DATA[v.id] || ["fotobox", "", {}];
+    const d = mythData(v) || DATA[v.id] || ["fotobox", "", {}];
     const sc = SCENES[d[0]], o = d[2] || {};
     const a = Animals.inner(v);
     const s = Math.min(130 / a.W, 112 / a.H) * (sc.size || 1);
@@ -219,7 +224,10 @@ const Photos = (() => {
     const tilt = sc.tilt ? `rotate(${sc.tilt} ${ax} ${gy})` : "";
     return `<svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block">${sc.bg}<g transform="${tilt}"><g transform="${tf}">${a.content}</g></g>${sc.fg}${o.m ? MOOD[o.m](headX, headY) : ""}</svg>`;
   }
-  const caption = (v) => (DATA[v.id] ? DATA[v.id][1] : "");
+  // mythische Tiere bekommen ihr eigenes Foto und ihren eigenen Text
+  const MYTH_TXT = { Aurora: "Ist auf einem Polarlicht ins Gehege geritten. Einfach so.", Selene: "Kam im Mondschein angehoppelt und bringt schöne Träume mit.", Stella: "Ist direkt vom Weihnachtsstern heruntergeschlichen." };
+  const mythData = (v) => (v.rarity === "mythisch" ? ["polarlicht", MYTH_TXT[{ 6: "Aurora", 17: "Selene", 23: "Stella" }[v.only]] || "Ein Wunder, mitten im Gehege.", {}] : null);
+  const caption = (v) => (mythData(v) || DATA[v.id] || [])[1] || "";
 
   /* ---------- Das Polaroid ---------- */
   const queue = [];

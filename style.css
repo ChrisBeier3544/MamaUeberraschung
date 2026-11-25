@@ -2220,3 +2220,55 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx):not(.mk-album) { visi
 .mk-cinema .mkc-btns { min-height: 36px; }
 .mk-cinema .mkc-close { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(243, 220, 147, .5); background: rgba(10, 24, 18, .5); color: #f3e3b5; font-size: 17px; cursor: pointer; z-index: 10; }
 .mk-cinema .mkc-back { background: #f3dc93; color: #1f3d33; }
+
+/* ---------- Mythische Tiere: Polarlicht in allen Farben ---------- */
+@keyframes myHue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+@keyframes mySpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes myFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes myShine { to { background-position: 200% 0; } }
+@keyframes myGlow { 0%, 100% { filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px #9be7ff) drop-shadow(0 0 20px #c58bff); } 50% { filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 14px #ffd84d) drop-shadow(0 0 26px #ff8fd0); } }
+.rar.r-mythisch, .pola-sticker.r-mythisch { background: linear-gradient(90deg, #8fe3ff, #c79bff, #ff9fd6, #ffe27a, #8fe3ff); background-size: 200% 100%; color: #2a1d5c; font-weight: 800; animation: myShine 2.2s linear infinite; box-shadow: 0 0 10px rgba(180, 140, 255, .8); }
+.pola-sticker.r-mythisch { font-size: 15px; }
+.polaroid.r-mythisch { box-shadow: 0 0 0 3px #c9a7ff, 0 0 34px 8px rgba(160, 120, 255, .7), 0 0 60px 14px rgba(120, 220, 255, .45), 0 18px 40px rgba(40, 20, 10, .35); }
+.album-card.r-mythisch:not(.missing) { background: radial-gradient(circle at 50% 35%, #f4eeff, #d9c8ff 55%, #9fd8ff); box-shadow: 0 0 0 3px #c9a7ff, 0 0 24px rgba(160, 120, 255, .9); }
+.album-card.r-mythisch:not(.missing) b { color: #3a2380; }
+.album-card.r-mythisch.missing { box-shadow: 0 0 0 2px #c9a7ff inset; }
+.r-mythisch .w-in, .pen-animal.r-mythisch .pa-in { position: relative; }
+.r-mythisch .ani { animation: myGlow 2.4s ease-in-out infinite; }
+.hider.r-mythisch svg, .walker.r-mythisch svg { animation: myGlow 2.4s ease-in-out infinite; }
+.my-aura { position: absolute; left: 50%; top: 45%; width: 150%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, rgba(143, 227, 255, .55), rgba(199, 155, 255, .55), rgba(255, 159, 214, .5), rgba(255, 226, 122, .5), rgba(143, 227, 255, .55)); filter: blur(10px); animation: mySpin 6s linear infinite; pointer-events: none; z-index: -1; }
+/* Sternschnuppe, die das mythische Tier bringt */
+.myth-comet { position: fixed; left: 0; top: 0; z-index: 45; pointer-events: none; font-size: 30px; color: #fff6c9; text-shadow: 0 0 10px #fff, 0 0 22px #c79bff, 0 0 40px #8fe3ff; margin: -18px 0 0 -12px; }
+.myth-comet i { position: absolute; right: 18px; top: 50%; width: 170px; height: 5px; border-radius: 4px; transform-origin: right center; transform: translateY(-50%) rotate(calc(var(--ang) + 0deg)); background: linear-gradient(90deg, transparent, rgba(199, 155, 255, .5), #fff); filter: blur(1px); }
+/* das erschienene Tier */
+.myth-appear { position: fixed; z-index: 45; transform: translate(-50%, -50%); cursor: pointer; -webkit-tap-highlight-color: transparent; animation: myIn .9s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes myIn { from { transform: translate(-50%, -50%) scale(.1); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+.myth-appear .my-beam { position: absolute; left: 50%; bottom: 40%; width: 70%; height: 300%; transform: translateX(-50%); background: linear-gradient(to top, rgba(255, 255, 255, .55), rgba(199, 155, 255, .25) 40%, transparent); filter: blur(6px); pointer-events: none; animation: myBeam 1.6s ease-out both; }
+@keyframes myBeam { from { opacity: 0; height: 0; } 30% { opacity: 1; } to { opacity: .55; } }
+.myth-appear .my-rays { position: absolute; left: 50%; top: 50%; width: 210%; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, rgba(255, 246, 201, .55) 0 8deg, transparent 8deg 22deg); -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%); animation: mySpin 9s linear infinite; pointer-events: none; }
+.myth-appear .my-halo { position: absolute; left: 50%; top: 50%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, #8fe3ff, #c79bff, #ff9fd6, #ffe27a, #8fe3ff); filter: blur(14px); opacity: .85; animation: mySpin 5s linear infinite; pointer-events: none; }
+.myth-appear .my-ani { position: relative; width: 100%; height: 100%; animation: myFloat 2.4s ease-in-out infinite; }
+.myth-appear .my-ani .ani { animation: myGlow 2s ease-in-out infinite; }
+.myth-appear .my-spark { position: absolute; left: 50%; top: 50%; color: #fff; font-size: 16px; text-shadow: 0 0 8px #c79bff; pointer-events: none; animation: myOrbit 3.6s linear infinite; animation-delay: calc(var(--k) * -.6s); }
+@keyframes myOrbit { from { transform: translate(-50%, -50%) rotate(0deg) translateX(85px) rotate(0deg) scale(.8); } 50% { opacity: .5; } to { transform: translate(-50%, -50%) rotate(360deg) translateX(85px) rotate(-360deg) scale(1.1); } }
+.myth-appear .my-label { position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%); white-space: nowrap; padding: 3px 10px; border-radius: 999px; font: 800 12px "DM Sans", sans-serif; letter-spacing: .08em; color: #2a1d5c; background: linear-gradient(90deg, #8fe3ff, #c79bff, #ff9fd6, #ffe27a, #8fe3ff); background-size: 200% 100%; animation: myShine 2s linear infinite; box-shadow: 0 0 14px rgba(199, 155, 255, .9); pointer-events: none; }
+.myth-appear.caught { animation: myOut .9s ease-in forwards; pointer-events: none; }
+@keyframes myOut { to { transform: translate(-50%, -50%) scale(1.8); opacity: 0; filter: brightness(3); } }
+/* großes Jubel-Fenster */
+.myth-wow { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 16px; overflow: hidden; animation: lbIn .5s ease-out; }
+.myth-wow.out { opacity: 0; transition: opacity .45s; }
+.myth-wow .mw-sky { position: absolute; inset: -20%; background: radial-gradient(ellipse at 30% 20%, rgba(143, 227, 255, .55), transparent 50%), radial-gradient(ellipse at 75% 30%, rgba(255, 159, 214, .5), transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(199, 155, 255, .55), transparent 55%), #140f33; animation: myHue 12s linear infinite; }
+.myth-wow .mw-rays { position: absolute; left: 50%; top: 42%; width: 160vmax; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, rgba(255, 246, 201, .16) 0 7deg, transparent 7deg 18deg); animation: mySpin 30s linear infinite; }
+.myth-wow .mw-card { position: relative; width: min(380px, 100%); text-align: center; color: #fff6e8; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.myth-wow .mw-kicker { padding: 5px 14px; border-radius: 999px; font: 800 13px "DM Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #2a1d5c; background: linear-gradient(90deg, #8fe3ff, #c79bff, #ff9fd6, #ffe27a, #8fe3ff); background-size: 200% 100%; animation: myShine 2s linear infinite; box-shadow: 0 0 20px rgba(199, 155, 255, .9); }
+.myth-wow .mw-stage { position: relative; width: min(230px, 62vw); aspect-ratio: 1; margin: 6px 0; }
+.myth-wow .mw-halo { position: absolute; left: 50%; top: 50%; width: 120%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, #8fe3ff, #c79bff, #ff9fd6, #ffe27a, #8fe3ff); filter: blur(22px); opacity: .9; animation: mySpin 6s linear infinite; }
+.myth-wow .mw-ani { position: relative; width: 100%; height: 100%; animation: myPop .9s cubic-bezier(.2, 1.5, .4, 1) both, myFloat 2.6s ease-in-out .9s infinite; }
+.myth-wow .mw-ani .ani { animation: myGlow 2s ease-in-out infinite; }
+@keyframes myPop { from { transform: scale(.2) rotate(-12deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+.myth-wow h2 { margin: 0; font: 700 clamp(30px, 9vw, 40px)/1.05 var(--serif, Fraunces, serif); background: linear-gradient(90deg, #fff, #ffe27a, #ff9fd6, #8fe3ff, #fff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: myShine 3s linear infinite; }
+.myth-wow .mw-title { font: 600 18px var(--serif, Fraunces, serif); color: #e7dcff; }
+.myth-wow p { margin: 4px 0 2px; font-size: 15px; line-height: 1.45; color: #efe7ff; }
+.myth-wow .mw-coins { font: 800 20px "DM Sans", sans-serif; color: #ffe27a; text-shadow: 0 0 12px rgba(255, 210, 90, .8); }
+.myth-wow .mw-btn { margin-top: 8px; background: linear-gradient(90deg, #ffe27a, #ffc94a); color: #2a1d5c; border: none; box-shadow: 0 0 20px rgba(255, 210, 90, .7); }
+@media (prefers-reduced-motion: reduce) { .myth-appear *, .myth-wow *, .my-aura, .r-mythisch .ani { animation: none !important; } }

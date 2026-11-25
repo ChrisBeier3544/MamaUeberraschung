@@ -209,7 +209,7 @@ const App = (() => {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
   }
   /* ---------- Ruhe beim Rätseln: Hinweise warten, bis kein Fenster mehr offen ist ---------- */
-  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits, .xmas-show, .santa-fly";
+  const BUSY_SEL = ".gehege-overlay, .finale-overlay, .pola-wrap, .lightbox, .intro-wrap, .site-lock, .credits, .xmas-show, .santa-fly, .myth-wow";
   const busy = () => !document.getElementById("modal")?.classList.contains("hidden") || !!document.querySelector(BUSY_SEL);
   const notes = [];
   function flushNotes() {
