@@ -67,7 +67,7 @@ const Intro = (() => {
       title: "100 Tiere suchen",
       lines: [
         "Überall auf der Seite verstecken sich Tiere: hinter Türchen, am Adventskranz, an den Rändern, in den Karten … Entdeckst du eins, tipp es an – dann zieht es bei dir ein, und du bekommst ein Polaroid-Foto.",
-        "Manche Tiere sind selten, ganz wenige sind legendär – die glänzen golden.",
+        "Manche Tiere sind selten, ganz wenige sind legendär – die glänzen golden. Und an drei ganz besonderen Tagen erscheint ein mythisches Tier – nur an diesem einen Tag!",
         "An einigen Tagen im Dezember ziehen neue Tiere ein.",
         "Im Sammelalbum (im großen Gehege) siehst du, wer schon da ist, und kannst alle Fotos ansehen.",
       ],

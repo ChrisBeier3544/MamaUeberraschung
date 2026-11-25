@@ -261,7 +261,7 @@ const Animals = (() => {
   };
 
   /* ---------- Accessoires ---------- */
-  const ACC_NAME = { muetze: "mit Weihnachtsmütze", schal: "mit Schal", schleife: "mit Schleife", brille: "mit Brille", krone: "mit Krone", geweih: "mit Rentiergeweih", blume: "mit Blume", fliege: "mit Fliege", orange: "mit Mandarine auf dem Kopf" };
+  const ACC_NAME = { sternkrone: "mit Sternenkrone", muetze: "mit Weihnachtsmütze", schal: "mit Schal", schleife: "mit Schleife", brille: "mit Brille", krone: "mit Krone", geweih: "mit Rentiergeweih", blume: "mit Blume", fliege: "mit Fliege", orange: "mit Mandarine auf dem Kopf" };
   const ACCS = ["", "muetze", "schal", "schleife", "brille", "krone", "geweih", "blume", "fliege"];
   const ACC_COLORS = ["#e85d75", "#3f9e6e", "#4f7fe0", "#f39c32", "#9b5fd0"];
 
@@ -271,6 +271,12 @@ const Animals = (() => {
     const [tx, ty] = a.top, [ex, ey] = a.eye, [nx, ny] = a.neck, [kx, ky] = a.ear;
     const X = (d) => f(tx + d * s), Y = (d) => f(ty + d * s);
     switch (type) {
+      case "sternkrone": {
+        const star = (cx, cy, R, fill) => { let p = ""; for (let k = 0; k < 10; k++) { const ang = -Math.PI / 2 + (k * Math.PI) / 5, rr = k % 2 ? R * 0.45 : R; p += `${k ? "L" : "M"}${f(cx + Math.cos(ang) * rr)} ${f(cy + Math.sin(ang) * rr)} `; } return `<path d="${p}Z" fill="${fill}" stroke="#fff6c9" stroke-width="${f(0.8 * s)}" stroke-linejoin="round"/>`; };
+        return `<ellipse cx="${X(0)}" cy="${Y(-7)}" rx="${f(13 * s)}" ry="${f(3.6 * s)}" fill="none" stroke="#fff3b0" stroke-width="${f(2.4 * s)}" opacity=".95"/>` +
+          `<ellipse cx="${X(0)}" cy="${Y(-7)}" rx="${f(13 * s)}" ry="${f(3.6 * s)}" fill="none" stroke="#ffd84d" stroke-width="${f(1 * s)}"/>` +
+          star(tx, ty - 17 * s, 7 * s, "#ffe680") + star(tx - 11 * s, ty - 12 * s, 3 * s, "#bfe9ff") + star(tx + 11 * s, ty - 12 * s, 3 * s, "#ffc2e0");
+      }
       case "muetze":
         return P(`M${X(-11)} ${Y(3)} L${X(11)} ${Y(3)} Q${X(2)} ${Y(-12)} ${X(-15)} ${Y(-19)} Z`, "#d93a4a") + RC(tx - 12 * s, ty - 1 * s, 24 * s, 6 * s, 3 * s, "#fff") + C(tx - 15 * s, ty - 19 * s, 3.6 * s, "#fff");
       case "krone":
@@ -323,10 +329,18 @@ const Animals = (() => {
     selten: { label: "Selten", w: 3.5 },
     sehrselten: { label: "Sehr selten", w: 1.2 },
     legendaer: { label: "Legendär", w: 0.5 },
+    mythisch: { label: "Mythisch", w: 0 }, // erscheinen nie zufällig, nur an ihrem Tag
   };
   const UNFOUND_BOOST = 4;
   const nth = (sp, i) => VARIANTS.filter((v) => v.sp === sp)[i];
-  [[nth("capy", 8), 2], [nth("elefant", 4), 1], [nth("baer", 6), 2]].forEach(([v, col]) => { v.col = col; v.acc = "krone"; v.rarity = "legendaer"; });
+  [[nth("capy", 8), 2], [nth("elefant", 4), 1], [nth("baer", 6), 2], [nth("otter", 5), 1], [nth("pinguin", 5), 1]].forEach(([v, col]) => { v.col = col; v.acc = "krone"; v.rarity = "legendaer"; });
+  // Mythisch: drei Tiere mit eigener Fellfarbe und Sternenkrone – nur an einem einzigen Tag zu finden
+  const MYTHS = [
+    [nth("fuchs", 5), 6, "Aurora", "der Polarlicht-Fuchs", { n: "Polarlicht", main: "#bfe6ff", belly: "#ffffff", dark: "#4f6fd0" }],
+    [nth("hase", 5), 17, "Selene", "der Mondhase", { n: "Mondschein", main: "#e7ddff", belly: "#ffffff" }],
+    [nth("katze", 7), 23, "Stella", "die Sternenkatze", { n: "Sternenstaub", main: "#34407e", belly: "#6a78cf", dark: "#1d2457" }],
+  ];
+  MYTHS.forEach(([v, day, name, title, colObj]) => Object.assign(v, { rarity: "mythisch", acc: "sternkrone", only: day, name, title, colObj }));
   // besondere Fellfarben landen bevorzugt in "sehr selten"
   const SPECIAL = { capy: [2], elefant: [1], fuchs: [1], pinguin: [1], igel: [1], baer: [1, 2], schaf: [1], ente: [2], katze: [4], hund: [2] };
   let rs = 77;
@@ -344,9 +358,10 @@ const Animals = (() => {
     { day: 20, acc: "krone", msg: "Kurz vor Weihnachten kommen die Majestäten: Neue Tiere mit Krone sind eingezogen!" },
   ];
   VARIANTS.forEach((v) => { const w = WAVES.find((x) => x.acc === v.acc); v.from = w ? w.day : 0; });
-  // die drei legendären verteilen sich über den Monat
-  nth("capy", 8).from = 6; nth("elefant", 4).from = 13; nth("baer", 6).from = 20;
-  const available = (v) => v.from === 0 || App.isUnlocked(v.from);
+  // die fünf legendären verteilen sich über den Monat
+  nth("capy", 8).from = 6; nth("elefant", 4).from = 13; nth("baer", 6).from = 20; nth("otter", 5).from = 1; nth("pinguin", 5).from = 27;
+  const decDay = () => { const n = new Date(); return typeof CONFIG !== "undefined" && n.getFullYear() === CONFIG.year && n.getMonth() === 11 ? n.getDate() : 0; };
+  const available = (v) => (v.only ? decDay() === v.only : v.from === 0 || App.isUnlocked(v.from));
 
   const rarityChip = (v) => `<span class="rar r-${v.rarity}">${RARITY[v.rarity].label}</span>`;
 
@@ -360,6 +375,7 @@ const Animals = (() => {
   }
   const desc = (v) => {
     const sp = SPECIES[v.sp];
+    if (v.title) return v.title.charAt(0).toUpperCase() + v.title.slice(1);
     return sp.name + (sp.colors.length > 1 ? ", " + sp.colors[v.col].n : "") + (v.acc ? " " + ACC_NAME[v.acc] : "");
   };
 
@@ -367,13 +383,13 @@ const Animals = (() => {
   // v = {sp, col, acc, accColor}; opts: walk, width, fit, cls
   function svg(v, opts = {}) {
     const sp = SPECIES[v.sp];
-    const d = sp.draw(sp.colors[v.col || 0]);
+    const d = sp.draw(v.colObj || sp.colors[v.col || 0]);
     const size = opts.fit ? 'style="width:100%;height:100%"' : `width="${f(opts.width || sp.W * sp.scale)}" height="${f(((opts.width || sp.W * sp.scale) * sp.H) / sp.W)}"`;
     return `<svg xmlns="http://www.w3.org/2000/svg" class="ani${opts.walk ? " walking" : ""} ${opts.cls || ""}" viewBox="0 0 ${sp.W} ${sp.H}" ${size} aria-hidden="true">${d.legs}<g class="up">${d.body}${acc(v.acc, d.a, v.accColor)}</g></svg>`;
   }
   function inner(v) {
     const sp = SPECIES[v.sp];
-    const d = sp.draw(sp.colors[v.col || 0]);
+    const d = sp.draw(v.colObj || sp.colors[v.col || 0]);
     return { W: sp.W, H: sp.H, content: d.legs + d.body + acc(v.acc, d.a, v.accColor) };
   }
 
@@ -408,10 +424,10 @@ const Animals = (() => {
   function pickVariant() {
     if (preDecember()) {
       if (found.size >= PRE_MAX || onScreen.size >= 1 || Math.random() > 0.12) return null;
-      const fresh = VARIANTS.filter((v) => !found.has(v.id) && available(v) && v.rarity !== "legendaer");
+      const fresh = VARIANTS.filter((v) => !found.has(v.id) && available(v) && v.rarity !== "legendaer" && v.rarity !== "mythisch");
       return fresh.length ? H.pick(fresh) : null;
     }
-    const pool = VARIANTS.filter((v) => !onScreen.has(v.id) && available(v));
+    const pool = VARIANTS.filter((v) => !onScreen.has(v.id) && available(v) && v.rarity !== "mythisch");
     if (!pool.length) return null;
     const wt = (v) => RARITY[v.rarity].w * (found.has(v.id) ? 1 : UNFOUND_BOOST);
     let t = Math.random() * pool.reduce((n, v) => n + wt(v), 0), v = pool[pool.length - 1];
@@ -463,10 +479,10 @@ const Animals = (() => {
         if (isNew) s.good();
       };
     }, 550);
-    const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER" }[v.rarity];
+    const pre = { haeufig: "✨ Neu im Gehege", selten: "💙 Seltenes Tier", sehrselten: "💜 Sehr seltenes Tier", legendaer: "👑 LEGENDÄRES TIER", mythisch: "✦ MYTHISCHES TIER" }[v.rarity];
     if (isNew && typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 650);
     if (isNew) (typeof Extras !== "undefined" && Extras.track("found"));
-    if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 3, selten: 8, sehrselten: 20, legendaer: 60 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
+    if (isNew && typeof Zoo !== "undefined") setTimeout(() => Zoo.addCoins({ haeufig: 3, selten: 8, sehrselten: 20, legendaer: 60, mythisch: 150 }[v.rarity], { x: r.left + r.width / 2, y: r.top }), 400);
     if (isNew) setTimeout(refreshPens, 1300);
     else if (isNew) H.toast(`${pre}: ${v.name} – ${desc(v)} · ${found.size}/100`, 3200);
     if (isNew && preDecember() && found.size === PRE_MAX) setTimeout(() => H.notify("Das waren die ersten Tiere – ein kleiner Vorgeschmack! Ab dem 1. Dezember ziehen viele weitere ein.", 6500), 4000);
@@ -482,7 +498,8 @@ const Animals = (() => {
   const hiders = new Set();
   // legendäre Tiere: Strahlenkranz + funkelnde Sterne
   const LEGEND_FX = `<span class="lg-rays"></span><span class="lg-star s1">✦</span><span class="lg-star s2">✧</span><span class="lg-star s3">✦</span><span class="lg-star s4">★</span>`;
-  const legendFx = (el, v) => { if (v.rarity === "legendaer") el.insertAdjacentHTML("afterbegin", LEGEND_FX); };
+  const MYTH_FX = `<span class="my-aura"></span><span class="lg-star s1">✦</span><span class="lg-star s2">✧</span><span class="lg-star s3">✦</span><span class="lg-star s4">✧</span>`;
+  const legendFx = (el, v) => { if (v.rarity === "legendaer") el.insertAdjacentHTML("afterbegin", LEGEND_FX); if (v.rarity === "mythisch") el.insertAdjacentHTML("afterbegin", MYTH_FX); };
   function makeHider(v, parent, css, o = {}) {
     const sp = SPECIES[v.sp];
     const w = Math.round(o.w || 64), svgH = (w * sp.H) / sp.W;
@@ -701,7 +718,7 @@ const Animals = (() => {
     const raus = typeof Zoo !== "undefined" ? Zoo.raus() : {};
     const h = hourNow();
     const key = (v) => { let x = (v.id * 2654435761 + h * 97) % 1000003; return x / 1000003; };
-    const rank = (v) => (raus[v.id] === h ? 0 : Date.now() - (since[v.id] || 0) < DAY ? 1 : hungry(v) ? 2 : v.rarity === "legendaer" ? 3 : 4) + key(v);
+    const rank = (v) => (raus[v.id] === h ? 0 : Date.now() - (since[v.id] || 0) < DAY ? 1 : hungry(v) ? 2 : v.rarity === "legendaer" || v.rarity === "mythisch" ? 3 : 4) + key(v);
     return mine.slice().sort((a, b) => rank(a) - rank(b)).slice(0, max);
   }
   const outside = () => new Set(lineup().map((v) => v.id));
@@ -1272,7 +1289,7 @@ const Animals = (() => {
     });
     const waiting = VARIANTS.filter((v) => !available(v)).length;
     if (typeof Extras !== "undefined" && Extras.hasXmasPhoto()) wrap.append(H.el("button", { class: "album-xmas", onclick: () => Extras.showXmasPhoto() }, H.el("b", { text: `Weihnachtsfoto ${CONFIG.year}` }), H.el("span", { text: "Alle zusammen vor dem Weihnachtsbaum – antippen zum Ansehen" })));
-    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Die Tiere verstecken sich überall auf der Seite, seltene leuchten ein wenig. Die legendären kommen nur ganz selten vorbei – Augen offen halten!" + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
+    wrap.append(sum, H.el("p", { class: "rar-hint", text: "Tippe auf ein gefundenes Tier, um sein Foto anzusehen. Die Tiere verstecken sich überall auf der Seite, seltene leuchten ein wenig. Die legendären kommen nur ganz selten vorbei – Augen offen halten! Und an drei ganz besonderen Tagen erscheint ein mythisches Tier, aber nur an diesem einen Tag." + (waiting ? ` ${waiting} Tiere ziehen erst im Laufe des Dezembers ein.` : "") }));
     Object.keys(QUOTA).forEach((key) => {
       const sp = SPECIES[key];
       const vs = VARIANTS.filter((v) => v.sp === key);
@@ -1284,7 +1301,7 @@ const Animals = (() => {
         const card = H.el("div", { class: "album-card r-" + v.rarity + (has ? "" : " missing") + (locked ? " locked" : "") });
         const pic = H.el("div", { class: "album-pic" }); pic.innerHTML = svg(v, { fit: true });
         if (has && typeof Photos !== "undefined") { card.classList.add("has-photo"); card.title = "Foto ansehen"; card.onclick = () => Photos.show(v, { replay: true }); }
-        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name : locked ? `zieht am ${v.from}. Dezember ein` : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
+        card.append(pic, H.el("b", { text: has ? v.name : "???" }), H.el("small", { text: has ? (v.title ? desc(v) : desc(v).replace(sp.name, "").replace(/^, /, "") || sp.name) : v.only && !has ? (decDay() === v.only ? "nur heute zu finden!" : decDay() > v.only || new Date() > new Date(CONFIG.year, 11, v.only, 23, 59) ? `erschien am ${v.only}. Dezember` : `erscheint nur am ${v.only}. Dezember`) : locked ? `zieht am ${v.from}. Dezember ein` : "noch nicht gefunden" }), H.el("div", { html: rarityChip(v) }));
         grid.append(card);
       });
       wrap.append(H.el("h3", {}, sp.plural, H.el("span", { text: ` ${n}/${vs.length}` })), grid);
@@ -1314,9 +1331,74 @@ const Animals = (() => {
     updateStallChip();
   }
 
+  /* ---------- Mythische Tiere: großer Auftritt nur an ihrem Tag ---------- */
+  let mythEl = null, mythNext = 0, mythLeft = 0;
+  const mythToday = () => VARIANTS.find((v) => v.rarity === "mythisch" && v.only === decDay() && !found.has(v.id)) || null;
+  function mythTick() {
+    const v = mythToday();
+    if (!v || mythEl || Date.now() < mythNext || document.hidden || H.busy() || document.querySelector(".gehege-overlay, .mk-cinema, .myth-wow")) return;
+    mythAppear(v);
+  }
+  function chime(notes, gap = 0.09, type = "sine", vol = 0.09) { notes.forEach((f, i) => H.sfx.tone(f, 0.5, type, vol, null, i * gap)); }
+  function mythAppear(v) {
+    const w = Math.min(150, Math.max(110, innerWidth * 0.34));
+    const x = innerWidth * (0.3 + Math.random() * 0.4), y = innerHeight * (0.4 + Math.random() * 0.16);
+    mythEl = H.el("div", { class: "myth-comet", html: "<i></i>✦" });
+    document.body.append(mythEl);
+    chime([1568, 1760, 2093, 2349], 0.07, "sine", 0.06);
+    const sx = innerWidth + 60, sy = -60, ang = (Math.atan2(y - sy, x - sx) * 180) / Math.PI;
+    mythEl.style.setProperty("--ang", ang + "deg");
+    mythEl.animate([{ transform: `translate(${sx}px, ${sy}px)` }, { transform: `translate(${x}px, ${y}px)` }], { duration: 1400, easing: "cubic-bezier(.35,.1,.35,1)", fill: "forwards" }).onfinish = () => {
+      mythEl.remove();
+      const el = H.el("div", { class: "myth-appear", role: "button", "aria-label": `Mythisches Tier: ${v.name} – antippen!`, style: `left:${x}px;top:${y}px;width:${w}px;height:${w}px` });
+      el.innerHTML = `<div class="my-beam"></div><div class="my-rays"></div><div class="my-halo"></div><div class="my-ani">${svg(v, { fit: true })}</div>` + [0, 1, 2, 3, 4, 5].map((k) => `<span class="my-spark" style="--k:${k}">✦</span>`).join("") + `<div class="my-label">✦ Mythisch ✦</div>`;
+      document.body.append(el); mythEl = el; onScreen.add(v.id);
+      H.burst(x, y, ["✦", "✧", "✨", "🌟", "💫"], 34, 170);
+      chime([523, 659, 784, 1047, 1319, 1568], 0.11, "triangle", 0.09);
+      H.toast("✦ Ein MYTHISCHES Tier ist erschienen! Schnell antippen!", 5500);
+      el.addEventListener("click", (e) => { e.stopPropagation(); mythCatch(v, el); });
+      el._t = setTimeout(() => mythLeave(v, el), 32000);
+    };
+  }
+  function mythLeave(v, el) {
+    if (el.dataset.gone) return; el.dataset.gone = "1"; onScreen.delete(v.id);
+    el.animate([{ opacity: 1, transform: "translate(-50%,-50%) scale(1)" }, { opacity: 0, transform: "translate(-50%,-260%) scale(.4)" }], { duration: 1200, easing: "ease-in", fill: "forwards" }).onfinish = () => el.remove();
+    mythEl = null; mythNext = Date.now() + 120000; mythLeft++;
+    H.toast(mythLeft === 1 ? "Oh – es ist weitergezogen! Vielleicht kommt es heute nochmal vorbei …" : "Weitergezogen … Augen offen halten!", 4500);
+  }
+  function mythCatch(v, el) {
+    if (el.dataset.gone) return; el.dataset.gone = "1"; clearTimeout(el._t);
+    found.add(v.id); since[v.id] = Date.now(); save(); onScreen.delete(v.id); mythEl = null;
+    const r = el.getBoundingClientRect();
+    el.classList.add("caught"); setTimeout(() => el.remove(), 900);
+    H.burst(r.left + r.width / 2, r.top + r.height / 2, ["✦", "🌟", "✨", "💫", "🌈"], 40, 200);
+    if (typeof Extras !== "undefined") Extras.track("found");
+    if (typeof Zoo !== "undefined") Zoo.addCoins(150, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    updateBtn(true); setTimeout(refreshPens, 1300);
+    setTimeout(() => mythWow(v), 650);
+  }
+  function mythWow(v) {
+    const ov = H.el("div", { class: "myth-wow", role: "dialog", "aria-label": "Mythisches Tier gefunden" });
+    ov.innerHTML = `<div class="mw-sky"></div><div class="mw-rays"></div>`;
+    const card = H.el("div", { class: "mw-card" },
+      H.el("div", { class: "mw-kicker", text: "✦ Mythisches Tier ✦" }),
+      H.el("div", { class: "mw-stage", html: `<div class="mw-halo"></div><div class="mw-ani">${svg(v, { fit: true })}</div>` }),
+      H.el("h2", { text: v.name }),
+      H.el("div", { class: "mw-title", text: v.title }),
+      H.el("p", { text: `Mythische Tiere erscheinen nur an einem einzigen Tag im Jahr – ${v.name} nur am ${v.only}. Dezember. Und du hast es entdeckt!` }),
+      H.el("div", { class: "mw-coins", text: "+150 Taler" }),
+      H.el("button", { class: "btn mw-btn", text: "Wunderbar! Ins Album damit", onclick: () => { ov.classList.add("out"); setTimeout(() => ov.remove(), 450); if (typeof Photos !== "undefined") setTimeout(() => Photos.show(v), 500); } }));
+    ov.append(card); document.body.append(ov); document.getElementById("toast")?.classList.remove("show");
+    H.rain(["✦", "🌟", "✨", "💫", "⭐"], 70);
+    setTimeout(() => H.confetti(["✦", "🌈", "💜", "💙", "💛"], 60), 600);
+    chime([392, 523, 659, 784, 1047, 784, 1047, 1319, 1568], 0.13, "triangle", 0.12);
+    setTimeout(() => chime([1047, 1319, 1568, 2093], 0.09, "sine", 0.07), 1400);
+  }
+
   function init() {
     H = App.h;
     load();
+    setInterval(mythTick, 4000); mythNext = Date.now() + 15000;
     btn = H.el("button", { id: "gehege-btn", "aria-label": "Tiergehege öffnen" });
     btn.innerHTML = `<svg viewBox="0 0 40 30" width="30" height="22" aria-hidden="true"><g fill="#8a5a3b"><rect x="3" y="6" width="5" height="22" rx="2"/><rect x="17" y="6" width="5" height="22" rx="2"/><rect x="31" y="6" width="5" height="22" rx="2"/><rect x="0" y="11" width="40" height="4" rx="2"/><rect x="0" y="20" width="40" height="4" rx="2"/></g></svg><span>Gehege</span><span class="g-count"></span>`;
     btn.addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(500); openGehege(); });
@@ -1337,5 +1419,5 @@ const Animals = (() => {
   }
 
   function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
-  return { BABIES, scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { mythAppear: () => { const v = mythToday(); if (v && !mythEl) mythAppear(v); }, BABIES, scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();
