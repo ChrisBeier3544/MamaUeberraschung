@@ -77,7 +77,7 @@ const Intro = (() => {
       title: "Füttern, Namen und der Stall",
       lines: [
         "Jede Tierart hat ihr Lieblingsfutter – das kaufst du im Shop unter „Futter“.",
-        "Bekommt ein Tier einen Tag lang nichts, wird es traurig. Oben in der Leiste siehst du, wie viele gerade Hunger haben.",
+        "Jeden Tag freuen sich die Tiere auf ihr Futter – wer heute noch nichts bekommen hat, ist ein bisschen traurig. Tipp oben auf „Tiere haben Hunger“, dann füttert ihr mit der Futterrunde alle auf einmal.",
         "Tipp ein Tier an, um es zu füttern oder ihm einen neuen Namen zu geben.",
         "Höchstens 25 Tiere sind gleichzeitig draußen, jede Stunde wechselt die Besetzung. Die anderen ruhen im Stall – dort kannst du sie füttern oder ins Gehege holen.",
       ],

@@ -534,7 +534,7 @@ const Zoo = (() => {
       area.innerHTML = "";
       if (id === "futter") {
         const order = list.slice().sort((a, b) => (Animals.ownedOf(b) > 0) - (Animals.ownedOf(a) > 0));
-        area.append(H.el("p", { class: "shop-note", text: "Jede Tierart frisst etwas anderes. Tiere, die einen Tag lang nichts bekommen, werden traurig. Größere Packungen sind günstiger." }), H.el("div", { class: "shop-grid" }, ...order.map(foodCard)));
+        area.append(H.el("p", { class: "shop-note", text: "Jede Tierart frisst etwas anderes. Wer heute noch nichts bekommen hat, ist ein bisschen traurig – mit der Futterrunde fütterst du alle auf einmal. Größere Packungen sind günstiger." }), H.el("div", { class: "shop-grid" }, ...order.map(foodCard)));
       } else area.append(list.length ? H.el("div", { class: "shop-grid" + (id === "gehege" ? " mini" : "") }, ...list.map(card)) : H.el("p", { class: "shop-empty", text: emptyText }));
       if (typeof Animals !== "undefined") Animals.hideIn("shop", area);
     };
@@ -715,5 +715,5 @@ const Zoo = (() => {
   function setPos(key, dx, dy) { st.pos[key] = [Math.round(Math.max(-450, Math.min(450, dx))), Math.round(Math.max(-300, Math.min(250, dy)))]; save(); refresh(); }
   const posOf = (key) => off(key);
   const ownedList = () => st.owned.slice();
-  return { LANTERNS, startGift, W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
+  return { buyFood, FOOD_PACKS, LANTERNS, startGift, W, ZONES, off, snap, toggle, isOn: on, raus: () => (st.raus = st.raus || {}), saveRaus: save, SMALL, EXTRAS, NOMOVE, setPos, posOf, ownedList, foodStock: () => ({ ...st.food }), setFood: (sp, n) => { st.food[sp] = Math.max(0, n); save(); }, STORY, ITEMS, FOOD, foodIcon, foodCount, useFood, fedAt: (id) => st.fed[id] || 0, gameResult, high: (g) => st.high[g] || 0, init, scene, preview, refresh, earn, addCoins, openShop, letter, info, anchorOf, coins: () => st.coins, owns };
 })();

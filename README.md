@@ -21,7 +21,7 @@ Mama wird Direktorin eines tristen Tiergeheges und verwandelt es Stück für St�
   hin und sagen, wie schön es ist (ohne eigene Tiere kommen Kalle, Mimi und Bello zu Besuch).
   Manche Tiere ziehen erst ab Nikolaus, dem 13. oder dem 20. Dezember ein.
 - **Füttern:** Jede Tierart frisst etwas anderes (16 Sorten im Shop unter „Futter“: 3 Stück für 1 Taler, 7 für 2, 20 für 5). Im Gehege ein Tier
-  antippen und „Füttern“ wählen. Wer 24 Stunden nichts bekommt, wird traurig.
+  antippen und „Füttern“ wählen. Wer an einem Tag (ab 6 Uhr) noch nichts bekommen hat, ist traurig. „Tiere haben Hunger“ oben öffnet die Futterrunde: alle auf einmal füttern, fehlendes Futter mit einem Tipp kaufen.
 - **Großes Gehege:** Über den Gehege-Knopf öffnet sich eine große Ansicht zum Zoomen (Mausrad, zwei Finger, +/−) und Verschieben.
 - **Spielecke:** „Heuballen-Turm“, „Waschbär-Alarm“ und „Pinguin-Rutsche“. Bestimmte Punktzahlen bringen einmalig heimlich Taler
   (Stufen in `games.js` unter `RULES`).
