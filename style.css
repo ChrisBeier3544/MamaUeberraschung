@@ -2272,3 +2272,6 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx):not(.mk-album) { visi
 .myth-wow .mw-coins { font: 800 20px "DM Sans", sans-serif; color: #ffe27a; text-shadow: 0 0 12px rgba(255, 210, 90, .8); }
 .myth-wow .mw-btn { margin-top: 8px; background: linear-gradient(90deg, #ffe27a, #ffc94a); color: #2a1d5c; border: none; box-shadow: 0 0 20px rgba(255, 210, 90, .7); }
 @media (prefers-reduced-motion: reduce) { .myth-appear *, .myth-wow *, .my-aura, .r-mythisch .ani { animation: none !important; } }
+/* verpasste Szenen im Album: nachholbar */
+.mka-scene .mka-late { display: block; font-style: normal; font-size: 11px; font-weight: 600; color: #a8740c; margin-top: 1px; }
+.mka-scene.late { border-style: dashed; }
