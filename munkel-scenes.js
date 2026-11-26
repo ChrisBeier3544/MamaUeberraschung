@@ -1275,13 +1275,14 @@ const MunkelShow = (() => {
     const now = currentSlot(), nowOrder = now ? slotOrder(now) : -1;
     const wrap = document.createElement("div"); wrap.className = "mk-album"; wrap.setAttribute("role", "dialog");
     const close = () => wrap.remove();
-    let html = `<div class="mka-card"><button class="mka-close" aria-label="Schließen">✕</button><h2>Munkels Szenen-Album</h2><p>Alle Szenen, die du schon gesehen hast – zum Nochmal-Ansehen.</p><div class="mka-grid">`;
+    let html = `<div class="mka-card"><button class="mka-close" aria-label="Schließen">✕</button><h2>Munkels Szenen-Album</h2><p>Alle Szenen bis heute – auch die verpassten – zum (Nochmal-)Ansehen.</p><div class="mka-grid">`;
     for (let d = 14; d <= 27; d++) {
       html += `<div class="mka-day"><small>${d}. November</small>`;
       for (const p of SCENES[d + "s"] ? ["m", "s", "e"] : ["m", "e"]) {
         const id = d + p, seen = !!st.seen[id], order = slotOrder(id);
-        const state = seen || free() || order === nowOrder ? "open" : order < nowOrder ? "missed" : "future";
-        html += `<button class="mka-scene ${state}" data-id="${id}" ${state === "open" ? "" : "disabled"}><span class="mka-ic">${p === "m" ? "☀" : p === "s" ? "♥" : "☾"}</span><span>${state === "open" ? SCENES[id].title : state === "missed" ? "verpasst" : "?"}</span></button>`;
+        // alles bis heute ist offen – auch verpasste Szenen; nur zukünftige bleiben zu
+        const state = seen || free() || order <= nowOrder ? "open" : "future", late = !seen && !free() && order < nowOrder;
+        html += `<button class="mka-scene ${state}${late ? " late" : ""}" data-id="${id}" ${state === "open" ? "" : "disabled"}><span class="mka-ic">${p === "m" ? "☀" : p === "s" ? "♥" : "☾"}</span><span>${state === "open" ? SCENES[id].title : "?"}${late ? '<em class="mka-late">verpasst – jetzt ansehen</em>' : ""}</span></button>`;
       }
       html += `</div>`;
     }
