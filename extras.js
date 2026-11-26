@@ -208,10 +208,10 @@ const Extras = (() => {
   const taskOfDay = () => TASKS[seedOf(dkey() + "x") % TASKS.length];
 
   /* ================= Zähler & Tagebuch ================= */
-  function track(type, n = 1, detail) {
+  function track(type, n = 1, detail, o = {}) {
     if (!H) return;
     st.stats[type] = (st.stats[type] || 0) + n;
-    const t = today(); t.c[type] = (t.c[type] || 0) + n;
+    const t = today(); if (!o.noTask) t.c[type] = (t.c[type] || 0) + n; // Futterrunde zählt nicht für die Aufgabe des Tages
     const lg = (st.log[dkey()] = st.log[dkey()] || { bought: [], fed: 0, found: 0, games: 0, door: 0 });
     if (type === "bought" && detail) lg.bought.push(detail);
     if (["fed", "found", "games", "door"].includes(type)) lg[type] += n;

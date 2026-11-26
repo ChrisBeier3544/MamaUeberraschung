@@ -364,7 +364,7 @@ const Games = (() => {
   function init() {
     H = App.h;
     document.getElementById("games-btn")?.addEventListener("click", (e) => { e.stopPropagation(); H.sfx.boop(640); open(); });
-    document.getElementById("hunger-pill")?.addEventListener("click", (e) => { e.stopPropagation(); Animals.openGehege(); });
+    document.getElementById("hunger-pill")?.addEventListener("click", (e) => { e.stopPropagation(); Animals.feedRound(); });
   }
   return { init, open };
 })();

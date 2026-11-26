@@ -402,9 +402,11 @@ const Animals = (() => {
     let changed = false; found.forEach((id) => { if (!since[id]) { since[id] = Date.now(); changed = true; } }); if (changed) save();
   };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...found])); localStorage.setItem(KEY + "-zeit", JSON.stringify(since)); } catch (e) {} };
-  /* ---------- Hunger: 24 Stunden ohne Futter = traurig ---------- */
+  /* ---------- Hunger: wer heute (ab 6 Uhr) noch nichts bekommen hat, ist hungrig ---------- */
   const DAY = 24 * 3600 * 1000;
-  const hungry = (v) => typeof Zoo !== "undefined" && found.has(v.id) && Date.now() - Math.max(Zoo.fedAt(v.id), since[v.id] || Date.now()) > DAY;
+  // Tagesbeginn = 6 Uhr; neu gefundene Tiere sind am ersten Tag satt
+  const dayStart = () => { const d = new Date(); if (d.getHours() < 6) d.setDate(d.getDate() - 1); d.setHours(6, 0, 0, 0); return d.getTime(); };
+  const hungry = (v) => typeof Zoo !== "undefined" && found.has(v.id) && Math.max(Zoo.fedAt(v.id), since[v.id] || Date.now()) < dayStart();
   const hungryCount = () => VARIANTS.filter(hungry).length;
   const ownedOf = (sp) => VARIANTS.filter((v) => v.sp === sp && found.has(v.id)).length;
   function updateHunger() {
@@ -1211,6 +1213,7 @@ const Animals = (() => {
     const rest = VARIANTS.filter((v) => found.has(v.id) && !out.has(v.id));
     const wrap = H.el("div", { class: "album stall" });
     wrap.append(H.el("p", { class: "rar-hint", text: `Draußen im Gehege sind gerade ${out.size} Tiere unterwegs, ${rest.length} ruhen sich im Stall aus. Jede volle Stunde wechselt die Besetzung – neue und hungrige Tiere sind immer draußen.${isNightNow() ? " Nachts schlafen mehr Tiere im Stall." : ""}` }));
+    if (VARIANTS.some(hungry)) wrap.append(H.el("button", { class: "btn btn-green fr-open", text: `Futterrunde: alle ${VARIANTS.filter(hungry).length} hungrigen Tiere füttern`, onclick: () => { closeAll(); feedRound(); } }));
     const grid = H.el("div", { class: "album-grid stall-grid" });
     rest.forEach((v) => {
       const card = H.el("div", { class: "album-card stall-card r-" + v.rarity });
@@ -1331,6 +1334,77 @@ const Animals = (() => {
     updateStallChip();
   }
 
+  /* ---------- Futterrunde: alle hungrigen Tiere auf einmal füttern ---------- */
+  // günstigste Packungen für n Portionen (3 für 1, 7 für 2, 20 für 5 Taler)
+  function cheapest(n) {
+    const packs = Zoo.FOOD_PACKS, best = [[0, []]];
+    for (let i = 1; i <= n; i++) { let b = null; packs.forEach(([pr, q]) => { const prev = best[Math.max(0, i - q)]; const c = prev[0] + pr; if (!b || c < b[0]) b = [c, [...prev[1], [pr, q]]]; }); best[i] = b; }
+    return best[n];
+  }
+  function feedRound() {
+    if (typeof Zoo === "undefined" || document.querySelector(".fr-wrap")) return;
+    const list = VARIANTS.filter(hungry);
+    if (!list.length) { H.toast("Alle Tiere sind satt und zufrieden!"); return; }
+    const bySp = {}; list.forEach((v) => (bySp[v.sp] = bySp[v.sp] || []).push(v));
+    const wrap = H.el("div", { class: "pola-wrap fr-wrap", role: "dialog", "aria-label": "Futterrunde" });
+    const card = H.el("div", { class: "fr-card" });
+    const close = () => { wrap.classList.add("closing"); setTimeout(() => wrap.remove(), 250); };
+    wrap.onclick = (e) => { if (e.target === wrap) close(); };
+    const render = () => {
+      card.innerHTML = "";
+      const rows = Object.keys(bySp).map((sp) => { const hung = bySp[sp].filter(hungry).length; return { sp, hung, stock: Zoo.foodCount(sp) }; }).filter((r) => r.hung);
+      const canFeed = rows.reduce((n, r) => n + Math.min(r.hung, r.stock), 0);
+      const missing = rows.filter((r) => r.stock < r.hung).map((r) => ({ ...r, need: r.hung - r.stock, buy: cheapest(r.hung - r.stock) }));
+      const cost = missing.reduce((n, m) => n + m.buy[0], 0);
+      const total = rows.reduce((n, r) => n + r.hung, 0);
+      card.append(
+        H.el("div", { class: "fr-kalle", html: svg({ sp: "capy", col: 0, acc: "orange" }, { fit: true }) + `<span class="fr-bell">🔔</span>` }),
+        H.el("b", { class: "fr-title", text: "Futterrunde" }),
+        H.el("p", { class: "fr-sub", text: total === 1 ? "Ein Tier hat heute noch nichts bekommen." : `${total} Tiere haben heute noch nichts bekommen.` }),
+        H.el("div", { class: "fr-rows" }, ...rows.map((r) => H.el("div", { class: "fr-row" + (r.stock < r.hung ? " short" : "") },
+          H.el("span", { class: "fr-ic", html: Zoo.foodIcon(r.sp) }),
+          H.el("span", { class: "fr-name", text: `${SPECIES[r.sp].plural}: ${r.hung} hungrig` }),
+          H.el("span", { class: "fr-stock", text: r.stock >= r.hung ? `${Zoo.FOOD[r.sp][0]} ✓` : `${r.stock} von ${r.hung} da` })))));
+      const btns = H.el("div", { class: "fr-btns" });
+      if (missing.length) {
+        const buy = H.el("button", { class: "btn" + (Zoo.coins() >= cost ? " btn-green" : " btn-soft"), text: Zoo.coins() >= cost ? `Fehlendes Futter kaufen (${cost} Taler)` : `Für alles Futter fehlen ${cost - Zoo.coins()} Taler` });
+        buy.disabled = Zoo.coins() < cost;
+        buy.onclick = () => { missing.forEach((m) => m.buy[1].forEach(([pr, q]) => Zoo.buyFood(m.sp, pr, q))); H.sfx.pop(); render(); };
+        btns.append(buy);
+      }
+      const go = H.el("button", { class: "btn " + (missing.length ? "btn-soft" : "btn-green"), text: canFeed === total ? (total === 1 ? "Füttern" : `Alle ${total} füttern`) : `${canFeed} füttern` });
+      go.disabled = !canFeed;
+      go.onclick = () => runRound();
+      btns.append(go, H.el("button", { class: "fr-later", text: "Später", onclick: close }));
+      card.insertBefore(btns, card.querySelector(".fr-rows")); // Knöpfe oben, die Liste darunter
+    };
+    const runRound = () => {
+      const fed = [];
+      Object.keys(bySp).forEach((sp) => bySp[sp].filter(hungry).forEach((v) => { if (Zoo.useFood(sp, v.id)) fed.push(v); }));
+      if (!fed.length) return;
+      if (typeof Extras !== "undefined") Extras.track("fed", fed.length, null, { noTask: true });
+      card.innerHTML = "";
+      const stage = H.el("div", { class: "fr-stage" });
+      const show = fed.slice(0, 18);
+      show.forEach((v, i) => {
+        const a = H.el("div", { class: "fr-ani", style: `--i:${i}`, html: svg(v, { fit: true }) + `<span class="fr-food">${Zoo.foodIcon(v.sp)}</span>` });
+        stage.append(a);
+      });
+      if (fed.length > show.length) stage.append(H.el("div", { class: "fr-more", text: `+${fed.length - show.length}` }));
+      card.append(H.el("div", { class: "fr-kalle ring", html: svg({ sp: "capy", col: 0, acc: "orange" }, { fit: true }) + `<span class="fr-bell">🔔</span>` }), H.el("b", { class: "fr-title", text: "Essen ist fertig!" }), stage);
+      [1319, 1568, 1319, 1568].forEach((f, i) => H.sfx.tone(f, 0.18, "triangle", 0.08, null, i * 0.16));
+      setTimeout(() => {
+        const r = stage.getBoundingClientRect(); H.burst(r.left + r.width / 2, r.top + r.height / 2, ["💖", "💕", "✨"], 26, 140); H.sfx.good();
+        const left = VARIANTS.filter(hungry).length;
+        card.append(H.el("p", { class: "fr-sub", text: fed.length === 1 ? `${fed[0].name} ist satt und glücklich!` : `${fed.length} Tiere sind satt und glücklich!` + (left ? ` ${left} warten noch auf Futter.` : "") }),
+          H.el("div", { class: "fr-btns" }, H.el("button", { class: "btn btn-green", text: "Schön!", onclick: close })));
+      }, 1400 + Math.min(18, fed.length) * 60);
+      updateHunger(); inlineCtrls.forEach((c) => !c.guest && c.setSad(hungry(c.v)));
+    };
+    render();
+    wrap.append(card); document.body.append(wrap);
+  }
+
   /* ---------- Mythische Tiere: großer Auftritt nur an ihrem Tag ---------- */
   let mythEl = null, mythNext = 0, mythLeft = 0;
   const mythToday = () => VARIANTS.find((v) => v.rarity === "mythisch" && v.only === decDay() && !found.has(v.id)) || null;
@@ -1419,5 +1493,5 @@ const Animals = (() => {
   }
 
   function sayRandom(text) { const cs = inlineCtrls.filter((c) => c.a.isConnected && !c.guest); if (cs.length) H.pick(cs).say(text, 3000); }
-  return { mythAppear: () => { const v = mythToday(); if (v && !mythEl) mythAppear(v); }, BABIES, scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
+  return { feedRound, mythAppear: () => { const v = mythToday(); if (v && !mythEl) mythAppear(v); }, BABIES, scrollPenTo, debugHide, spotOf, SPOT_KEYS, SPECIES, VARIANTS, RARITY, sayRandom, isFound: (id) => found.has(id), rename, refreshPens, hungryCount, updateHunger, ownedOf, celebrate, hideIn, clearIn, svg, inner, desc, init, openGehege, foundCount: () => found.size };
 })();
