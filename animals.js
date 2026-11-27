@@ -1256,7 +1256,17 @@ const Animals = (() => {
     const frame = H.el("div", { class: "pen-frame" });
     const sc = H.el("div", { class: "pen-scroller" });
     zoo.insertBefore(frame, pen); sc.append(pen); frame.append(sc);
-    const step = (d) => sc.scrollBy({ left: d * sc.clientWidth * 0.8, behavior: "smooth" });
+    // Pfeile: immer genau einen Bereich weiter (am Rand so weit es geht)
+    const zoneScroll = () => Zoo.ZONES.map(([, a, b]) => { const M = sceneMap(pen), x = M.ox + ((a + b) / 2) * M.sc; return Math.round(Math.max(0, Math.min(sc.scrollWidth - sc.clientWidth, x - sc.clientWidth / 2))); });
+    const zoneNow = () => { const z = zoneScroll(); let best = 0; z.forEach((v, i) => { if (Math.abs(v - sc.scrollLeft) < Math.abs(z[best] - sc.scrollLeft)) best = i; }); return best; };
+    let goal = null;
+    const step = (d) => {
+      const z = zoneScroll(); let i = goal ?? zoneNow();
+      do { i += d; } while (i > 0 && i < z.length - 1 && z[i] === z[i - d]);
+      i = Math.max(0, Math.min(z.length - 1, i)); goal = i;
+      sc.scrollTo({ left: z[i], behavior: "smooth" });
+      clearTimeout(step.t); step.t = setTimeout(() => (goal = null), 700);
+    };
     const la = H.el("button", { class: "pen-arrow left", "aria-label": "Nach links", html: "‹", onclick: () => step(-1) });
     const ra = H.el("button", { class: "pen-arrow right", "aria-label": "Nach rechts", html: "›", onclick: () => step(1) });
     frame.append(la, ra);
@@ -1266,9 +1276,8 @@ const Animals = (() => {
     bar.append(stallChip);
     zoo.insertBefore(bar, frame);
     const upd = () => {
-      const mid = sc.scrollLeft + sc.clientWidth / 2, M = sceneMap(pen);
-      const sx = (mid - M.ox) / M.sc;
-      chips.forEach((c, i) => c.classList.toggle("active", sx >= Zoo.ZONES[i][1] && sx < Zoo.ZONES[i][2]));
+      const now = goal ?? zoneNow();
+      chips.forEach((c, i) => c.classList.toggle("active", i === now));
       la.classList.toggle("off", sc.scrollLeft < 8); ra.classList.toggle("off", sc.scrollLeft > sc.scrollWidth - sc.clientWidth - 8);
     };
     sc.addEventListener("scroll", upd, { passive: true });
