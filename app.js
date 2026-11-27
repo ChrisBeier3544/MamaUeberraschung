@@ -412,6 +412,46 @@ const App = (() => {
     if (!again && day === 18) setTimeout(() => buildBonus(true), 900);
   }
 
+  /* ---------- Deko: Winterlandschaft unter dem Kalender ---------- */
+  function buildFooter() {
+    const f = document.querySelector(".site-foot"); if (!f || f.classList.contains("winter-foot")) return;
+    const n = now(), y = CONFIG.year, day = (m, d) => new Date(y, m, d);
+    const until = (d) => Math.ceil((d - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000);
+    const T = (k) => `${k} ${k === 1 ? "Tag" : "Tage"}`;
+    let line;
+    if (n < day(11, 24)) line = `Noch ${T(until(day(11, 24)))} bis Heiligabend`;
+    else if (n < day(11, 25)) line = "Heute ist Heiligabend!";
+    else if (n < day(11, 27)) line = "Frohe Weihnachten!";
+    else if (n < day(11, 31)) line = `Noch ${T(until(day(11, 31)))} bis Silvester`;
+    else if (n < day(12, 1)) line = "Heute ist Silvester – guten Rutsch!";
+    else line = "Frohes neues Jahr!";
+    const R = (a) => a[Math.floor(Math.random() * a.length)];
+    const tree = (x, by, h, lights) => {
+      const w = h * 0.62;
+      let g = `<rect x="${x - 3}" y="${by - 6}" width="6" height="8" fill="#5a3b26"/>`;
+      [[1, 0.42], [0.8, 0.7], [0.56, 1]].forEach(([sc, top]) => { const ty = by - h * top, ww = w * sc; g += `<path d="M${x} ${ty} L${x + ww / 2} ${ty + h * 0.42} L${x - ww / 2} ${ty + h * 0.42}Z" fill="#1d5a3c"/><path d="M${x} ${ty} L${x + ww * 0.22} ${ty + h * 0.12} Q${x} ${ty + h * 0.16} ${x - ww * 0.22} ${ty + h * 0.12}Z" fill="#f4f7fb"/>`; });
+      if (lights) for (let i = 0; i < 7; i++) { const t = 0.3 + i * 0.1, ly = by - h + h * t, lx = x + (i % 2 ? 1 : -1) * w * 0.18 * t * 1.6; g += `<circle class="wf-light" style="animation-delay:-${(i * 0.37).toFixed(2)}s" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2.2" fill="${["#ffcf6a", "#ff7a6a", "#7fd6a0", "#7fbfff", "#e7a1ff"][i % 5]}"/>`; }
+      g += `<path d="M${x} ${by - h - 6} l2 4 4.4 .6 -3.2 3 .8 4.4 -4 -2.1 -4 2.1 .8 -4.4 -3.2 -3 4.4 -.6z" fill="#ffd84d"/>`.replace(/^/, h > 60 ? "" : "<!--").replace(/$/, h > 60 ? "" : "-->");
+      return g;
+    };
+    const stars = Array.from({ length: 26 }, (_, i) => `<circle class="wf-star" style="animation-delay:-${(i * 0.53 % 4).toFixed(2)}s" cx="${(i * 97) % 400}" cy="${8 + ((i * 37) % 70)}" r="${i % 4 ? 0.9 : 1.6}" fill="#fff"/>`).join("");
+    const flakes = Array.from({ length: 14 }, (_, i) => `<circle class="wf-flake" style="animation-delay:-${(i * 0.9).toFixed(1)}s;animation-duration:${(7 + (i % 5)).toFixed(1)}s" cx="${(i * 29 + 11) % 400}" cy="-6" r="${1.2 + (i % 3) * 0.6}" fill="#fff"/>`).join("");
+    f.classList.add("winter-foot");
+    f.innerHTML = `<svg class="wf-scene" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><linearGradient id="wfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#132a23"/><stop offset="1" stop-color="#24493d"/></linearGradient>
+      <radialGradient id="wfMoon" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffbe6" stop-opacity=".55"/><stop offset="1" stop-color="#fffbe6" stop-opacity="0"/></radialGradient></defs>
+      <rect width="400" height="200" fill="url(#wfSky)"/>${stars}
+      <circle cx="374" cy="30" r="24" fill="url(#wfMoon)"/><circle cx="374" cy="30" r="10" fill="#fff6d6"/><circle cx="378.5" cy="26.5" r="9" fill="#183229"/>
+      <path d="M0 150 Q70 112 150 136 T300 126 T400 134 V200 H0Z" fill="#d7e3ea"/>
+      ${tree(40, 150, 56, false)}${tree(78, 144, 44, false)}${tree(318, 140, 50, false)}${tree(362, 146, 64, true)}
+      <path d="M0 168 Q90 138 190 160 T400 156 V200 H0Z" fill="#f4f7fb"/>
+      ${tree(120, 172, 70, true)}${tree(268, 170, 58, false)}
+      <g transform="translate(196 140)"><rect x="-2.5" y="8" width="5" height="26" fill="#6b4a35"/><rect x="-46" y="-6" width="92" height="18" rx="3" fill="#8a5a3b" stroke="#5a3b26" stroke-width="1.5"/><text x="0" y="6.5" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="9" font-weight="700" fill="#fff3dc">Utes Tiergehege</text><path d="M-46 -6 q46 -7 92 0" stroke="#f4f7fb" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+      <path d="M0 186 Q100 174 200 184 T400 182 V200 H0Z" fill="#ffffff"/>${flakes}
+    </svg>
+    <div class="wf-text"><b class="wf-count">${line}</b><span>Mit Liebe gemacht – für die beste Gehege-Direktorin der Welt.</span></div>`;
+  }
+
   /* ---------- Deko: Titel ---------- */
   function buildTitle() {
     const h = document.getElementById("title");
@@ -677,7 +717,7 @@ const App = (() => {
     if (isLocked()) { showLock(); return; }
     load();
     if (typeof Zoo !== "undefined") Zoo.init();
-    buildTitle(); buildLights(); buildCalendar();
+    buildTitle(); buildLights(); buildCalendar(); buildFooter();
     updateCountdown(); setupCapy(); setupPaws(); startSnow();
     if (typeof Animals !== "undefined") Animals.init();
     if (typeof Games !== "undefined") Games.init();

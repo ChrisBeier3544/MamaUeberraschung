@@ -2301,3 +2301,18 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx):not(.mk-album) { visi
 .fr-more { display: grid; place-items: center; font-weight: 700; color: #1f3d33; }
 .fr-open { margin: 0 0 12px; }
 .fr-wrap .btn { animation: none; }
+
+/* ---------- Winterlandschaft unter dem Kalender ---------- */
+.site-foot.winter-foot { position: relative; margin: 44px 0 70px; border-radius: 26px; overflow: hidden; font-style: normal; color: #fff6e8; box-shadow: 0 18px 40px -18px rgba(20, 40, 30, .55); background: #132a23; }
+.winter-foot .wf-scene { display: block; width: 100%; height: clamp(200px, 50vw, 320px); }
+.site-foot.winter-foot { max-width: 640px; margin-left: auto; margin-right: auto; }
+.winter-foot .wf-text { position: absolute; left: 0; right: 0; top: 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 18px; text-align: center; }
+.winter-foot .wf-count { font: 700 clamp(19px, 4.6vw, 24px)/1.15 var(--serif, Fraunces, serif); color: #f3dc93; text-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
+.winter-foot .wf-text span { font: italic 500 13.5px/1.35 var(--serif, Fraunces, serif); color: #e9e1cf; max-width: 30ch; }
+.wf-star { animation: wfTwinkle 3.6s ease-in-out infinite; }
+@keyframes wfTwinkle { 0%, 100% { opacity: .9; } 50% { opacity: .25; } }
+.wf-light { animation: wfLight 1.8s ease-in-out infinite; }
+@keyframes wfLight { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.wf-flake { animation: wfSnow 9s linear infinite; }
+@keyframes wfSnow { from { transform: translate(0, 0); } to { transform: translate(14px, 210px); } }
+@media (prefers-reduced-motion: reduce) { .wf-star, .wf-light, .wf-flake { animation: none; } }
