@@ -2316,3 +2316,42 @@ body.locked-page > :not(.site-lock):not(#testbar):not(#fx):not(.mk-album) { visi
 .wf-flake { animation: wfSnow 9s linear infinite; }
 @keyframes wfSnow { from { transform: translate(0, 0); } to { transform: translate(14px, 210px); } }
 @media (prefers-reduced-motion: reduce) { .wf-star, .wf-light, .wf-flake { animation: none; } }
+
+/* ---------- Leiste: Symbole mit Beschriftung ---------- */
+.nav-icons .nav-icon.labeled { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: auto !important; min-height: 40px; padding: 4px 2px 3px; }
+.nav-icons .nav-icon.labeled svg { width: 17px; height: 17px; flex: none; }
+.nav-icons .ni-label { font: 600 9.5px/1.1 "DM Sans", sans-serif; letter-spacing: .01em; color: inherit; opacity: .85; white-space: nowrap; }
+@media (min-width: 761px) { .nav-icons .nav-icon.labeled { width: auto !important; min-width: 52px; padding: 4px 6px 3px; } }
+
+/* ---------- Nach oben ---------- */
+.to-top { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 35; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(201, 160, 74, .6); background: rgba(31, 61, 51, .92); color: #f3e3b5; display: grid; place-items: center; box-shadow: 0 8px 20px rgba(20, 40, 30, .35); cursor: pointer; opacity: 0; transform: translateY(12px) scale(.9); pointer-events: none; transition: opacity .25s, transform .25s; }
+.to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+.to-top svg { width: 22px; height: 22px; }
+body.is-busy .to-top { opacity: 0; pointer-events: none; }
+
+/* ---------- Himmel im Kopfbereich nach Tageszeit ---------- */
+.hero-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; transition: opacity 1s; }
+#hero { transition: background 1.2s; }
+#hero[data-sky="morning"] { background: radial-gradient(700px 300px at 15% 100%, rgba(255, 190, 130, .32), transparent 70%), linear-gradient(180deg, #2a5552 0%, #2f5a4b 60%, #3b6250 100%); }
+#hero[data-sky="day"] { background: radial-gradient(600px 320px at 85% 0%, rgba(255, 236, 170, .3), transparent 65%), linear-gradient(180deg, #2c5c4b 0%, #26503f 100%); }
+#hero[data-sky="evening"] { background: radial-gradient(800px 300px at 50% 110%, rgba(255, 140, 80, .34), transparent 70%), linear-gradient(180deg, #2a2d4a 0%, #36344f 40%, #23453a 100%); }
+#hero[data-sky="night"] { background: radial-gradient(600px 300px at 50% 0%, rgba(120, 150, 220, .16), transparent 70%), linear-gradient(180deg, #0f1d29 0%, #142a2a 55%, #1b362e 100%); }
+.hero-sky .hs-stars { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s; }
+.hero-sky .hs-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: wfTwinkle 3.6s ease-in-out infinite; }
+#hero[data-sky="night"] .hs-stars { opacity: .9; } #hero[data-sky="evening"] .hs-stars { opacity: .35; }
+.hero-sky .hs-moon { position: absolute; left: 54%; top: 34px; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset -7px -2px 0 0 #fff4cf; transform: rotate(-20deg); filter: drop-shadow(0 0 8px rgba(255, 244, 207, .55)); opacity: 0; transition: opacity 1.2s; }
+#hero[data-sky="night"] .hs-moon { opacity: 1; }
+.hero-sky .hs-glow { position: absolute; right: 8%; top: -30px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 238, 180, .45), transparent 65%); opacity: 0; transition: opacity 1.2s; }
+#hero[data-sky="day"] .hs-glow { opacity: 1; } #hero[data-sky="morning"] .hs-glow { opacity: .5; right: auto; left: 6%; top: auto; bottom: -40px; background: radial-gradient(circle, rgba(255, 200, 140, .45), transparent 65%); }
+@media (prefers-reduced-motion: reduce) { .hero-sky .hs-stars i { animation: none; } }
+
+/* ---------- gelöste Türchen funkeln ---------- */
+.door-wrap.sparkle::before { content: ""; position: absolute; inset: 0; z-index: 4; border-radius: 18px; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255, 250, 220, .75) 48%, transparent 64%); background-size: 260% 100%; animation: doorShine 1.2s ease-out both; }
+.door-wrap.sparkle::after { content: "✦"; position: absolute; right: 12%; top: 10%; z-index: 5; color: #fff6c9; font-size: 18px; text-shadow: 0 0 8px #ffd84d; pointer-events: none; animation: doorStar 1.4s ease-out both; }
+@keyframes doorShine { from { background-position: 130% 0; } to { background-position: -40% 0; } }
+@keyframes doorStar { 0% { opacity: 0; transform: scale(.3) rotate(0); } 35% { opacity: 1; transform: scale(1.2) rotate(40deg); } 100% { opacity: 0; transform: scale(.6) rotate(90deg); } }
+@media (prefers-reduced-motion: reduce) { .door-wrap.sparkle::before, .door-wrap.sparkle::after { animation: none; display: none; } }
+
+/* ---------- Tannengirlanden zwischen den Abschnitten ---------- */
+.garland { display: flex; justify-content: center; margin: 30px 0 -14px; pointer-events: none; }
+.garland svg { width: min(240px, 66vw); height: auto; filter: drop-shadow(0 2px 2px rgba(40, 60, 40, .18)); }

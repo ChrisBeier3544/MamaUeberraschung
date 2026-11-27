@@ -412,6 +412,51 @@ const App = (() => {
     if (!again && day === 18) setTimeout(() => buildBonus(true), 900);
   }
 
+  /* ---------- Bedienung & Optik: Beschriftungen, Nach-oben, Himmel, Funkeln, Girlanden ---------- */
+  // Symbole in der Leiste bekommen ein kleines Wort darunter
+  function labelNav() {
+    const box = document.getElementById("nav-icons"); if (!box) return;
+    const LABELS = [[".backup-btn", "Sichern"], [".badge-btn", "Abzeichen"], ["#music-toggle", "Musik"], ["#sound-toggle", "Ton"], [".help-btn", "Hilfe"]];
+    const run = () => LABELS.forEach(([sel, t]) => { const b = box.querySelector(sel); if (b && !b.querySelector(".ni-label")) { b.classList.add("labeled"); b.append(el("span", { class: "ni-label", text: t })); } });
+    run(); new MutationObserver(run).observe(box, { childList: true, subtree: true });
+  }
+  // runder Knopf "Nach oben", sobald man weit gescrollt hat
+  function backToTop() {
+    const b = el("button", { class: "to-top", "aria-label": "Nach oben", title: "Nach oben", html: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>` });
+    b.addEventListener("click", (e) => { e.stopPropagation(); scrollTo({ top: 0, behavior: "smooth" }); });
+    document.body.append(b);
+    const upd = () => b.classList.toggle("show", scrollY > innerHeight * 1.3);
+    addEventListener("scroll", upd, { passive: true }); upd();
+  }
+  // Himmel im Kopfbereich nach Tageszeit
+  function heroSky() {
+    const hero = document.getElementById("hero"); if (!hero) return;
+    let sky = hero.querySelector(".hero-sky");
+    if (!sky) {
+      sky = el("div", { class: "hero-sky", "aria-hidden": "true" });
+      sky.innerHTML = `<div class="hs-stars">${Array.from({ length: 34 }, (_, i) => `<i style="left:${(i * 37 + 11) % 100}%;top:${4 + ((i * 53) % 62)}%;animation-delay:-${((i * 0.7) % 4).toFixed(1)}s;${i % 5 ? "" : "width:3px;height:3px;"}"></i>`).join("")}</div><div class="hs-moon"></div><div class="hs-glow"></div>`;
+      hero.prepend(sky);
+    }
+    const h = now().getHours();
+    hero.dataset.sky = h >= 6 && h < 11 ? "morning" : h >= 11 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
+  }
+  // gelöste Türchen funkeln kurz, wenn sie ins Bild kommen (einmal pro Besuch)
+  function sparkleDoors() {
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      const w = e.target; io.unobserve(w);
+      if (!w.querySelector(".door.open")) return;
+      setTimeout(() => { w.classList.add("sparkle"); setTimeout(() => w.classList.remove("sparkle"), 1800); }, (Number(w.dataset.k) || 0) * 90);
+    }), { threshold: 0.6 });
+    document.querySelectorAll("#calendar .door-wrap, #calendar-bonus .door-wrap").forEach((w, i) => { w.dataset.k = i % 6; io.observe(w); });
+  }
+  // feine Tannengirlanden zwischen den Abschnitten
+  function garlands() {
+    const G = `<svg viewBox="0 0 240 30" aria-hidden="true"><path d="M8 8 Q120 34 232 8" fill="none" stroke="#2f6b4a" stroke-width="5" stroke-linecap="round"/><path d="M8 8 Q120 34 232 8" fill="none" stroke="#4f9e6a" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"/>${[[44, 15, "#d93a4a"], [84, 21, "#f2c84b"], [156, 21, "#f2c84b"], [196, 15, "#d93a4a"]].map(([x, y, c]) => `<circle cx="${x}" cy="${y + 4}" r="4.2" fill="${c}"/><circle cx="${x - 1.3}" cy="${y + 2.7}" r="1.2" fill="#fff" opacity=".7"/>`).join("")}<g transform="translate(120 20)"><path d="M0 0 C-10 -9 -16 -2 -11 3 C-7 7 -2 3 0 0 C2 3 7 7 11 3 C16 -2 10 -9 0 0Z" fill="#b8324b"/><circle r="2.6" fill="#8e2d3b"/><path d="M-1 2 L-5 12 M1 2 L5 12" stroke="#b8324b" stroke-width="2.4" stroke-linecap="round"/></g></svg>`;
+    ["block-today", "block-calendar"].forEach((id) => { const b = document.getElementById(id); if (b && !b.previousElementSibling?.classList.contains("garland")) b.before(el("div", { class: "garland", html: G })); });
+  }
+
   /* ---------- Deko: Winterlandschaft unter dem Kalender ---------- */
   function buildFooter() {
     const f = document.querySelector(".site-foot"); if (!f || f.classList.contains("winter-foot")) return;
@@ -717,12 +762,13 @@ const App = (() => {
     if (isLocked()) { showLock(); return; }
     load();
     if (typeof Zoo !== "undefined") Zoo.init();
-    buildTitle(); buildLights(); buildCalendar(); buildFooter();
+    buildTitle(); buildLights(); buildCalendar(); buildFooter(); garlands(); heroSky(); setInterval(heroSky, 60000);
     updateCountdown(); setupCapy(); setupPaws(); startSnow();
     if (typeof Animals !== "undefined") Animals.init();
     if (typeof Games !== "undefined") Games.init();
     if (typeof Extras !== "undefined") Extras.init();
     if (typeof MunkelHome !== "undefined") MunkelHome.init();
+    labelNav(); backToTop(); setTimeout(sparkleDoors, 800);
     const st = document.getElementById("sound-toggle");
     const SND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
     const SND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;

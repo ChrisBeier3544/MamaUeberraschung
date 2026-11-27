@@ -273,12 +273,21 @@ const Zoo = (() => {
     lichter: [], tanne: [[500, 82, 26], [486, 150, 9], [530, 196, 9], [450, 250, 9], [552, 246, 9]], stand: [[782, 250, 30]],
   };
   // Ab Kapitel 19 (erster Schnee): Schnee auf Zaun, Dächern, Bäumen und am Boden
-  function snowLayer(o, night, r, ground) {
+  // Schneemenge: ab Nikolaus ein Hauch, nach dem ersten Schnee (Kapitel 19) immer mehr bis Heiligabend
+  function snowAmount() {
+    if (typeof App === "undefined") return 0;
+    const n = new Date(), y = CONFIG.year;
+    const d = n.getFullYear() > y ? 32 : n.getFullYear() === y && n.getMonth() === 11 ? n.getDate() : 0;
+    if (App.isSolved(19)) return Math.min(1, 0.6 + Math.max(0, d - 19) * 0.08);
+    return d >= 6 ? Math.min(0.45, 0.15 + (d - 6) * 0.025) : 0;
+  }
+  function snowLayer(o, night, r, ground, amt = 1) {
     const c = night ? "#dfe7f2" : "#ffffff", sh = night ? "#b9c6d8" : "#dbe8f2";
     let t = "";
     const at = (k, x, y) => { const [dx, dy] = off(k); return [x + dx, y + dy]; };
     // Schneewehen am Boden (werden vor allen Teilen gezeichnet)
-    if (ground) { const rr = rnd(19); for (let i = 0; i < 18; i++) { const x = (rr() * W) | 0, y = 290 + ((rr() * 300) | 0), w = 40 + rr() * 80; t += `<ellipse cx="${x}" cy="${y}" rx="${w.toFixed(0)}" ry="${(w / 7).toFixed(1)}" fill="${c}" opacity=".8"/>`; } return t; }
+    if (ground) { const rr = rnd(19), cnt = Math.round(5 + 25 * amt), big = 0.55 + 0.6 * amt; for (let i = 0; i < cnt; i++) { const x = (rr() * W) | 0, y = 290 + ((rr() * 300) | 0), w = (40 + rr() * 80) * big; t += `<ellipse cx="${x}" cy="${y}" rx="${w.toFixed(0)}" ry="${(w / 7).toFixed(1)}" fill="${c}" opacity=".8"/>`; } return t; }
+    if (amt < 0.5) return `<g class="snow-layer" style="filter:drop-shadow(0 1px 0 ${sh})">${t}</g>`; // nur ein Hauch: noch kein Schnee auf Zaun, Bäumen und Dächern
     // Zaun
     if (o.has("zaun")) { t += `<rect y="203.5" width="${W}" height="3.5" rx="1.75" fill="${c}" opacity=".95" pointer-events="none"/>`; for (let x = 5; x < W; x += 48) t += `<ellipse cx="${x + 5.5}" cy="196" rx="7.5" ry="3.4" fill="${c}" pointer-events="none"/>`; }
     // Bäume
@@ -315,8 +324,8 @@ const Zoo = (() => {
     s += `<path d="M0 205 Q180 150 380 195 T760 185 T1140 190 T1520 180 T2000 195 V280 H0Z" fill="${hill}"/><rect y="250" width="${W}" height="350" fill="${ground}"/>`;
     if (!o.has("rasen")) s += [[150, 330, 70], [520, 430, 90], [330, 540, 80], [880, 330, 60], [700, 560, 70]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, 600 - y + 270, w * 0.9]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 5}" fill="#9c8b70"/>`).join("");
     else s += Array.from({ length: 60 }, () => { const x = (r() * W) | 0, y = 270 + ((r() * 320) | 0); return `<path d="M${x} ${y} q2 -9 4 0 q2 -9 4 0" stroke="${night ? "#3f5a4b" : "#8cc477"}" stroke-width="1.6" fill="none"/>`; }).join("");
-    const snowy = ownedOverride == null && typeof App !== "undefined" && App.isSolved(19);
-    if (snowy) s += snowLayer(o, night, r, true);
+    const amt = ownedOverride == null ? snowAmount() : 0, snowy = amt > 0;
+    if (snowy) s += snowLayer(o, night, r, true, amt);
     if (o.has("schneemann")) s += [[120, 470, 90], [600, 330, 110], [430, 500, 70], [880, 560, 80], [300, 300, 60]].flatMap(([x, y, w]) => [[x, y, w], [x + 1000, y + 20, w]]).map(([x, y, w]) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w / 6}" fill="#fff" opacity=".8"/>`).join("");
     if (!o.has("teich") && !o.has("eisbahn")) s += `<ellipse cx="1400" cy="435" rx="44" ry="10" fill="#8f8a7a"/><ellipse cx="1400" cy="433" rx="36" ry="7" fill="#a6b2b6"/>`;
     if (!o.has("baeume")) s += `<rect x="248" y="258" width="28" height="22" fill="#6b5a4a"/><ellipse cx="262" cy="258" rx="14" ry="4" fill="#8a7a66"/>`;
@@ -330,7 +339,7 @@ const Zoo = (() => {
     MID.forEach((k) => (s += k === "teich" && o.has("eisbahn") ? "" : g(k)));
     if (!o.has("rasen")) s += `<circle cx="700" cy="560" r="20" fill="none" stroke="#3a3a40" stroke-width="9"/><rect x="180" y="500" width="44" height="30" fill="#8f7a5f" transform="rotate(-12 202 515)"/><path d="M184 506 l36 18" stroke="#6b5a4a" stroke-width="3"/><circle cx="1560" cy="520" r="18" fill="none" stroke="#3a3a40" stroke-width="8"/><rect x="1180" y="540" width="40" height="28" fill="#8f7a5f" transform="rotate(10 1200 554)"/>`;
     FRONT.forEach((k) => (s += g(k)));
-    if (snowy) s += snowLayer(o, night, r, false);
+    if (snowy) s += snowLayer(o, night, r, false, amt);
     if (o.has("schneemann") && !night) s += Array.from({ length: 40 }, () => `<circle cx="${(r() * W) | 0}" cy="${(r() * 560) | 0}" r="${(1.5 + r() * 1.6).toFixed(1)}" fill="#fff" opacity=".7" pointer-events="none"/>`).join("");
     if (night) {
       s += `<rect width="${W}" height="600" fill="#0a1636" opacity="${o.has("feuerwerk") && !dark ? 0.12 : 0.36}" pointer-events="none"/>`;

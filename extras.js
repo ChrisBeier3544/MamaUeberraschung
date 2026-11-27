@@ -389,7 +389,7 @@ const Extras = (() => {
     BADGES.forEach(([id, name]) => {
       if (st.badges.includes(id)) return;
       let ok = false; try { ok = BADGES.find((b) => b[0] === id)[4](); } catch (e) {}
-      if (ok) { st.badges.push(id); save(); setTimeout(() => { H.notify(`Neues Abzeichen: „${name}“! Hol dir die Taler unter „Abzeichen“ ab.`, 4500); H.sfx.good(); markUnclaimed(); }, 600); }
+      if (ok) { st.badges.push(id); st.claimed = st.claimed || []; st.claimed.push(id); save(); setTimeout(() => { H.notify(`Neues Abzeichen: „${name}“! +${BADGE_COINS} Taler für dich.`, 4500); H.sfx.good(); Zoo.addCoins(BADGE_COINS); markUnclaimed(); }, 600); }
     });
     markUnclaimed();
   }
@@ -691,6 +691,8 @@ const Extras = (() => {
     H = App.h;
     load();
     if (!Array.isArray(st.claimed)) { st.claimed = st.badges.slice(); save(); } // alte Abzeichen wurden schon bezahlt
+    // Taler für Abzeichen gibt es jetzt automatisch – noch nicht abgeholte werden einmal gutgeschrieben
+    { const open = st.badges.filter((id) => !st.claimed.includes(id)); if (open.length) { st.claimed.push(...open); save(); setTimeout(() => Zoo.addCoins(open.length * BADGE_COINS), 1500); } }
     // Spieluhr-Knopf
     const mb = H.el("button", { id: "music-toggle", class: "music-toggle" + (st.music ? "" : " off"), title: "Spieluhr an/aus", text: "♪" });
     mb.addEventListener("click", (e) => { e.stopPropagation(); music(!st.music); H.toast(st.music ? "Die Spieluhr spielt." : "Die Spieluhr ist aus."); });

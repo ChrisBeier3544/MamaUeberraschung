@@ -95,7 +95,7 @@ const Intro = (() => {
       title: "Spiele und Abzeichen",
       lines: [
         "In der Spielecke („Spiele“ oben) warten drei Spiele: Heuballen-Turm, Waschbär-Alarm und Pinguin-Rutsche. Dein Rekord wird gespeichert – und wer gut spielt, entdeckt geheime Belohnungen.",
-        "Für vieles, was du schaffst, bekommst du Abzeichen (Medaille oben). Tipp ein neues an, um die Taler abzuholen.",
+        "Für vieles, was du schaffst, bekommst du Abzeichen (Medaille oben) – und die Taler dafür gleich dazu.",
       ],
     },
     {
