@@ -532,12 +532,12 @@ const App = (() => {
   }
 
   /* ---------- Start ---------- */
-  /* ---------- Bis zum 28.11., 9 Uhr: alles verschlossen ---------- */
-  const OPENS = new Date(CONFIG.year, 10, 28, 9, 0, 0);
+  /* ---------- Bis zum 28.11., 8 Uhr: alles verschlossen ---------- */
+  const OPENS = new Date(CONFIG.year, 10, 28, 8, 0, 0);
   const isLocked = () => (!PREVIEW || params.has("schloss")) && new Date() < OPENS;
   function showLock() {
     document.body.classList.add("locked-page");
-    const lock = el("div", { class: "site-lock", role: "img", "aria-label": "Verschlossen – öffnet am 28. November um 9 Uhr morgens" });
+    const lock = el("div", { class: "site-lock", role: "img", "aria-label": "Verschlossen – öffnet am 28. November um 8 Uhr morgens" });
     const pad = el("div", { class: "lock-pad", html: `<svg viewBox="0 0 200 240" aria-hidden="true">
       <defs><linearGradient id="lkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc93"/><stop offset=".5" stop-color="#c9a04a"/><stop offset="1" stop-color="#8f6a24"/></linearGradient>
       <linearGradient id="lkS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a7a9ad"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#8c8f94"/></linearGradient></defs>
@@ -582,7 +582,7 @@ const App = (() => {
     lock.append(pad,
       el("div", { class: "lock-copy" },
         el("p", { class: "lock-text", text: "Hier wartet etwas ganz Besonderes auf dich, liebe Mama." }),
-        el("p", { class: "lock-sub", text: "Das Schloss öffnet sich am 28.\u00a0November um 9\u00a0Uhr morgens." })),
+        el("p", { class: "lock-sub", text: "Das Schloss öffnet sich am 28.\u00a0November um 8\u00a0Uhr morgens." })),
       el("div", { class: "lock-clock" }, watch, left));
     document.body.append(lock);
     setInterval(() => { if (!isLocked()) location.reload(); }, 5000);
