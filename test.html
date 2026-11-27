@@ -162,7 +162,7 @@
   const GAINS = { "14e": ["nest"], "15m": ["brief"], "18m": ["slim"], "18e": ["scarf"], "19s": ["partnerin"], "19e": ["laterne"], "21m": ["hat"], "22m": ["schneemann"], "22e": ["kerze"], "25e": ["lichter"], "26m": ["glanz"] };
   const SPECIAL = { "2026-11-27": "Schloss zu", "2026-11-28": "Schloss öffnet", "2026-11-29": "1. Advent", "2026-12-01": "Erstes Türchen", "2026-12-06": "Nikolaus", "2026-12-13": "Neue Tiere", "2026-12-17": "Nachwuchs", "2026-12-18": "Bonus-Paket", "2026-12-19": "Erster Schnee", "2026-12-20": "Neue Tiere", "2026-12-23": "Weihnachtsfoto", "2026-12-24": "Heiligabend", "2026-12-31": "Silvester" };
   const EVENTS = [
-    ["2026-11-28", "08:59", "Eine Minute vor dem Öffnen"], ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", 1],
+    ["2026-11-28", "07:59", "Eine Minute vor dem Öffnen"], ["2026-11-28", "09:30", "Erster Besuch: Aufschließen, Brief, Erklärung", 1],
     ["2026-11-29", "10:00", "Vorgeschmack: höchstens 7 Tiere"], ["2026-12-01", "09:00", "Erstes Türchen"], ["2026-12-06", "10:00", "Nikolaus"],
     ["2026-12-18", "10:00", "Bonus-Paket"], ["2026-12-23", "11:00", "Weihnachtsfoto"], ["2026-12-24", "18:00", "Heiligabend"],
     ["2026-12-31", "22:00", "Silvester & Abspann"], ["2027-01-02", "11:00", "Nach Silvester"],
@@ -266,7 +266,7 @@
       if (a === "buyall") { if (!Zoo) throw 0; const k = T + "mama-zoo-2026"; const z = JSON.parse(localStorage.getItem(k) || "{}"); z.owned = [...Zoo.ITEMS, ...Zoo.SMALL, ...Zoo.EXTRAS].map((i) => i[0]).filter((x) => x !== "feuerwerk" || cfg.date >= "2026-12-31"); localStorage.setItem(k, JSON.stringify(z)); load(); }
       if (a === "intro") { clearFirst(); load(); }
       if (a === "reset" && confirm("Den kompletten Testspielstand löschen?")) load(true);
-    } catch (e) { alert("Das geht an diesem Tag nicht – vor dem 28.11. um 9 Uhr ist die Seite noch verschlossen."); }
+    } catch (e) { alert("Das geht an diesem Tag nicht – vor dem 28.11. um 8 Uhr ist die Seite noch verschlossen."); }
   }));
 
   /* ---------- Anzeige & Steuerung ---------- */
